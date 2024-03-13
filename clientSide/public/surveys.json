@@ -1,0 +1,263 @@
+[
+  
+    {
+      "title": "Tech Talk: iOS or Android?",
+      "description": "Dive into the tech realm and cast your vote! Are you Team Android or Team iOS? Your preference shapes the future of handheld innovation. Let your voice be heard in this ultimate tech showdown!",
+      "category": "Technology",
+      "image": "https://i.ibb.co/qrWs7vK/technology.jpg",
+      "date": "September 03, 2020",
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "JohnDoe",
+          "comment": "I'm a die-hard Android fan!"
+        },
+        {
+          "username": "JaneSmith",
+          "comment": "iOS all the way!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "android": 0,
+        "ios": 0
+      },
+      "votedPeopleMails":[  ]
+    },
+    {
+      "title": "Morning Riser or Night Owl?",
+      "description": "Let's settle the debate – are you an early bird catching the worm or a night owl thriving in the moonlight? Cast your vote and discover if you're in sync with the rhythm of the morning sun or the tranquility of the night.",
+      "category": "Lifestyle",
+      "image": "https://i.ibb.co/hcYmKp3/lifestyle.jpg",
+      "date": "December 10, 2023", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "NightOwl123",
+          "comment": "Nighttime is when I come alive!"
+        },
+        {
+          "username": "EarlyBird456",
+          "comment": "Mornings are my favorite!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "morning": 0,
+        "night": 0
+      },
+      "votedPeopleMails":[  ]
+    },
+    {
+      "title": "Streaming Wars: Netflix vs. Hulu vs. Amazon Prime",
+      "description": "Grab your popcorn and pick a side! In the battle of streaming giants, which platform gets your binge-watching loyalty? Cast your vote and let's see which streaming service reigns supreme in the entertainment realm!",
+      "category": "Entertainment",
+      "image": "https://i.ibb.co/PhtGsHW/entertainment.jpg",
+      "date": "November 14, 2022", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "BingeWatcher789",
+          "comment": "Netflix all the way!"
+        },
+        {
+          "username": "HuluFanatic",
+          "comment": "Hulu has the best shows!"
+        },
+        {
+          "username": "PrimeAddict",
+          "comment": "Amazon Prime is my go-to!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "netflix": 2,
+        "hulu": 3,
+        "amazon": 1
+      },
+      "votedPeopleMails":[ "user1@example.com","user2@example.com","user2@example.com","user3@example.com","user4@example.com","user5@example.com"]
+    },
+    {
+      "title": "Fitness Fanatics: Gym or Home Workouts?",
+      "description": "Time to break a sweat! Where does your fitness journey unfold – at the gym or in the comfort of your home? Cast your vote and share your go-to workout space. Let's find out where the health and fitness community thrives!",
+      "category": "Health",
+      "image": "https://i.ibb.co/3yxnN7p/medical.jpg",
+      "date": "October 12, 2021",
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "GymGoer",
+          "comment": "Nothing beats the gym atmosphere!"
+        },
+        {
+          "username": "HomeWorkoutEnthusiast",
+          "comment": "Working out at home is so convenient!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "gym": 2,
+        "home": 3
+      },
+      "votedPeopleMails": [ "user1@example.com","user2@example.com","user2@example.com","user3@example.com","user4@example.com","user5@example.com"]
+    },
+    {
+      "title": "E-Books or Paperback Pages?",
+      "description": "Turn the page on this literary face-off! Are you team e-books, embracing the digital era, or do you still savor the tactile pleasure of paperback pages? Cast your vote and contribute to the ongoing debate in the world of reading.",
+      "category": "Lifestyle",
+      "image": "https://i.ibb.co/hcYmKp3/lifestyle.jpg",
+      "date": "March 10, 2021", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "EBookLover",
+          "comment": "E-books are the future!"
+        },
+        {
+          "username": "PaperbackReader",
+          "comment": "Nothing beats the feel of a book in your hands!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "ebooks": 0,
+        "paperback": 0
+      },
+      "votedPeopleMails":[  ]
+    },
+    {
+      "title": "City Lights or Countryside Serenity?",
+      "description": "Urban buzz or rural calm, where does your heart belong? Cast your vote and share your preference for the perfect backdrop to your life. Let's uncover the prevailing sentiment in the eternal city versus countryside debate!",
+      "category": "Lifestyle",
+      "image": "https://i.ibb.co/hcYmKp3/lifestyle.jpg",
+      "date": "January 30, 2023", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "CitySlicker",
+          "comment": "I love the city life!"
+        },
+        {
+          "username": "CountryBumpkin",
+          "comment": "Nothing beats the countryside!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "city": 0,
+        "countryside": 0
+      },
+      "votedPeopleMails":[  ]
+    },
+    {
+      "title": "Sleep Tech: Pillow or App?",
+      "description": "Embrace the future of restful nights! When it comes to optimizing your sleep, do you trust a smart pillow or a sleep-tracking app? Cast your vote and share your preference in the realm of health technology. Let's uncover the prevailing trend in the pursuit of quality sleep!",
+      "category": "Health",
+      "image": "https://i.ibb.co/3yxnN7p/medical.jpg",
+      "date": "April 08, 2023", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "PillowLover",
+          "comment": "My smart pillow is a game-changer!"
+        },
+        {
+          "username": "AppEnthusiast",
+          "comment": "My sleep app is the best!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "home": 2,
+        "takeout": 1
+      },
+      "votedPeopleMails":[ "user1@example.com","user3@example.com","user2@example.com"]
+    },
+    {
+      "title": "Music Mood: Beats or Lyrics?",
+      "description": "When it comes to music, what captures your soul – the beats that make you move or the lyrics that tell a story? Cast your vote and share your musical preference. Let's unravel the melody that resonates with our community!",
+      "category": "Entertainment",
+      "image": "https://i.ibb.co/PhtGsHW/entertainment.jpg",
+      "date": "February 28, 2023",
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "BeatLover",
+          "comment": "I love a good beat!"
+        },
+        {
+          "username": "LyricEnthusiast",
+          "comment": "I'm all about the lyrics!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "beats": 1,
+        "lyrics": 2
+      },
+      "votedPeopleMails":[ "user1@example.com","user3@example.com","user2@example.com"]
+    },
+    {
+      "title": "Desk Dwellers: Windows or Mac?",
+      "description": "In the world of computing, where does your allegiance lie – with the sleek Mac or the versatile Windows? Cast your vote and let's uncover the prevailing sentiment in the ongoing debate of operating systems.",
+      "category": "Technology",
+      "image": "https://i.ibb.co/qrWs7vK/technology.jpg",
+      "date": "August 17, 2022", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "WindowsLover",
+          "comment": "Windows is the best!"
+        },
+        {
+          "username": "MacEnthusiast",
+          "comment": "Mac is the best!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "windows": 1,
+        "mac": 3
+      },
+      "votedPeopleMails":[ "user1@example.com","user3@example.com","user2@example.com","user5@example.com"]
+    },
+    {
+      "title": "Smart Assistants Showdown: Siri vs. Alexa vs. Google Assistant",
+      "description": "The battle of the virtual helpers! Are you team Siri, Alexa, or Google Assistant? Cast your vote and let us know which smart assistant reigns supreme in your tech-savvy world. Your choice could shape the future of voice-activated innovation!",
+      "category": "Technology",
+      "image": "https://i.ibb.co/qrWs7vK/technology.jpg",
+      "date": "July 07, 2022", 
+      "likes": [],
+      "dislikes": [],
+      "userReview": [
+        {
+          "username": "SiriLover",
+          "comment": "Siri is the best!"
+        },
+        {
+          "username": "AlexaEnthusiast",
+          "comment": "Alexa is the best!"
+        },
+        {
+          "username": "GoogleAssistantFan",
+          "comment": "Google Assistant is the best!"
+        }
+      ],
+      "adminFeedback": [],
+      "options": {
+        "siri": 1,
+        "alexa": 0,
+        "google": 1
+      },
+      "votedPeopleMails":[ "user1@example.com","user3@example.com"]
+    }
+  ]
