@@ -1,24 +1,26 @@
 /* eslint-disable react/prop-types */
-import { useState } from "react";
 
-const Buttonmd = ({text}) => {
-    const [isClicked, setIsClicked] = useState(false);
-    const handleClick = () => {
-        setIsClicked(true);
-        setTimeout(() => {
-            setIsClicked(false);
-          }, 300);
-      };
-    const clickStyle = {
-        borderRadius: '0.45rem',
-        transform: isClicked ? 'scale(0.95)' : 'scale(1)',
-        backgroundColor: isClicked ? '#f88703' : '#fff',
-        color: isClicked ? 'white' : '',
-        transition: 'transform 0.2s ease-out',
-      };
-    return (
-        <button className={`px-4 font-bold border-2 border-solid uppercase border-[#f88703] py-2`} style={clickStyle} onClick={handleClick}>{text}</button>
-    );
+const Buttonmd = ({ text, onClick, className = "", ...props }) => {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        px-6 py-2.5 
+        font-bold uppercase tracking-wide
+        border-2 border-brand-500 
+        bg-white text-brand-500
+        rounded-lg
+        transition-all duration-200 ease-out
+        hover:bg-brand-500 hover:text-white hover:shadow-lg hover:shadow-brand-500/30
+        active:scale-95 active:bg-brand-600
+        disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-brand-500 disabled:shadow-none
+        ${className}
+      `}
+      {...props}
+    >
+      {text}
+    </button>
+  );
 };
 
 export default Buttonmd;

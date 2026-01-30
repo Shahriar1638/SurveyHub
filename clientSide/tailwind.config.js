@@ -24,6 +24,32 @@ module.exports = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        brand: {
+            50: "#fff8ec",
+            100: "#fff0d3",
+            200: "#ffe0a5",
+            300: "#ffca71",
+            400: "#ffac3e",
+            500: "#f88703", // Primary (Original)
+            600: "#db6a00",
+            700: "#b64f00",
+            800: "#923d06",
+            900: "#78320b",
+            950: "#411702",
+        },
+        navy: {
+            50: "#f5f7fa",
+            100: "#eaedf5",
+            200: "#d0d9e7",
+            300: "#a6b9d2",
+            400: "#7695b9",
+            500: "#53779e",
+            600: "#3e5d83",
+            700: "#334b6b",
+            800: "#2d3f57",
+            900: "#293648",
+            950: "#1a1d23", // Dark Background
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -47,7 +73,7 @@ module.exports = {
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
-        },
+          },
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
@@ -77,5 +103,5 @@ module.exports = {
   plugins: [
     require("tailwindcss-animate"),
     require('daisyui')
-],
+  ],
 }
