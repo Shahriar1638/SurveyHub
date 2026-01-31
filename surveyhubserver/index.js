@@ -65,3 +65,4 @@ app.get('/', (req, res) => {
 app.listen(port, () => {
   console.log(`Current active port: ${port}`);
 })
+module.exports = app;
