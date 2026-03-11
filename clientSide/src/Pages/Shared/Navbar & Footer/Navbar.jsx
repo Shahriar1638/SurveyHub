@@ -86,11 +86,7 @@ const Navbar = () => {
           </NavLink>
         </li>
       )}
-      <li className="text-base font-medium">
-        <NavLink to={`/payment`} className={linkClasses}>
-          Premium
-        </NavLink>
-      </li>
+
       {!user && (
         <li className="text-base font-medium">
           <NavLink to="/login" className={linkClasses}>

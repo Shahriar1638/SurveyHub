@@ -9,7 +9,7 @@ const Footer = () => {
         <aside>
           <div className=" flex sm:flex-row md:flex-col lg:flex-row items-center">
               <img className="lg:ml-48 w-28 h-full mr-4 border-2 border-solid border-white rounded-full" src={logo} alt="" />
-              <h1 className="text-5xl font-extrabold text-white">Survey<span className="text-[#0DD3FA]">Hub</span></h1> 
+              <h1 className="text-5xl font-extrabold text-white">Survey<span className="text-brand-500">Hub</span></h1> 
           </div>
         </aside>
         <nav className="">

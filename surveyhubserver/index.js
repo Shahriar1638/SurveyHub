@@ -3,17 +3,27 @@ const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 require('dotenv').config()
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
 const port = process.env.PORT || 3000;
 
 // middleware
-app.use(cors());
+app.use(cors({
+    origin: [
+        'http://localhost:5173',
+        'http://localhost:5174',
+        'https://practice-2-firebase.web.app',
+        'https://practice-2-firebase.firebaseapp.com',
+        'https://surveyhubserver.vercel.app' 
+    ],
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
 app.use(express.json());
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
-console.log("DB_USER:", process.env.DB_USER);
-console.log("DB_PASS:", process.env.DB_PASS);
+// console.log("DB_USER:", process.env.DB_USER);
+// console.log("DB_PASS:", process.env.DB_PASS);
 // DO NOT log DB_PASS to console for security
 // const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.uwwtyq1.mongodb.net/?appName=Cluster0`;
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.uwwtyq1.mongodb.net/?retryWrites=true&w=majority`;
@@ -43,7 +53,7 @@ async function run() {
     app.use(require('./routes/userRoutes')(userCollection, verifyToken, verifyAdmin, verifySurveyor));
     app.use(require('./routes/pendingSurveyRoutes')(pendingCollection, verifyToken, verifyAdmin, verifySurveyor));
     app.use(require('./routes/surveyRoutes')(surveyCollection, verifyToken, verifyAdmin));
-    app.use(require('./routes/paymentRoutes')(paymentCollection, stripe, verifyToken, verifyAdmin));
+
     app.use(require('./routes/statsRoutes')(surveyCollection, userCollection, paymentCollection, verifyToken, verifyAdmin));
 
 

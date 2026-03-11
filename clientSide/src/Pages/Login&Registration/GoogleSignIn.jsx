@@ -1,16 +1,19 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { AuthContext } from '../../Firebase AuthProvider/AuthProvider';
 import useAxiosPublic from '../../Hooks/useAxiosPublic';
 import { useNavigate } from 'react-router-dom';
-import swal from 'sweetalert';
+
 import Swal from 'sweetalert2';
-import Gicon from "../../assets/google.png"
+import Gicon from "../../assets/google.png";
 
 const GoogleSignIn = () => {
     const {signInWithGoogle} = useContext(AuthContext)
     const axiosPublic = useAxiosPublic();
     const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
+
     const handleGoogleSignIn = () => {
+        setIsLoading(true);
         signInWithGoogle()
         .then(result =>{
             const userInfo = {
@@ -20,27 +23,35 @@ const GoogleSignIn = () => {
             }
             axiosPublic.post('/users', userInfo)
             .then(res => {
-                console.log(res.data);
                 if(res.data.insertedId){
-                    console.log('User created in firebase')                   
                     Swal.fire({
                         position: 'top-end',
                         icon: 'success',
-                        title: 'You are using free membership',
+                        title: 'Authenticated Successfully!',
                         showConfirmButton: false,
                         timer: 1500
                     });
                 }
             })
+            setIsLoading(false);
             navigate('/');
-            swal("SuccessFully Registered", "Your registration is done. Redirecting to Home page", "success");
         })
+        .catch(err => {
+             console.error(err);
+             setIsLoading(false);
+        });
     }
+
     return (
-        <div onClick={handleGoogleSignIn} className="flex flex-row gap-4 my-4 w-72 items-center px-4 py-2 rounded-l-full rounded-r-full border border-solid border-[#FFE72F]" style={{ cursor: 'pointer' }}>
-            <img className="w-10 h-10" src={Gicon} />
-            <p className="text-base font-medium text-black">Continue with Google</p>              
-        </div>  
+        <button 
+            disabled={isLoading}
+            onClick={handleGoogleSignIn} 
+            className="w-full flex items-center justify-center gap-4 bg-white hover:bg-gray-50 text-navy-900 border border-gray-200 hover:border-brand-500 rounded-xl px-6 py-3.5 shadow-sm transition-all hover:-translate-y-0.5"
+        >
+            <img className="w-6 h-6 object-contain" src={Gicon} alt="Google sign in" />
+            <span className="font-bold text-sm">Continue with Google</span>
+            {isLoading && <span className="loading loading-spinner text-brand-500 loading-sm ml-2"></span>}
+        </button>  
     );
 };
 

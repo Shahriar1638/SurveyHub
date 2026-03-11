@@ -26,29 +26,43 @@ module.exports = {
         foreground: "hsl(var(--foreground))",
         brand: {
             50: "#fff8ec",
-            100: "#fff0d3",
-            200: "#ffe0a5",
-            300: "#ffca71",
-            400: "#ffac3e",
-            500: "#f88703", // Primary (Original)
-            600: "#db6a00",
-            700: "#b64f00",
+            100: "#ffedd1",
+            200: "#ffd29e",
+            300: "#ffb263",
+            400: "#fc9928",
+            500: "#f98602", // Primary Logo Orange
+            600: "#e36303", // Darker Logo Orange
+            700: "#b64a00",
             800: "#923d06",
             900: "#78320b",
             950: "#411702",
         },
         navy: {
-            50: "#f5f7fa",
-            100: "#eaedf5",
-            200: "#d0d9e7",
-            300: "#a6b9d2",
-            400: "#7695b9",
-            500: "#53779e",
-            600: "#3e5d83",
-            700: "#334b6b",
-            800: "#2d3f57",
-            900: "#293648",
-            950: "#1a1d23", // Dark Background
+            50: "#f4f7f9",
+            100: "#e4ecf1",
+            200: "#ccdbe4",
+            300: "#a9c3d2",
+            400: "#7fa4ba",
+            500: "#5d86a0",
+            600: "#446b86",
+            700: "#37556c",
+            800: "#30485b",
+            900: "#023652",
+            950: "#012335", // Logo Night-Black
+        },
+        ocean: {
+            50: "#f0f9fb",
+            100: "#dcf0f6",
+            500: "#118bb0", // Logo Blue
+            600: "#0e7292",
+            700: "#034b60", // Darker Logo Blue
+        },
+        danger: {
+            50: "#fdf3f3",
+            100: "#fce5e4",
+            500: "#d33a2f", // Logo Red
+            600: "#bb2f25",
+            700: "#871f19", // Darker Logo Red
         },
         primary: {
           DEFAULT: "hsl(var(--primary))",
