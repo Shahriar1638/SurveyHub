@@ -1,33 +1,32 @@
 const express = require('express');
-const { ObjectId } = require('mongodb');
+const mongoose = require('mongoose');
+const User = require('../models/User');
 const router = express.Router();
 
-module.exports = (userCollection, verifyToken, verifyAdmin, verifySurveyor) => {
+module.exports = (verifyToken, verifyAdmin, verifySurveyor) => {
     
     // Get all users (Admin only)
     router.get('/users', verifyToken, verifyAdmin, async (req, res) => {
-      const result = await userCollection.find().toArray();
+      const result = await User.find().lean();
       res.send(result);
     });
 
     // Get specific user by email
     router.get('/users/:email', async (req, res) => {
       const email = req.params.email;
-      const query = { email: email };
-      const result = await userCollection.findOne(query);
+      const result = await User.findOne({ email }).lean();
       res.send(result);
     });
 
     // Create user (SignUp)
     router.post('/users', async (req, res) => {
       const user = req.body;
-      const query = { email: user.email }
-      const existingUser = await userCollection.findOne(query);
+      const existingUser = await User.findOne({ email: user.email }).lean();
       if (existingUser) {
         return res.send({ message: 'User already exists', insertedId: null })
       }
-      const result = await userCollection.insertOne(user);
-      res.send(result);
+      const createdUser = await User.create(user);
+      res.send({ acknowledged: true, insertedId: createdUser._id });
     });
     
     // Check if user is admin
@@ -36,12 +35,8 @@ module.exports = (userCollection, verifyToken, verifyAdmin, verifySurveyor) => {
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'Unauthorized request' })
       }
-      const query = { email: email };
-      const result = await userCollection.findOne(query);
-      let admin = false;
-      if (result.role === 'admin') {
-        admin = true;
-      }
+      const result = await User.findOne({ email }).lean();
+      const admin = result?.role === 'admin';
       res.send({ admin });
     });
 
@@ -51,51 +46,39 @@ module.exports = (userCollection, verifyToken, verifyAdmin, verifySurveyor) => {
       if (email !== req.decoded.email) {
         return res.status(403).send({ message: 'Unauthorized request' })
       }
-      const query = { email: email };
-      const result = await userCollection.findOne(query);
-      let surveyor = false;
-      if (result.role === 'surveyor') {
-        surveyor = true;
-      }
+      const result = await User.findOne({ email }).lean();
+      const surveyor = result?.role === 'surveyor';
       res.send({ surveyor });
     });
 
-    // Upgrade user to prouser
-     router.patch('/users/upgrade/:email', async (req, res) => {
-      const email = req.params.email;
-      const filter = { email: email };
-      const updatedDoc = {
-        $set: {
-          role: 'prouser'
-        }
-      }
-      const result = await userCollection.updateOne(filter, updatedDoc);
-      res.send(result);
-    })
+    // Upgrade user to prouser removed
+
 
     // Make user admin
     router.patch('/users/admin/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedDoc = {
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).send({ message: 'Invalid user id' });
+      }
+      const result = await User.updateOne({ _id: id }, {
         $set: {
           role: 'admin'
         }
-      }
-      const result = await userCollection.updateOne(filter, updatedDoc);
+      });
       res.send(result);
     })
 
     // Make user surveyor
     router.patch('/user/surveyor/:id', verifyToken, verifyAdmin, async (req, res) => {
       const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedDoc = {
+      if (!mongoose.isValidObjectId(id)) {
+        return res.status(400).send({ message: 'Invalid user id' });
+      }
+      const result = await User.updateOne({ _id: id }, {
         $set: {
           role: 'surveyor'
         }
-      }
-      const result = await userCollection.updateOne(filter, updatedDoc);
+      });
       res.send(result);
     })
 

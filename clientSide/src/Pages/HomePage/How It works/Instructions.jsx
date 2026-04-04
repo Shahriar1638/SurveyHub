@@ -23,12 +23,8 @@ const Instructions = () => {
         description: 'The public surveys page displays a comprehensive list of all available surveys, complete with essential information such as titles, short descriptions, and total votes. Users can conveniently filter surveys by title, category, and vote count.',
     },
     {
-        title: 'Survey Details Page (Public and Pro User)',
-        description: 'Survey details pages provide in-depth information about a specific survey. While all users can view the survey details and vote in polls, only authorized users (pro users) can add comments. All users can see comments, fostering transparency.',
-    },
-    {
-        title: 'Pricing and Pro User Membership',
-        description: 'The public pricing page integrates a payment system, allowing users to become pro-user members by subscribing to enhanced features. A dedicated "Pro" nav link in the navigation bar directs users to the pro-user membership page, where they can become pro users upon successful payment. Account creation is facilitated using email and password, with JWT tokens securely stored on the client side for authentication.',
+        title: 'Survey Details Page',
+        description: 'Survey details pages provide in-depth information about a specific survey. All users can view the survey details, vote in polls, and read or add comments to foster discussion and transparency.',
     },
     ];
   return (

@@ -1,38 +1,98 @@
-# SurveyHub
+# 📊 SurveyHub
 
-Welcome to SurveyHub! Your go-to platform for creating, participating in, and analyzing surveys.
+[![Live Demo](https://img.shields.io/badge/Live_Demo-View_Site-blue?style=for-the-badge)](https://practice-2-firebase.web.app/)
 
-## Table of Contents
+> SurveyHub is a comprehensive, full-stack survey management platform designed to facilitate survey creation, voting, and real-time result analysis. Built with a robust Role-Based Access Control (RBAC) system, it empowers users to gather feedback, conduct market research, and engage communities effectively.
 
-- [Overview](#overview)
-- [How It Works](#how-it-works)
-- [Testimonials](#testimonials)
-- [Getting Started](#getting-started)
-- [Features](#features)
-- [Contributing](#contributing)
-- [License](#license)
+---
 
-## Overview
+## 🎯 Key Features
 
-SurveyHub is a feature-rich platform designed to facilitate survey creation, voting, and result analysis. Whether you're looking to gather feedback, conduct market research, or simply engage with your community, SurveyHub provides the tools you need.
+SurveyHub implements a secure, role-based architecture to provide tailored experiences for different types of users:
 
-## How It Works
+**🟢 Regular Users**
 
-The platform consists of several key features, including:
+- **Authentication:** Secure login/registration via Email or Google Sign-In (Firebase).
+- **Engagement:** Browse featured surveys, vote on active polls, and leave comments.
+- **Analytics:** View real-time distributions of votes via interactive charts after participating.
 
-- **Homepage Banner:** A descriptive banner providing an overview of the platform.
-- **Featured and Latest Surveys Sections:** Easily discover and explore interesting surveys.
-- **Surveys Page (Public):** View a comprehensive list of surveys with filtering options.
-- **Survey Details Page (Public and Pro User):** Access detailed survey information, vote in polls, and add comments (Pro users only).
-- **Pricing Page (Public):** Integrate a payment system for users to become pro-user members.
+**🔵 Surveyors (Creators)**
 
-## Features
+- **Dashboard Management:** Dedicated portal to create, edit, and manage custom surveys.
+- **Audience Interaction:** Track user reviews and interact with participants on their own surveys.
+- **Admin Feedback:** View moderation statuses and feedback from platform administrators.
 
-- **User Authentication:** Allow users to create accounts with email and password.
-- **Pro User Membership:** Unlock premium features by becoming a pro user.
-- **Survey Creation and Participation:** Create, update, and participate in surveys.
-- **Admin and Surveyor Roles:** Manage users, publish/unpublish survey status,can see statistics and receive feedback.
-- **Responsive Design:** Ensure a seamless experience across devices.
+**🔴 Administrators**
 
-[Live site link](https://practice-2-firebase.web.app/)
-### You have to be an admin or surveyor if you want to explore dashboard
+- **User Management:** Promote users to Surveyors or Admins, managing the platform's hierarchy.
+- **Content Moderation:** Approve, publish, or reject pending surveys submitted by Surveyors.
+- **Platform Analytics:** Access high-level statistics, participation rates, and graphical data representing platform health.
+
+---
+
+## 💻 Tech Stack
+
+**Frontend**
+
+- **Framework:** React 18 (Vite)
+- **Styling:** Tailwind CSS, DaisyUI
+- **Routing & State:** React Router DOM, TanStack Query (React Query)
+- **Data Visualization:** Recharts
+
+**Backend**
+
+- **Runtime:** Node.js
+- **Framework:** Express.js
+- **Database:** MongoDB with Mongoose
+- **Authentication:** Firebase (Client) & JWT (Server)
+
+---
+
+## 🚀 Getting Started
+
+Follow these instructions to set up the project locally.
+
+### Prerequisites
+
+- Node.js installed on your machine
+- MongoDB instance (local or Atlas)
+- Firebase Project setup
+
+### Installation
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/SurveyHub.git
+   cd SurveyHub
+   ```
+
+2. **Setup Server**
+
+   ```bash
+   cd surveyhubserver
+   npm install
+   ```
+
+   *Create a `.env` file in the `surveyhubserver` directory and add your environment variables (MongoDB URI, JWT Secret).*
+
+3. **Setup Client**
+
+   ```bash
+   cd ../clientSide
+   npm install
+   ```
+
+   *Create a `.env.local` file in the `clientSide` directory and add your Firebase config.*
+
+4. **Run the Application**
+   - Start Backend: `nodemon index.js` (inside `surveyhubserver`)
+   - Start Frontend: `npm run dev` (inside `clientSide`)
+
+---
+
+<!-- ## 📸 Screenshots
+
+*(Replace this text with high-quality screenshots of your application. Include the Homepage, the Dashboard, and the Analytics charts to impress recruiters!)* -->
+
+> **Note for Recruiters:** To fully explore the dashboard functionalities, Admin or Surveyor access is required. Please feel free to reach out if you would like me to provide you with test credentials.

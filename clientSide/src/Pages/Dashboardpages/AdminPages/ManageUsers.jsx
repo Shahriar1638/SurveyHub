@@ -9,7 +9,7 @@ import useAxiosSecure from "@/Hooks/useAxiosSecure";
 import Subtitles from "@/Components/Sectiontitles/Subtitles";
 
 const ManageUsers = () => {
-  const roles = ["admin", "user", "prouser", "surveyor", "all"];
+  const roles = ["admin", "user", "surveyor", "all"];
   const [selectedPerson, setSelectedPerson] = useState("all");
   const axiosSecure = useAxiosSecure();
 
@@ -19,7 +19,6 @@ const ManageUsers = () => {
       admin: "bg-purple-100 text-purple-700 border-purple-200",
       user: "bg-blue-100 text-blue-700 border-blue-200",
       surveyor: "bg-brand-100 text-brand-700 border-brand-200",
-      prouser: "bg-green-100 text-green-700 border-green-200",
     };
     return (
       <span
@@ -34,13 +33,6 @@ const ManageUsers = () => {
     queryKey: ["users"],
     queryFn: async () => {
       const res = await axiosSecure.get("/users");
-      return res.data;
-    },
-  });
-  const { data: payments = [] } = useQuery({
-    queryKey: ["payments"],
-    queryFn: async () => {
-      const res = await axiosSecure.get("/payments");
       return res.data;
     },
   });
@@ -171,9 +163,6 @@ const ManageUsers = () => {
                 <th className="px-6 py-4 text-left text-sm font-light uppercase tracking-wider">
                   Current Role
                 </th>
-                <th className="px-6 py-4 text-left text-sm font-light uppercase tracking-wider">
-                  Payment
-                </th>
                 <th className="px-6 py-4 text-center text-sm font-light uppercase tracking-wider">
                   Actions
                 </th>
@@ -195,17 +184,6 @@ const ManageUsers = () => {
                     <div className="text-xs text-gray-400">{user.email}</div>
                   </td>
                   <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
-                  <td className="px-6 py-4">
-                    {payments.some(
-                      (payment) => payment.email === user.email,
-                    ) ? (
-                      <span className="text-green-600 font-bold text-sm bg-green-50 px-2 py-1 rounded">
-                        Paid
-                      </span>
-                    ) : (
-                      <span className="text-gray-400 text-sm">Free</span>
-                    )}
-                  </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-3">
                       <button
