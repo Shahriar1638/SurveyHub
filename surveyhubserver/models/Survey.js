@@ -1,104 +1,54 @@
 const mongoose = require('mongoose');
 
-const reviewSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    comment: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const surveySchema = new mongoose.Schema({
+  surveyorId: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: 'User',
+    required: true 
   },
-  { _id: false }
-);
-
-const reportSchema = new mongoose.Schema(
-  {
-    user: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    comment: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+  title: { type: String, required: true },
+  description: String,
+  useCase: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        if (!v) return true; // Optional field
+        const wordCount = v.trim().split(/\s+/).length;
+        return wordCount <= 20;
+      },
+      message: 'Use case must not exceed 20 words'
+    }
   },
-  { _id: false }
-);
+  
+  // THE DYNAMIC ARRAY: This handles n questions automatically
+  questions: [
+    {
+      id: { type: String, required: true }, // unique frontend ID
+      label: { type: String, required: true }, // The Question text
+      type: { 
+        type: String, 
+        enum: ['short_answer', 'paragraph', 'multiple_choice', 'checkbox', 'linear_scale'],
+        required: true 
+      },
+      options: [String], // Array of choices (empty for text questions)
+      required: { type: Boolean, default: false }
+    }
+  ],
+  
+  status: { type: String, enum: ['active', 'expired', 'banned'], default: 'active' },
+  category: String,
+  deadline: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  image: String
+}, { timestamps: true });
 
-const surveySchema = new mongoose.Schema(
-  {
-    email: {
-      type: String,
-      required: true,
-      trim: true,
-      lowercase: true,
-      index: true,
-    },
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    category: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    image: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    date: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    options: {
-      type: mongoose.Schema.Types.Mixed,
-      default: {},
-    },
-    likes: {
-      type: [String],
-      default: [],
-    },
-    dislikes: {
-      type: [String],
-      default: [],
-    },
-    userReview: {
-      type: [reviewSchema],
-      default: [],
-    },
-    votedPeopleMails: {
-      type: [String],
-      default: [],
-    },
-    reports: {
-      type: [reportSchema],
-      default: [],
-    },
-    adminFeedback: {
-      type: mongoose.Schema.Types.Mixed,
-      default: [],
-    },
-  },
-  {
-    timestamps: true,
-    collection: 'allsurveys',
-  }
-);
+// Indexes for faster queries
+surveySchema.index({ surveyorId: 1 });
+surveySchema.index({ status: 1 });
+surveySchema.index({ category: 1 });
+surveySchema.index({ status: 1, createdAt: -1 });
 
-module.exports = mongoose.models.Survey || mongoose.model('Survey', surveySchema);
+module.exports = mongoose.model('Survey', surveySchema);

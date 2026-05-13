@@ -7,37 +7,43 @@ const useSurveys = () => {
   const [featured, setFeatured] = useState([]);
   const [surveys, setSurveys] = useState([]);
   const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
-    // fetch('surveys.json')
     fetch(`${import.meta.env.VITE_API_URL}/surveys`)
       .then((res) => res.json())
       .then((data) => {
         setSurveys(data);
+        
         // Most voted surveys filter
         const surveysWithTotalVotes = data.map((survey) => {
-          const totalVotes = Object.values(survey.options).reduce(
+          const totalVotes = Object.values(survey.options || {}).reduce(
             (sum, value) => sum + value,
             0,
           );
           return { ...survey, totalVotes };
         });
         setSortedSurveys(surveysWithTotalVotes);
-        const sortedSurveys = surveysWithTotalVotes.sort(
+        const sortedArray = [...surveysWithTotalVotes].sort(
           (a, b) => b.totalVotes - a.totalVotes,
         );
-        const mostVotedSurveys = sortedSurveys.slice(0, 6);
+        const mostVotedSurveys = sortedArray.slice(0, 6);
         setFeatured(mostVotedSurveys);
+        
         // Latest surveys filter
-        const sortedSurveys2 = surveysWithTotalVotes.sort((a, b) => {
+        const sortedArray2 = [...surveysWithTotalVotes].sort((a, b) => {
           const dateA = new Date(a.date);
           const dateB = new Date(b.date);
           return dateB - dateA;
         });
-        const latestSurveys = sortedSurveys2.slice(0, 6);
+        const latestSurveys = sortedArray2.slice(0, 6);
         setLatest(latestSurveys);
+        setLoading(false);
+      }).catch(err => {
+        console.error(err);
         setLoading(false);
       });
   }, []);
+  
   return [surveys, loading, featured, latest];
 };
 

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 import { useContext } from "react";
 import { AuthContext } from "@/Firebase AuthProvider/AuthProvider";
 
@@ -8,7 +8,7 @@ const axiosSecure = axios.create({
 });
 const useAxiosSecure = () => {
   const navigate = useNavigate();
-  const { logout } = useContext(AuthContext);
+  const { logOut } = useContext(AuthContext); // Note: updated logout to logOut from AuthProvider
   axiosSecure.interceptors.request.use(
     function (config) {
       const token = localStorage.getItem("access-token");
@@ -24,9 +24,9 @@ const useAxiosSecure = () => {
       return response;
     },
     async function (error) {
-      const status = error.response.status;
+      const status = error?.response?.status;
       if (status === 401 || status === 403) {
-        await logout();
+        await logOut();
         navigate("/login");
       }
       return Promise.reject(error);

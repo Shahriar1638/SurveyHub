@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "skills": {
+    "express": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": "skills/express/SKILL.md",
+      "computedHash": "local-express-skill"
+    },
+    "gsap-core": {
+      "source": "greensock/gsap-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-core/SKILL.md",
+      "computedHash": "b891c9ed42d9319685250231085ebe21538f2c844613b277b9dd2b3ff529a542"
+    },
+    "gsap-react": {
+      "source": "greensock/gsap-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-react/SKILL.md",
+      "computedHash": "255206fb6a4a079ad73b4a12e7c63197dc451a8549c7ac4e852b50ff74ef3bd6"
+    },
+    "gsap-utils": {
+      "source": "greensock/gsap-skills",
+      "sourceType": "github",
+      "skillPath": "skills/gsap-utils/SKILL.md",
+      "computedHash": "72af4a036d417d6eaef7478eca2f28e760631fb78db822ba34a9c706797aab62"
+    },
+    "nodejs": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": "skills/nodejs/SKILL.md",
+      "computedHash": "local-nodejs-skill"
+    },
+    "react": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": "skills/react/SKILL.md",
+      "computedHash": "local-react-skill"
+    },
+    "stripe-best-practices": {
+      "source": "docs.stripe.com",
+      "sourceType": "well-known",
+      "computedHash": "1d32ab705b1801928f68b8f0b839e5f43e8e83405bf14e72978ac4422ca4f052"
+    },
+    "stripe-react": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": "skills/stripe-react/SKILL.md",
+      "computedHash": "local-stripe-react-skill"
+    },
+    "tailwindcss": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": "skills/tailwindcss/SKILL.md",
+      "computedHash": "local-tailwindcss-skill"
+    },
+    "tanstack-query": {
+      "source": "local",
+      "sourceType": "local",
+      "skillPath": "skills/tanstack-query/SKILL.md",
+      "computedHash": "local-tanstack-query-skill"
+    }
+  }
+}

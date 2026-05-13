@@ -39,14 +39,10 @@ async function run() {
     });
 
     // Initialize Middlewares
-    const { verifyToken, verifyAdmin, verifySurveyor } = require('./middlewares/authMiddleware')();
+    // const { verifyToken, verifyAdmin, verifySurveyor, verifyUser } = require('./middlewares/authMiddleware')();
 
     // Initialize Routes
-    app.use(require('./routes/authRoutes'));
-    app.use(require('./routes/userRoutes')(verifyToken, verifyAdmin, verifySurveyor));
-    app.use(require('./routes/pendingSurveyRoutes')(verifyToken, verifyAdmin, verifySurveyor));
-    app.use(require('./routes/surveyRoutes')(verifyToken, verifyAdmin));
-    app.use(require('./routes/statsRoutes')(verifyToken, verifyAdmin));
+    app.use('/api/auth', require('./routes/authRoutes'));
 
 
     // Send a ping to confirm a successful connection

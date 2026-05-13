@@ -20,6 +20,9 @@ module.exports = () => {
     try {
       const email = req.decoded.email;
       const user = await User.findOne({ email }).lean();
+      if (user?.status === 'banned') {
+        return res.status(403).send({ message: 'User is banned' });
+      }
       const isAdmin = user?.role === 'admin';
       if (!isAdmin) {
         return res.status(403).send({ message: 'Unauthorized request' });
@@ -34,6 +37,9 @@ module.exports = () => {
     try {
       const email = req.decoded.email;
       const user = await User.findOne({ email }).lean();
+      if (user?.status === 'banned') {
+        return res.status(403).send({ message: 'User is banned' });
+      }
       const isSurveyor = user?.role === 'surveyor';
       if (!isSurveyor) {
         return res.status(403).send({ message: 'Unauthorized request' });
@@ -44,5 +50,22 @@ module.exports = () => {
     }
   }
 
-  return { verifyToken, verifyAdmin, verifySurveyor };
+  const verifyUser = async (req, res, next) => {
+    try {
+      const email = req.decoded.email;
+      const user = await User.findOne({ email }).lean();
+      if (user?.status === 'banned') {
+        return res.status(403).send({ message: 'User is banned' });
+      }
+      const isUser = user?.role === 'user';
+      if (!isUser) {
+        return res.status(403).send({ message: 'Unauthorized request' });
+      }
+      next();
+    } catch (error) {
+      return res.status(500).send({ message: 'Failed to verify user role' });
+    }
+  }
+
+  return { verifyToken, verifyAdmin, verifySurveyor, verifyUser };
 };

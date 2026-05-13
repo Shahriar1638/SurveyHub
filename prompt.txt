@@ -1,0 +1,12 @@
+go through @contextScopeItemMention to learn about my feature . [litlle bit tldr context: im refining my exting project beucause previous one was made back in 2024 and lots of stuff got outdated.]
+
+i have created new schema as well : @contextScopeItemMention .
+now go through : @contextScopeItemMention to know current state of my front end. 
+
+now i would like you to design the login page and sign up page. u can follow: @contextScopeItemMention @contextScopeItemMention .
+
+btw this is my updated logo:@contextScopeItemMention 
+
+go throught :@contextScopeItemMention to learn current back end status. i will store user infos in mongo except password as im using firebase to handle authentication. so create login /sign up api as well in back end. ( one small thing ,@contextScopeItemMention "user" role check is missing in middleware add that). for successful log in and sign up. show a sweet alert toast and rooute them to home. jsx and  show " hello world, role.". [ i will let you know home pages for different roles later in details.]
+[note we will add google login later, not now so ignore google login and sign up for now in login register page. ]
+

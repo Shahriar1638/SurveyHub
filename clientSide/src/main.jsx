@@ -1,27 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import './index.css'
-import {
-  RouterProvider,
-} from "react-router-dom";
-import { HelmetProvider } from 'react-helmet-async';
-import {
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-import AuthProvider from './Firebase AuthProvider/AuthProvider';
-import routes from './Routes/routes';
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Routes from "./Router/Routes";
+import AuthProvider from "./Firebase_AuthProvider/AuthProvider.jsx";
+import { RouterProvider } from "react-router";
 
 const queryClient = new QueryClient();
 
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <HelmetProvider>        
-            <RouterProvider router={routes} />
-        </HelmetProvider>
+        <RouterProvider router={Routes} />
       </QueryClientProvider>
     </AuthProvider>
-  </React.StrictMode>,
-)
+  </StrictMode>,
+);
