@@ -12,7 +12,7 @@ const GUEST_LINKS = [
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
   { name: "Pricings", path: "/pricing" },
-  { name: "About Us", path: "/about" },
+  { name: "Feedback & Support", path: "/feedback" },
 ];
 
 // Registered user nav links
@@ -20,9 +20,8 @@ const USER_LINKS = [
   { name: "Home", path: "/" },
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Survey Drafts", path: "/drafts" },
   { name: "Pricings", path: "/pricing" },
-  { name: "About Us", path: "/about" },
+  { name: "Feedback & Support", path: "/feedback" },
 ];
 
 // Surveyor nav links
@@ -30,9 +29,8 @@ const SURVEYOR_LINKS = [
   { name: "Home", path: "/" },
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Survey Drafts", path: "/drafts" },
   { name: "Pricings", path: "/pricing" },
-  { name: "About Us", path: "/about" },
+  { name: "Feedback & Support", path: "/feedback" },
   { name: "Dashboard", path: "/dashboard" },
 ];
 
@@ -41,7 +39,6 @@ const ADMIN_LINKS = [
   { name: "Home", path: "/" },
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Survey Drafts", path: "/drafts" },
   { name: "Dashboard", path: "/dashboard" },
 ];
 
@@ -127,24 +124,25 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Role pill */}
-              {!isProfileLoading && (
-                <span
-                  className="type-meta px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
-                  style={{
-                    backgroundColor: `color-mix(in srgb, ${accentColor} 15%, transparent)`,
-                    color: accentColor,
-                  }}
-                >
-                  {role || "Member"}
-                </span>
-              )}
-
-              {/* Avatar / Name / Link to Profile */}
+              {/* Avatar, Role pill, & Name in a unified Link to Profile */}
               <Link
                 to="/profile"
-                className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                className="flex items-center gap-3 hover:opacity-80 transition-all rounded-lg p-1.5 hover:bg-[--color-bg-subtle]"
               >
+                {/* Role pill */}
+                {!isProfileLoading && (
+                  <span
+                    className="type-meta px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
+                    style={{
+                      backgroundColor: `color-mix(in srgb, ${accentColor} 15%, transparent)`,
+                      color: accentColor,
+                    }}
+                  >
+                    {role || "Member"}
+                  </span>
+                )}
+
+                {/* Avatar */}
                 {profile?.avatar || user.photoURL ? (
                   <img
                     src={profile?.avatar || user.photoURL}
@@ -162,6 +160,7 @@ export function Navbar() {
                       "?")[0].toUpperCase()}
                   </div>
                 )}
+
                 {/* First name on large screen */}
                 <span className="hidden lg:block text-sm font-medium text-[--color-text-primary]">
                   {(profile?.name || user.displayName || "User").split(" ")[0]}
@@ -283,9 +282,21 @@ export function Navbar() {
                             "?")[0].toUpperCase()}
                         </div>
                       )}
-                      <span className="type-meta text-[--color-text-tertiary] truncate">
-                        {profile?.name || user.displayName || user.email}
-                      </span>
+                      <div className="flex flex-col min-w-0">
+                        <span className="type-meta text-[--color-text-tertiary] truncate font-medium">
+                          {profile?.name || user.displayName || user.email}
+                        </span>
+                        {!isProfileLoading && (
+                          <span
+                            className="text-[9px] font-semibold uppercase tracking-wider w-fit"
+                            style={{
+                              color: accentColor,
+                            }}
+                          >
+                            {role || "Member"}
+                          </span>
+                        )}
+                      </div>
                     </Link>
                     <Button
                       variant="ghost"

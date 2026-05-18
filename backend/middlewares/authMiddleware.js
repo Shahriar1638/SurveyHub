@@ -12,6 +12,7 @@ module.exports = () => {
         return res.status(401).send({ message: 'Unauthorized request' })
       }
       req.decoded = decoded;
+      req.user = decoded; // Added so routes using req.user (like profileRoutes) work
       next();
     });
   }

@@ -8,9 +8,8 @@ const siteFeedbackSchema = new mongoose.Schema({
     default: 'general'
   },
   affectedPage: String, // e.g., "landing-page", "dashboard", "survey-builder"
-  rating: { type: Number, min: 1, max: 5 },
   comment: { type: String, required: true },
-  attachments: [String], // URLs for screenshots, etc.
+  attachments: [String], // URLs for screenshots
   status: { 
     type: String, 
     enum: ['open', 'reviewing', 'resolved', 'dismissed'],

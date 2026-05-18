@@ -7,7 +7,7 @@ import "aos/dist/aos.css";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import useAxiosPublic from "../../hooks/useAxiosPublic";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { SurveyCard } from "../../Components/UI/SurveyCard";
 import { PageTransition } from "../../Components/UI/PageTransition";
 

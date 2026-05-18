@@ -4,13 +4,15 @@ const mongoose = require('mongoose');
 const replySchema = new mongoose.Schema({
   userEmail: { type: String, required: true },
   text: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 // Schema for top-level comments
 const commentSchema = new mongoose.Schema({
   userEmail: { type: String, required: true },
   text: { type: String, required: true },
-  replies: [replySchema]
+  replies: [replySchema],
+  createdAt: { type: Date, default: Date.now },
 }, { timestamps: true });
 
 // Main Blog Schema

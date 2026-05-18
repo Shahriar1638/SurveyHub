@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
-import useAxiosPublic from "../../hooks/useAxiosPublic";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { StatCard } from "../../Components/UI/StatCard";
 import { Card, CardBody } from "../../Components/UI/Card";
 import { PageTransition } from "../../Components/UI/PageTransition";

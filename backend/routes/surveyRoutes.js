@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Survey = require('../models/Survey');
+const Response = require('../models/response');
 
 /**
  * GET /api/surveys
@@ -87,6 +88,79 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching surveys:', error);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+
+/**
+ * GET /api/surveys/:id
+ * Returns a single survey by ID (published or expired only).
+ */
+router.get('/:id', async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id).lean();
+    if (!survey || !['published', 'expired'].includes(survey.status)) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+    res.json({ success: true, data: survey });
+  } catch (err) {
+    console.error('Error fetching survey:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/surveys/:id/respond
+ * Body: { userId, answers: [{ questionId, label, value }], isDraft: boolean }
+ * Upserts a response (draft or final). One response per user per survey.
+ */
+router.post('/:id/respond', async (req, res) => {
+  try {
+    const { userId, answers, isDraft = false } = req.body;
+    if (!userId || !Array.isArray(answers)) {
+      return res.status(400).json({ success: false, message: 'userId and answers are required' });
+    }
+
+    const survey = await Survey.findById(req.params.id);
+    if (!survey || !['published', 'expired'].includes(survey.status)) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    const status = isDraft ? 'draft' : 'submitted';
+
+    // Upsert: one response per user per survey
+    const response = await Response.findOneAndUpdate(
+      { surveyId: req.params.id, userId },
+      { $set: { surveyId: req.params.id, userId, answers, status } },
+      { upsert: true, new: true }
+    );
+
+    // Keep participantCount in sync on final submit
+    if (!isDraft) {
+      const count = await Response.countDocuments({ surveyId: req.params.id, status: 'submitted' });
+      await Survey.findByIdAndUpdate(req.params.id, { participantCount: count });
+    }
+
+    res.json({ success: true, data: response, isDraft });
+  } catch (err) {
+    console.error('Error submitting response:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/surveys/:id/my-response?userId=xxx
+ * Returns the existing draft or submitted response for a user.
+ */
+router.get('/:id/my-response', async (req, res) => {
+  try {
+    const { userId } = req.query;
+    if (!userId) return res.status(400).json({ success: false, message: 'userId required' });
+    const response = await Response.findOne({ surveyId: req.params.id, userId }).lean();
+    res.json({ success: true, data: response || null });
+  } catch (err) {
+    console.error('Error fetching response:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
