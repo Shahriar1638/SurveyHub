@@ -1,0 +1,221 @@
+[
+  {
+    "surveyorEmail": "surveyor1@example.com",
+    "status": "active",
+    "title": "Top 10 Survey Trends for 2026",
+    "content": "As we move further into 2026, the landscape of data collection is shifting. From AI-driven sentiment analysis to zero-party data strategies, here are the top 10 trends every surveyor should watch...",
+    "reactions": {
+      "like": ["user1@example.com", "user2@example.com", "surveyor2@example.com"],
+      "insightful": ["user1@example.com"],
+      "disagree": [],
+      "interesting": ["user2@example.com"],
+      "funny": []
+    },
+    "comments": [
+      {
+        "userEmail": "user1@example.com",
+        "text": "The point about AI sentiment analysis is spot on. I've noticed much higher accuracy lately.",
+        "replies": [
+          {
+            "userEmail": "surveyor1@example.com",
+            "text": "Exactly! The new NLP models are far better at detecting nuance than the 2024 versions."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "surveyorEmail": "surveyor2@example.com",
+    "status": "active",
+    "title": "Why Participant Incentives Still Matter",
+    "content": "Despite the rise of gamification, monetary incentives remain the most reliable way to ensure high-quality responses. In this post, we explore the psychology behind rewarding participants...",
+    "reactions": {
+      "like": ["user1@example.com", "surveyor1@example.com"],
+      "insightful": ["user2@example.com"],
+      "disagree": ["user2@example.com"],
+      "interesting": [],
+      "funny": []
+    },
+    "comments": [
+      {
+        "userEmail": "user2@example.com",
+        "text": "I actually disagree. I think intrinsic motivation driven by community impact is more sustainable.",
+        "replies": [
+          {
+            "userEmail": "surveyor2@example.com",
+            "text": "That's a fair point! Community-led surveys do see higher completion rates in niche sectors."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "surveyorEmail": "surveyor3@example.com",
+    "status": "active",
+    "title": "The Art of Writing Unbiased Questions",
+    "content": "Question bias can ruin even the most well-designed survey. Learn how to identify leading questions and double-barreled phrasing to ensure your data remains clean and objective...",
+    "reactions": {
+      "like": ["user1@example.com", "user2@example.com"],
+      "insightful": ["user1@example.com", "surveyor1@example.com", "surveyor2@example.com"],
+      "disagree": [],
+      "interesting": ["user1@example.com"],
+      "funny": []
+    },
+    "comments": [
+      {
+        "userEmail": "user1@example.com",
+        "text": "This is a masterclass in survey design. Thank you!",
+        "replies": []
+      }
+    ]
+  },
+  {
+    "surveyorEmail": "surveyor1@example.com",
+    "status": "active",
+    "title": "UX Research: Beyond the Screen",
+    "content": "UX research is no longer just about clicking buttons. We are now looking at physiological responses, eye-tracking, and environmental context to build truly immersive products...",
+    "reactions": {
+      "like": ["user2@example.com"],
+      "insightful": ["user1@example.com"],
+      "disagree": [],
+      "interesting": ["surveyor3@example.com", "user2@example.com"],
+      "funny": []
+    },
+    "comments": []
+  },
+  {
+    "surveyorEmail": "surveyor2@example.com",
+    "status": "active",
+    "title": "How to Handle Outliers in Qualitative Data",
+    "content": "Quantitative outliers are easy to spot with a graph, but qualitative outliers are trickier. Are they 'noise' or 'innovation'? Here's how to tell the difference...",
+    "reactions": {
+      "like": ["surveyor1@example.com"],
+      "insightful": ["user1@example.com", "user2@example.com"],
+      "disagree": [],
+      "interesting": ["user1@example.com"],
+      "funny": []
+    },
+    "comments": [
+      {
+        "userEmail": "user1@example.com",
+        "text": "I always struggled with this. The 'innovation' framework helps a lot.",
+        "replies": []
+      }
+    ]
+  },
+  {
+    "surveyorEmail": "surveyor3@example.com",
+    "status": "active",
+    "title": "The Future of Privacy-First Data Collection",
+    "content": "With the death of third-party cookies, surveyors are now the primary source of first-party data. But with great power comes great responsibility regarding participant privacy...",
+    "reactions": {
+      "like": ["user1@example.com", "user2@example.com"],
+      "insightful": ["surveyor1@example.com", "surveyor2@example.com"],
+      "disagree": [],
+      "interesting": [],
+      "funny": []
+    },
+    "comments": []
+  },
+  {
+    "surveyorEmail": "surveyor1@example.com",
+    "status": "active",
+    "title": "Gamifying Surveys: Fun vs. Distraction",
+    "content": "Adding progress bars and badges can increase engagement, but at what point does the 'game' distract from the data? We tested 500 surveys to find the balance...",
+    "reactions": {
+      "like": ["user2@example.com"],
+      "insightful": [],
+      "disagree": [],
+      "interesting": ["user1@example.com"],
+      "funny": ["user1@example.com", "user2@example.com"]
+    },
+    "comments": []
+  },
+  {
+    "surveyorEmail": "surveyor2@example.com",
+    "status": "active",
+    "title": "Analyzing 1 Million Open-Ended Responses",
+    "content": "Manual coding is impossible at scale. Here is how we used a custom machine learning pipeline to categorize open-ended feedback without losing the human touch...",
+    "reactions": {
+      "like": ["surveyor3@example.com", "user1@example.com"],
+      "insightful": ["user1@example.com"],
+      "disagree": [],
+      "interesting": ["user2@example.com"],
+      "funny": []
+    },
+    "comments": []
+  },
+  {
+    "surveyorEmail": "surveyor3@example.com",
+    "status": "active",
+    "title": "Why Mobile-First Surveys are Non-Negotiable",
+    "content": "85% of your participants are on their phones. If your survey isn't responsive, your data is biased toward desktop users. Stop losing participants to bad UI...",
+    "reactions": {
+      "like": ["user1@example.com", "user2@example.com"],
+      "insightful": ["user1@example.com"],
+      "disagree": [],
+      "interesting": [],
+      "funny": []
+    },
+    "comments": []
+  },
+  {
+    "surveyorEmail": "surveyor1@example.com",
+    "status": "active",
+    "title": "A Day in the Life of a Survey Analyst",
+    "content": "From cleaning messy CSVs to presenting insights to stakeholders, here is what my typical Wednesday looks like at SurveyHub. Spoiler: There is a lot of coffee involved...",
+    "reactions": {
+      "like": ["user1@example.com", "user2@example.com"],
+      "insightful": [],
+      "disagree": [],
+      "interesting": ["user2@example.com"],
+      "funny": ["user1@example.com", "surveyor2@example.com"]
+    },
+    "comments": [
+      {
+        "userEmail": "user2@example.com",
+        "text": "The 'lot of coffee' part is too relatable. Great read!",
+        "replies": []
+      }
+    ]
+  },
+  {
+    "surveyorEmail": "surveyor2@example.com",
+    "status": "banned",
+    "title": "Secret Way to Manipulate Survey Results",
+    "content": "Learn how to tweak your options to get the answer you want. Useful for corporate politics and winning arguments. [BANNED CONTENT: Encourages unethical data manipulation]",
+    "reactions": {
+      "like": [],
+      "insightful": [],
+      "disagree": ["user1@example.com", "user2@example.com", "surveyor1@example.com"],
+      "interesting": [],
+      "funny": []
+    },
+    "comments": [
+      {
+        "userEmail": "user1@example.com",
+        "text": "This is completely unethical and goes against everything SurveyHub stands for.",
+        "replies": [
+          {
+            "userEmail": "surveyor1@example.com",
+            "text": "Agreed. This post has been flagged for moderation."
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "surveyorEmail": "surveyor3@example.com",
+    "status": "banned",
+    "title": "Click Here for Free Survey Rewards (Scam)",
+    "content": "Get $500 for every survey you take! No work required, just enter your credit card info here... [BANNED CONTENT: Phishing/Scam]",
+    "reactions": {
+      "like": [],
+      "insightful": [],
+      "disagree": ["user1@example.com", "user2@example.com"],
+      "interesting": [],
+      "funny": []
+    },
+    "comments": []
+  }
+]

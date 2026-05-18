@@ -19,6 +19,9 @@
 11. [Form & Data Table Standards](#11-form--data-table-standards)
 12. [Accessibility Standards](#12-accessibility-standards)
 13. [Tailwind v4 Configuration](#13-tailwind-v4-configuration)
+14. [Homepage Design — All 4 Role Variants](#14-homepage-design--all-4-role-variants)
+15. [Missing Page Specs](#15-missing-page-specs)
+16. [Missing Component Specs](#16-missing-component-specs)
 
 ---
 
@@ -972,6 +975,809 @@ Tailwind v4 uses CSS-based config. In your `index.css`:
 
 ---
 
+---
+
+## 14. Homepage Design — All 4 Role Variants
+
+The homepage lives at `/`. The same URL renders a **completely different layout** based on auth state and role. Use a top-level `<HomePage>` component that reads from the auth context and switches between the four variants below.
+
+```tsx
+// pages/HomePage.tsx
+const HomePage = () => {
+  const { user } = useAuth();
+  if (!user)               return <GuestHome />;
+  if (user.role === 'user')      return <UserHome />;
+  if (user.role === 'surveyor')  return <SurveyorHome />;
+  if (user.role === 'admin')     return <AdminHome />;
+};
+```
+
+---
+
+### 14.1 Guest Homepage (`<GuestHome />`)
+
+**Goal:** Convert visitor → registered user or Surveyor subscriber.
+**Layout:** Full-width marketing page, no sidebar, standard top NavBar.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  NavBar (navy) — Logo + Nav Links + "Sign In" + "Get Started" (visitor-color CTA)
+├─────────────────────────────────────────────────────────┤
+│  SECTION 1 — Hero (min-h-[85vh], centered, py-24)
+│    ┌──────────────────────────────────────────────────┐
+│    │  Eyebrow badge: "AI-Powered Survey Platform"     │  ← surveyor-light bg + surveyor-dark text
+│    │  H1 (display-xl): "Turn Responses Into          │  ← Satoshi 900, text-primary
+│    │   Real Insight."                                 │
+│    │  Subtitle (body-lg, max-w-2xl, text-secondary)  │
+│    │  CTA Row:                                        │
+│    │    [Get Started Free] (visitor-color, lg button) │
+│    │    [Explore Surveys →] (ghost, lg button)        │
+│    │  Trust micro-copy: "Free to join · No credit card│
+│    │   required" (meta font, text-tertiary)           │
+│    └──────────────────────────────────────────────────┘
+│    Hero Graphic: Stylized browser mockup of Surveyor
+│    Dashboard (SVG or screenshot, AOS fade-left)
+│    Animation: GSAP orchestrated timeline (§7.3)
+├─────────────────────────────────────────────────────────┤
+│  SECTION 2 — Live Platform Stats Bar
+│    (bg-[--color-navy], py-8, full bleed)
+│    4 stats in a row: Surveys Published · Responses · Insights Generated · Active Surveyors
+│    All numbers: JetBrains Mono, text-white, font-medium
+│    Labels: Public Sans, text-white/60, text-sm
+│    Animation: GSAP CountUp on scroll enter
+├─────────────────────────────────────────────────────────┤
+│  SECTION 3 — Featured Surveys (py-20)
+│    Section label: "TRENDING NOW" (meta-sm, text-tertiary, tracking-widest)
+│    Section title: heading-lg
+│    Grid: 3 cols (lg), 2 cols (md), 1 col (sm)
+│    SurveyCard × 6 (published surveys, data from API)
+│    Guest lock overlay on card hover: semi-transparent
+│    overlay + "Sign in to vote" prompt
+│    "View All Surveys →" link below grid
+│    Animation: AOS fade-up, stagger 100ms per card
+├─────────────────────────────────────────────────────────┤
+│  SECTION 4 — "How It Works" (py-20, bg-[--color-bg-subtle])
+│    3-step horizontal layout (lg) / vertical stack (md-)
+│    Step 1: Create Survey → Step 2: Collect Responses → Step 3: AI Generates Insights
+│    Each step: numbered circle (navy) + icon + title (heading-sm) + body text
+│    Connector line between steps (desktop only, CSS border-dashed)
+│    Animation: GSAP ScrollTrigger stagger (§7.3)
+├─────────────────────────────────────────────────────────┤
+│  SECTION 5 — AI Insight Spotlight (py-20)
+│    Split layout: left=text, right=insight blog preview card
+│    Left: eyebrow + heading-lg + body-base description + CTA
+│    Right: BlogCard (blurred bottom 40% with gradient fade)
+│    "Unlock full AI analysis" prompt overlaid on blur
+│    Animation: AOS — left fade-right, right fade-left
+├─────────────────────────────────────────────────────────┤
+│  SECTION 6 — Pricing Snapshot (py-20, bg-[--color-bg-subtle])
+│    Section title: "Simple, Transparent Pricing"
+│    2-column pricing cards (see PricingCard component §16.5)
+│    Left: Free User — Right: Surveyor (highlighted, surveyor border)
+│    Link: "See full feature comparison →"
+│    Animation: AOS zoom-in, delay 100ms offset
+├─────────────────────────────────────────────────────────┤
+│  SECTION 7 — Final CTA Banner
+│    (bg-[--color-navy], py-16, centered text)
+│    H2 (display-lg, text-white): "Start Collecting Insights Today"
+│    Subtitle: text-white/70
+│    [Create Free Account] (white bg, navy text, lg button)
+├─────────────────────────────────────────────────────────┤
+│  Footer (bg-[--color-navy])
+│    Logo + tagline · Nav columns · Social links · Copyright
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 14.2 Registered User Homepage (`<UserHome />`)
+
+**Goal:** Surface fresh content, reward participation, nudge toward Surveyor upgrade.
+**Layout:** Top NavBar (navy) + main content, NO sidebar (users don't have a workspace sidebar). Max-width `1280px`, centered.
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  NavBar — Logo + Explore + Blog Hub + Notifications bell
+│           + User avatar dropdown
+├─────────────────────────────────────────────────────────┤
+│  GREETING STRIP (py-8, border-b border-[--color-border])
+│    "Good morning, [Name]" — heading-lg
+│    Activity streak: "🔥 7-day participation streak" (meta, user-color)
+│    Right: "You've taken 14 surveys this month" (meta, text-tertiary)
+├─────────────────────────────────────────────────────────┤
+│  MAIN CONTENT GRID (py-8)
+│  ┌──────────────────────────────┬──────────────────────┐
+│  │  LEFT COL (flex-1)           │  RIGHT COL (w-80)    │
+│  │                              │  sticky top-20       │
+│  │  Section: "For You"          │  "Your Activity"     │
+│  │  (personalized by prefs)     │  mini stat cards:    │
+│  │  SurveyCard × 4-6            │  - Surveys taken     │
+│  │  + "Load More" button        │  - Insights unlocked │
+│  │                              │  - Comments made     │
+│  │  Section: "Continue"         │  (all JetBrains Mono)│
+│  │  Incomplete submissions      │                      │
+│  │  (if any) — WarningCard      │  "New Insights"      │
+│  │  style with user-color       │  3 BlogCard teasers  │
+│  │  accent                      │  from surveys they   │
+│  │                              │  participated in     │
+│  │  Section: "Trending"         │                      │
+│  │  Top 3 surveys by volume     │  Upgrade Banner:     │
+│  │  this week, with sparkline   │  Soft card, surveyor │
+│  │  response trend              │  color, dismissible  │
+│  │                              │  "Create your own    │
+│  │  Section: "Latest Insights"  │  surveys →"          │
+│  │  BlogCard feed (most recent) │                      │
+│  └──────────────────────────────┴──────────────────────┘
+│  Animation: Motion staggered list for survey cards
+│  Right col: AOS fade-left once
+└─────────────────────────────────────────────────────────┘
+```
+
+**Right column collapses** to below main content on `md` and below. Becomes a horizontal scroll strip of BlogCards on mobile.
+
+---
+
+### 14.3 Surveyor Homepage (`<SurveyorHome />`)
+
+**Goal:** This IS the dashboard. Efficiency first, zero marketing.
+**Layout:** Fixed sidebar (240px) + main content area. Full app shell.
+
+```
+┌──────────┬──────────────────────────────────────────────┐
+│ SIDEBAR  │  PAGE HEADER                                  │
+│ (fixed)  │  "Welcome back, [Name]" (heading-xl)          │
+│          │  Subscription status pill + renewal date      │
+│          ├──────────────────────────────────────────────┤
+│          │  KPI ROW (4 cards, see §6.5 Stat Cards)       │
+│          │  [Total Responses] [Active Surveys]            │
+│          │  [Avg Completion %] [New (7d)]                 │
+│          │  All values: JetBrains Mono                   │
+│          ├──────────────────────────────────────────────┤
+│          │  QUICK ACTIONS (3-col grid, lg / 1-col mobile)│
+│          │  ┌──────────────┐ ┌───────────┐ ┌──────────┐ │
+│          │  │ + New Survey │ │ AI Lab    │ │ My Blogs │ │
+│          │  │ (icon+label) │ │ (icon+lbl)│ │(icon+lbl)│ │
+│          │  └──────────────┘ └───────────┘ └──────────┘ │
+│          │  Surveyor-light bg, surveyor-dark text/icon   │
+│          ├──────────────────────────────────────────────┤
+│          │  AI READY BANNER (conditional)                │
+│          │  Shows if any survey has ≥ 50 responses       │
+│          │  surveyor-light bg, border-l-4 surveyor       │
+│          │  "Survey '[Title]' has 234 responses —        │
+│          │   Ready for AI Analysis →"                    │
+│          ├──────────────────────────────────────────────┤
+│          │  ACTIVE SURVEYS TABLE (TanStack)              │
+│          │  Cols: Title · Status · Responses · Last      │
+│          │  Response · Actions                           │
+│          │  Inline sparkline in Responses col            │
+│          ├──────────────────────────────────────────────┤
+│          │  BOTTOM ROW (2-col)                           │
+│          │  Left: DRAFTS (list, "Pay & Publish" per item)│
+│          │  Right: BLOG ACTIVITY (recent comments on     │
+│          │         published blogs)                      │
+└──────────┴──────────────────────────────────────────────┘
+```
+
+**Note:** Surveyors who want to participate in other surveys use the top navbar "Explore" link — they don't lose their workspace shell.
+
+---
+
+### 14.4 Admin Homepage (`<AdminHome />`)
+
+**Goal:** Immediate operational awareness. Zero decoration.
+**Layout:** Fixed sidebar (admin-themed) + main content.
+
+```
+┌──────────┬──────────────────────────────────────────────┐
+│ SIDEBAR  │  PAGE HEADER                                  │
+│ (admin   │  "Admin Control Center" (heading-xl)          │
+│ themed)  │  Today's date (JetBrains Mono, text-tertiary) │
+│          ├──────────────────────────────────────────────┤
+│          │  PLATFORM HEALTH ROW (4 KPI cards)            │
+│          │  [Total Users] [Active Surveyors]              │
+│          │  [Revenue MTD] [Open Reports]                  │
+│          │  Admin-color icons, mono values                │
+│          ├──────────────────────────────────────────────┤
+│          │  URGENT ACTIONS (2-col)                        │
+│          │  Left: MODERATION QUEUE                        │
+│          │    Pending reports list (max 5, paginated)     │
+│          │    Each row: type badge + title + reporter     │
+│          │    + time + [Investigate] ghost button         │
+│          │    "View All Reports →" link                   │
+│          │  Right: APPROVAL QUEUE                         │
+│          │    Surveys awaiting publication review         │
+│          │    Each row: survey title + surveyor +         │
+│          │    submitted time + [Review] button            │
+│          │    "View All →" link                           │
+│          ├──────────────────────────────────────────────┤
+│          │  BOTTOM ROW (2-col)                            │
+│          │  Left: REVENUE CHART (recharts AreaChart)      │
+│          │    Last 30 days subscription revenue           │
+│          │    Thin line, admin-color fill with 10% opacity│
+│          │  Right: RECENT REGISTRATIONS                   │
+│          │    Last 10 signups: avatar + name + role badge │
+│          │    + join time (JetBrains Mono)                │
+│          ├──────────────────────────────────────────────┤
+│          │  SYSTEM NOTICES (if any exist)                 │
+│          │  admin-light bg, border-l-4 admin-color        │
+│          │  e.g. "3 surveys stuck in pending > 48h"       │
+└──────────┴──────────────────────────────────────────────┘
+```
+
+---
+
+## 15. Missing Page Specs
+
+### 15.1 Public Survey Explorer (`/surveys`)
+
+**Accessible by:** All roles (guests browse read-only).
+
+```
+Layout: No sidebar. NavBar + full-width content. Max-w-1280px.
+
+Header Row:
+  ├── Title: "Explore Surveys" (heading-xl)
+  └── Search bar (full-width on mobile, w-96 on desktop)
+        + Category filter pills (horizontal scroll on mobile)
+        + Sort dropdown: "Most Recent | Most Popular | Ending Soon"
+
+Survey Grid:
+  ├── 3-col (lg) / 2-col (md) / 1-col (sm)
+  ├── SurveyCard × n (paginated, 12 per page)
+  └── Guest auth gate on card action:
+        Hover overlay: "Sign in to vote"
+        Click action: opens AuthPromptModal (§16.9)
+
+Empty state: if search returns nothing → EmptyState component
+Pagination: bottom, centered, TanStack pagination controls
+```
+
+### 15.2 Public Insights / Blog Hub (`/insights`)
+
+**Accessible by:** All roles. Guests can read; must log in to react/comment.
+
+```
+Layout: No sidebar. NavBar + content. Max-w-1280px.
+
+Header:
+  ├── Title: "Insight Hub" (heading-xl)
+  ├── Subtitle: "AI-generated analysis from real survey data"
+  └── Filter row: Category pills + Sort (Recent | Most Reactions | Most Comments)
+
+Blog Feed Layout:
+  ┌──────────────────────────────┬────────────────────┐
+  │  MAIN FEED (flex-1)          │  SIDEBAR (w-72)    │
+  │  BlogCard (full-width style) │  "Trending Topics" │
+  │  × n (infinite scroll or     │  tag cloud         │
+  │  paginated)                  │                    │
+  │                              │  "Top Surveyors"   │
+  │                              │  mini leaderboard  │
+  │                              │  (avatar + name +  │
+  │                              │  blog count)       │
+  └──────────────────────────────┴────────────────────┘
+  Right sidebar collapses below feed on mobile.
+
+Guest reading gate:
+  - Full blog text is readable (no gate on content)
+  - Reactions and Comment input show AuthPromptModal on click
+  - Subtle banner at top of blog: "Join SurveyHub to react and comment"
+```
+
+### 15.3 Individual Blog Post (`/insights/:blogId`)
+
+```
+Layout: Reading-focused. Max-w-768px centered. No sidebar.
+
+Article Header:
+  ├── Category badge
+  ├── Title (heading-xl, Satoshi)
+  ├── Author row: avatar + name + "Surveyor" badge + publish date (JetBrains Mono)
+  ├── Survey reference: "Based on: [Survey Title] — 847 responses" (linked)
+  └── Read time estimate (meta font)
+
+Article Body:
+  ├── font-[--font-body], body-lg, line-height: 1.6, max-w-65ch
+  ├── Charts/graphs from AI analysis embedded inline (recharts)
+  └── Blockquotes for notable response quotes (styled with left border, user-color)
+
+Reactions Bar (sticky bottom on mobile, inline after article on desktop):
+  ├── Reaction types: 👍 Insightful · ❤️ Interesting · 🤔 Surprising · 💡 Useful
+  ├── Each shows count (JetBrains Mono)
+  └── Guest click → AuthPromptModal
+
+Comment Section:
+  ├── Comment count heading: "47 Comments"
+  ├── Comment input (logged-in users only, else AuthPromptModal)
+  └── CommentThread component (§16.3)
+```
+
+### 15.4 Pricing / Subscription Page (`/pricing`)
+
+```
+Layout: Marketing page. No sidebar. Max-w-1280px.
+
+Header: "Choose Your Plan" (heading-xl, centered)
+Subtitle: body-lg, centered, max-w-2xl
+
+Toggle: "Monthly / Annual" (saves 20%) — motion-animated tab switch
+
+Pricing Cards Row (2 cards centered):
+  Left:  Free User plan
+  Right: Surveyor plan (recommended, elevated, surveyor-color border)
+  See PricingCard component spec (§16.5)
+
+Feature Comparison Table:
+  Full table below cards showing every feature row
+  Check (success-color) / X (error-color) / custom value per cell
+  Sticky header row
+
+FAQ Accordion: 5–8 common questions (AnimatePresence height expand)
+Bottom CTA: "Start your Surveyor journey" → Stripe checkout
+```
+
+### 15.5 User Profile & Settings (`/profile`, `/settings`)
+
+```
+Layout: Sidebar (user-themed) + content. Tabs within page.
+
+Profile Tab:
+  ├── Avatar upload (click to replace, accepts jpg/png, 2MB max)
+  ├── Display name, Bio (textarea, 160 char), Location, Occupation
+  ├── Form: React Hook Form + inline validation
+  └── Save button (user-color primary)
+
+Preferences Tab:
+  ├── Survey category multi-select (tag-style toggles)
+  │     Categories: Politics, Technology, Health, Education, etc.
+  │     Selected: user-light bg + user-dark border + check icon
+  └── Notification preferences (toggle switches)
+
+Account Tab:
+  ├── Email display (read-only)
+  ├── Change Password form
+  └── Danger Zone: Delete Account (admin-color destructive button)
+```
+
+### 15.6 Active Survey View (`/surveys/:surveyId`)
+
+```
+Layout: Centered, max-w-720px. No sidebar. Clean reading mode.
+
+Survey Header Card:
+  ├── Category badge + Status indicator
+  ├── Title (heading-xl)
+  ├── Description (body-lg)
+  └── Meta: "By [Surveyor Name] · [X] responses · Closes [date]"
+
+Progress Bar (top of form, surveyor-color fill)
+Step Indicator: "Question 3 of 8" (meta font)
+
+Question Cards (one per step OR all on one page — surveyor config):
+  Each question type has distinct input UI (see §16.7)
+
+Navigation: Prev / Next buttons + progress indicator
+Submit button (final step): surveyor-color, full-width, lg
+
+Post-Submission Page:
+  ├── Success animation (motion scale-in checkmark, success-color)
+  ├── "Thank you!" heading
+  ├── Basic result charts (if surveyor enabled public results)
+  │     Recharts BarChart / PieChart
+  └── Insight Blog CTA (if published): "See the AI analysis →"
+        surveyor-light bg card with link
+```
+
+### 15.7 My Participation History (`/history`)
+
+```
+Layout: Sidebar (user-themed) + content.
+
+Header: "My Survey History" (heading-xl)
+Filter: All / Insights Available / Pending Analysis
+
+Table (TanStack):
+  Cols: Survey Title · Category · Date Taken · Responses · Insight Status · Action
+  Insight Status badge: "Published" (success) | "Pending" (warning) | "Not Yet" (grey)
+  Action: "View Insight" (link) or "—" if none
+
+Empty state: "You haven't taken any surveys yet. Explore surveys →"
+```
+
+### 15.8 Insights Feed & Blog Interaction (`/feed`) — User Only
+
+```
+Layout: Sidebar (user-themed) + content, 2-col with right sidebar.
+
+Filter Bar: Category pills + "From my surveys" toggle + Sort
+
+BlogCard Feed (main col): paginated, 8 per page
+  Each card shows: title + surveyor + date + reaction counts + comment count
+  Click → /insights/:blogId
+
+Right sidebar (sticky):
+  "Based on your categories" — 3 recommended surveys to take
+```
+
+### 15.9 Report Content Flow
+
+```
+Trigger: "Report" option in 3-dot menu (••• ) on SurveyCard and BlogCard
+
+ReportModal (motion animated, centered):
+  ├── Title: "Report this [Survey / Blog]"
+  ├── Reason selector (radio group):
+  │     • Spam or misleading
+  │     • Inappropriate content
+  │     • Violates community guidelines
+  │     • Other
+  ├── Details textarea (optional, 500 char max)
+  ├── Submit button (user-color)
+  └── Confirmation: inline success state replaces form content
+        "Your report has been submitted. We'll review it within 24h."
+```
+
+### 15.10 Reporting & Feedback Center (`/reports`) — User Only
+
+```
+Layout: Sidebar (user-themed) + content.
+
+Tab: "My Reports" | "Feedback Sent"
+
+My Reports Table:
+  Cols: Reported Item · Type · Submitted Date · Status · Admin Response
+  Status: Pending (warning) | Under Review (info) | Resolved (success) | Dismissed (grey)
+  Admin Response: expandable row — shows admin message if resolved/dismissed
+```
+
+### 15.11 Blog Management (`/manage/blogs`) — Surveyor Only
+
+```
+Layout: Surveyor workspace sidebar + content.
+
+Header: "Insight Blogs" + [New Blog Post] button (surveyor-color)
+
+Blog list table:
+  Cols: Title · Linked Survey · Status · Reactions · Comments · Published Date · Actions
+  Actions: Edit | Publish/Unpublish | Delete
+
+Blog Editor (click Edit or New):
+  ├── Rich text editor (use a lightweight lib or textarea + markdown preview)
+  ├── Linked survey selector (dropdown of their published surveys)
+  ├── Hero image upload (optional)
+  ├── Save Draft / Publish toggle
+  └── Comment moderation section below editor:
+        Comment list with [Hide] / [Delete] per comment
+        Bulk action: "Hide all pending"
+```
+
+### 15.12 Surveyor Feedback & Admin Messages (`/feedback`) — Surveyor Only
+
+```
+Layout: Surveyor workspace sidebar + content.
+
+Two-panel layout:
+  Left panel (list):
+    ├── Tab: "From Users" | "From Admin"
+    └── Feedback/message items list — title + excerpt + date (JetBrains Mono)
+
+  Right panel (detail):
+    Selected message detail
+    For admin messages on rejected surveys:
+      ├── Survey title reference (linked)
+      ├── Admin message (body-base, blockquote style)
+      ├── Rejection reason badge
+      └── CTA: "Edit Survey & Resubmit" (surveyor-color)
+```
+
+### 15.13 User & Role Management (`/admin/users`) — Admin Only
+
+```
+Layout: Admin sidebar + content.
+
+Header: "User Management" (heading-xl) + search input + role filter
+
+TanStack Table:
+  Cols: Avatar+Name · Email · Role · Joined · Status · Actions
+  Role cell: RoleBadge component
+  Status: Active (success) | Suspended (error)
+  Actions dropdown (3-dot menu):
+    - Promote to Surveyor (if currently user)
+    - Demote to User (if currently surveyor)
+    - Suspend Account
+    - View Full Profile
+
+Bulk actions bar (appears when rows selected):
+  "X users selected" + [Suspend Selected] (admin-color destructive)
+```
+
+### 15.14 Survey Approval Queue (`/admin/approvals`) — Admin Only
+
+```
+Layout: Admin sidebar + content.
+
+Header: "Approval Queue" + count badge (pending count)
+
+Survey list (card style, not table — needs more visual space):
+  Each item:
+  ├── Survey title (heading-sm) + category badge + surveyor name
+  ├── Submitted timestamp (JetBrains Mono) + payment confirmed badge
+  ├── Preview button: opens survey form in read-only modal
+  ├── Question count + estimated completion time
+  └── Action row:
+        [Approve & Publish] (success-color) | [Request Changes] (warning) | [Reject] (admin-color)
+        Reject/Request → opens side panel with message textarea (§16.10)
+
+"No pending surveys" empty state when queue is clear.
+```
+
+---
+
+## 16. Missing Component Specs
+
+### 16.1 Comment Thread (`<CommentThread />`)
+
+```
+CommentThread:
+  ├── Comment count: "47 Comments" (heading-sm)
+  ├── Sort: "Top / Newest / Oldest" (small tabs)
+  ├── Comment Input (logged-in only):
+  │     avatar + textarea + [Post Comment] button (user-color)
+  │     Guest: AuthPromptBanner instead of input
+  └── Comment List:
+        CommentItem:
+          ├── Avatar (32px, rounded-full) + Name (label-sm) + Role badge (if surveyor)
+          │     + Timestamp (JetBrains Mono, text-tertiary)
+          ├── Body text (body-sm, line-height 1.6)
+          ├── Action row: [👍 Like count] [↩ Reply] [••• Report]
+          │     All ghost style buttons with hover bg-subtle
+          └── Replies (nested, max 1 level deep, indented pl-10):
+                ├── Collapsed by default: "View 3 replies"
+                ├── AnimatePresence height expand on open
+                └── Same CommentItem structure, smaller avatar (24px)
+
+Moderation (surveyor on their own blog):
+  Each comment shows [Hide] icon button on hover (right-aligned)
+```
+
+### 16.2 Reaction Bar (`<ReactionBar />`)
+
+```
+ReactionBar:
+  inline-flex gap-2 items-center flex-wrap
+
+ReactionButton (per type):
+  ├── Base: px-3 py-1.5 rounded-full border border-[--color-border]
+  │         bg-white text-sm flex items-center gap-1.5
+  │         hover:border-[--color-border-strong] hover:bg-[--color-bg-subtle]
+  │         transition-all duration-[150ms]
+  ├── Active (user reacted): border-[--color-visitor] bg-[--color-visitor-light]
+  │         text-[--color-visitor-dark]
+  ├── Emoji: 1rem (inline)
+  ├── Label: body-sm (hidden on mobile, show on md+)
+  └── Count: JetBrains Mono, text-secondary
+
+Reaction types:
+  👍 Insightful · ❤️ Interesting · 🤔 Surprising · 💡 Useful
+
+Animation: on react — Motion scale 1 → 1.2 → 1 (spring, duration 0.3)
+Count increment: Motion animatePresence number transition
+Guest click: AuthPromptModal
+```
+
+### 16.3 Blog Card (`<BlogCard />`)
+
+```
+Two variants: FEED (full-width) and GRID (fixed-width card)
+
+FEED variant (used in Blog Hub main feed):
+  ├── Horizontal layout (lg+): thumbnail left (w-48, aspect-video) + content right
+  ├── Stacked (mobile): thumbnail top (full-width, aspect-video) + content below
+  ├── Content:
+  │     ├── Category badge + "AI Analysis" badge (surveyor-light)
+  │     ├── Title (heading-sm, line-clamp-2)
+  │     ├── Excerpt (body-sm, text-secondary, line-clamp-2)
+  │     ├── Author row: avatar + name + date (JetBrains Mono)
+  │     └── Reaction/comment counts (meta font, text-tertiary)
+  └── Hover: shadow-[--shadow-md] lift + title color → visitor-color
+
+GRID variant (used in sidebars, User homepage right col):
+  Standard card, stacked layout, smaller thumbnail
+  line-clamp-1 on title
+```
+
+### 16.4 Auth Gate / Prompt (`<AuthPromptModal />`, `<AuthPromptBanner />`)
+
+```
+AuthPromptModal (for vote/react clicks):
+  Centered modal (max-w-sm)
+  ├── Icon: LockClosedIcon (w-12 h-12, visitor-light bg, visitor-color icon)
+  ├── Title: "Join to [specific action]" (heading-md)
+  │     e.g. "Join to vote on this survey"
+  ├── Body: one sentence value prop
+  ├── [Sign Up Free] (visitor-color, full-width)
+  ├── [Sign In] (ghost, full-width)
+  └── Dismiss X button
+
+AuthPromptBanner (inline, for comment section):
+  bg-[--color-visitor-light] border border-[--color-visitor-light]
+  rounded-xl p-4 flex items-center justify-between
+  Left: text "Sign in to join the conversation"
+  Right: [Sign In] (visitor-color, sm button)
+```
+
+### 16.5 Pricing Card (`<PricingCard />`)
+
+```
+PricingCard:
+  bg-white border border-[--color-border] rounded-2xl p-8
+  Recommended variant: border-[--color-surveyor] shadow-[--shadow-lg]
+    + "Most Popular" badge (surveyor-color, top-center, -translate-y-1/2)
+
+  ├── Plan name (heading-md)
+  ├── Price (display-lg, Satoshi 800) + "/month" (body-base, text-secondary)
+  │     Annual: show discounted price + "Save 20%" badge
+  ├── Description (body-sm, text-secondary)
+  ├── Divider
+  ├── Feature list:
+  │     Each item: CheckIcon (success-color, w-5) + label (body-sm)
+  │     Locked items (not in plan): XMarkIcon (error-color) + label (text-tertiary)
+  └── CTA button (full-width)
+        Free: "Get Started Free" (ghost/secondary)
+        Surveyor: "Start Surveyor Plan" (surveyor-dark fill)
+
+Stripe trigger: Surveyor CTA button → useStripe hook → redirect to Stripe Checkout
+```
+
+### 16.6 Notification Dropdown (`<NotificationDropdown />`)
+
+```
+Trigger: Bell icon in NavBar with dot badge (admin-color, w-2 h-2)
+         if unread count > 0
+
+Dropdown (motion animated, origin top-right):
+  ├── Header: "Notifications" (label-lg) + "Mark all read" (ghost sm)
+  ├── List (max-h-96, overflow-y-auto, custom scrollbar):
+  │     NotificationItem:
+  │       ├── Icon (role-specific color) or avatar
+  │       ├── Message text (body-sm) — e.g. "Your survey got 50 new responses"
+  │       ├── Time (JetBrains Mono, text-tertiary)
+  │       └── Unread indicator: left blue dot (visitor-color)
+  │     Unread items: bg-[--color-visitor-light]
+  │     Read items: bg-white
+  └── Footer: "View all notifications →" link
+
+Dropdown close: click outside or Escape key
+```
+
+### 16.7 Survey Question Type Inputs
+
+All question types share a wrapper:
+```
+QuestionCard:
+  bg-white border border-[--color-border] rounded-xl p-6
+  ├── Question number (meta font, text-tertiary): "Q3"
+  ├── Question text (body-lg, font-medium, text-primary)
+  ├── Required asterisk (*) if required
+  └── Input area (type-specific, below)
+```
+
+**MCQ (Multiple Choice):**
+```
+Radio group or Checkbox group
+Each option: custom styled radio/checkbox
+  base: w-5 h-5 rounded (radio) or rounded-md (checkbox)
+  border border-[--color-border-strong]
+  checked: bg-[--color-surveyor] border-[--color-surveyor]
+  + label (body-base) inline
+  Hover: bg-[--color-bg-subtle] on option row
+```
+
+**Linear Scale (1–10 or custom):**
+```
+Row of numbered buttons: 1 through N
+Each: w-10 h-10 rounded-lg border border-[--color-border]
+      text-sm font-medium font-[--font-ui]
+Selected: bg-[--color-surveyor] text-white border-[--color-surveyor]
+Hover: bg-[--color-surveyor-light]
+Labels below: "Strongly Disagree" ←————→ "Strongly Agree" (body-sm, text-tertiary)
+```
+
+**Paragraph (Open Text):**
+```
+Textarea: min-h-[120px], resize-y, standard form input styles
+Char counter: bottom-right, JetBrains Mono, text-tertiary
+              turns warning-color at 80% capacity
+              turns error-color at limit
+```
+
+**Dropdown Select:**
+```
+Standard select styled with custom chevron icon
+Same border/focus styles as other form inputs
+```
+
+### 16.8 Search Overlay (`<SearchOverlay />`)
+
+```
+Trigger: Search icon in NavBar (all pages)
+Overlay: fixed inset-0 bg-black/50 z-[9998]
+         Motion: opacity 0→1, duration 200ms
+
+Search Panel (top-center, mt-20, max-w-2xl, w-full, mx-4):
+  ├── Input: large (py-4 px-5), text-lg, rounded-xl, shadow-[--shadow-xl]
+  │          autofocused on open, w-full
+  │          SearchIcon left-inset + Escape hint right-inset
+  └── Results dropdown (below input, bg-white, rounded-xl, shadow-[--shadow-lg]):
+        Sections: "Surveys" | "Insight Blogs" | "Surveyors"
+        Each result item: icon + title + meta (JetBrains Mono)
+        Hover: bg-[--color-bg-subtle]
+        Empty: "No results for '[query]'" EmptyState (compact)
+        Loading: skeleton rows (animate-pulse)
+```
+
+### 16.9 Stripe Payment Trigger UI
+
+```
+"Pay & Publish" button flow (Survey Builder):
+
+Step 1 — Confirmation Modal:
+  ├── Title: "Publish Your Survey" (heading-md)
+  ├── Survey summary: title + question count + estimated cost
+  ├── Price display: large, JetBrains Mono, surveyor-color
+  ├── [Proceed to Payment] (surveyor-color, full-width)
+  └── Note: "Powered by Stripe · Secure checkout" (meta, text-tertiary)
+            Stripe logo (react-icons FaStripe)
+
+Step 2 — Stripe Elements embed or redirect:
+  If embedded (@stripe/react-stripe-js):
+    CardElement styled to match design tokens
+    border: border-[--color-border], rounded-lg, p-3
+    focus: ring-2 ring-[--color-surveyor]/30
+  If redirect: loading spinner on button while redirecting
+
+Step 3 — Post-payment return:
+  Success: Toast ("Payment confirmed! Your survey is now under review.")
+           Survey status → "pending" in UI
+  Failure: Toast (error variant) + retry CTA
+```
+
+### 16.10 Admin Side Panel (`<AdminSidePanel />`)
+
+```
+Used for: Investigate report, Review survey for approval, Send message
+
+Layout: slides in from RIGHT, fixed, w-[480px] (lg) / full-width (mobile)
+Backdrop: bg-black/30 (does NOT blur — keep content visible)
+Motion: x: 480→0, duration 0.35s, ease expo-out
+
+Panel Header:
+  ├── Title (heading-md)
+  └── Close button (X, top-right, ghost)
+
+Panel Body (overflow-y-auto, flex-1):
+  Content varies by context:
+
+  REPORT INVESTIGATION:
+    ├── Report details: reporter, reported item (linked), reason, details
+    ├── Reported content preview (iframe-like card)
+    ├── Reporter history (how many reports they've filed)
+    └── Action section:
+          [Dismiss Report] (ghost) [Warn User] (warning) [Delete Content] (admin-color)
+          Admin message textarea (required for warn/delete)
+          [Submit Decision] (primary, admin-color)
+
+  SURVEY REVIEW:
+    ├── Survey preview (read-only, all questions visible)
+    ├── Surveyor info
+    └── Decision: [Approve] (success) [Request Changes] (warning) [Reject] (admin)
+          Changes/Reject: message textarea required
+
+Panel Footer (sticky bottom):
+  Cancel + Submit buttons
+```
+
+---
+
 ## Quick Reference Checklist for the Coding Agent
 
 Before shipping any component, verify:
@@ -990,7 +1796,14 @@ Before shipping any component, verify:
 - [ ] Motion used for all component mount/unmount/state transitions
 - [ ] AOS only on public/marketing pages, `once: true`
 - [ ] No inline `style={{}}` for colors — use CSS variable refs or Tailwind classes
+- [ ] Guest-locked actions use `<AuthPromptModal />`, never a redirect
+- [ ] Every survey question type input uses the QuestionCard wrapper (§16.7)
+- [ ] Comment threads never nest deeper than 1 level
+- [ ] Stripe UI matches design tokens (no default Stripe blue overriding surveyor-color)
+- [ ] Admin side panel used for investigate/review actions (never a modal)
+- [ ] Report flow always ends with an inline confirmation state, no page redirect
+- [ ] BlogCard uses FEED variant in feeds, GRID variant in sidebars
 
 ---
 
-*Document Version: 1.0 | SurveyHub Design System | Last updated: May 2026*
+*Document Version: 2.0 | SurveyHub Design System | Last updated: May 2026*

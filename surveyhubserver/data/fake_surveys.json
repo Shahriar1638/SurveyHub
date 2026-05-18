@@ -1,0 +1,436 @@
+[
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Consumer Tech Spending 2026",
+    "description": "Understanding how households are allocating their budget for new technology this year.",
+    "useCase": "Market research for a new consumer electronics brand.",
+    "category": "Technology",
+    "status": "published",
+    "participantCount": 145,
+    "deadline": "2026-12-31",
+    "image": "https://images.unsplash.com/photo-1519389950473-47ba0277781c",
+    "questions": [
+      { "id": "q1", "label": "Which smartphone brand do you currently use?", "type": "multiple_choice", "options": ["Apple", "Samsung", "Google", "Xiaomi", "Other"], "required": true },
+      { "id": "q2", "label": "How much do you plan to spend on gadgets this year?", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q3", "label": "Which of these devices do you own? (Select all that apply)", "type": "checkbox", "options": ["Laptop", "Tablet", "Smartwatch", "Gaming Console", "VR Headset"], "required": false },
+      { "id": "q4", "label": "What is the most important feature when buying a laptop?", "type": "short_answer", "required": true },
+      { "id": "q5", "label": "Tell us about a technology purchase you regret.", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Remote Work Productivity Study",
+    "description": "Gathering data on how remote work setups affect long-term productivity and mental health.",
+    "useCase": "Academic research for workplace psychology.",
+    "category": "Business",
+    "status": "published",
+    "participantCount": 89,
+    "deadline": "2026-08-15",
+    "image": "https://images.unsplash.com/photo-1521737711867-e3b97375f902",
+    "questions": [
+      { "id": "q1", "label": "How many days a week do you work from home?", "type": "multiple_choice", "options": ["0", "1-2", "3-4", "5+"], "required": true },
+      { "id": "q2", "label": "Do you have a dedicated home office space?", "type": "multiple_choice", "options": ["Yes", "No", "Shared space"], "required": true },
+      { "id": "q3", "label": "Rate your productivity compared to the office.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q4", "label": "What tools do you use for communication?", "type": "checkbox", "options": ["Slack", "Teams", "Discord", "Zoom", "Email"], "required": true },
+      { "id": "q5", "label": "What is your biggest distraction at home?", "type": "short_answer", "required": false },
+      { "id": "q6", "label": "How has remote work affected your work-life balance?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Healthy Eating Habits 2026",
+    "description": "Investigating the shift toward plant-based diets and organic food consumption.",
+    "useCase": "Nutritionist baseline data for community health.",
+    "category": "Health",
+    "status": "published",
+    "participantCount": 210,
+    "deadline": "2026-10-10",
+    "image": "https://images.unsplash.com/photo-1490645935967-10de6ba17061",
+    "questions": [
+      { "id": "q1", "label": "Do you follow a specific diet?", "type": "multiple_choice", "options": ["Vegan", "Vegetarian", "Keto", "Paleo", "No specific diet"], "required": true },
+      { "id": "q2", "label": "How many meals do you cook at home per week?", "type": "multiple_choice", "options": ["0-2", "3-5", "6-10", "11+"], "required": true },
+      { "id": "q3", "label": "Which organic items do you prioritize buying?", "type": "checkbox", "options": ["Vegetables", "Fruits", "Meat", "Dairy", "Grains"], "required": false },
+      { "id": "q4", "label": "Rate the availability of healthy food in your area.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q5", "label": "What is the biggest barrier to eating healthy for you?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Electric Vehicle Adoption Survey",
+    "description": "Understanding the barriers preventing car owners from switching to EVs.",
+    "useCase": "Policy recommendation for local government.",
+    "category": "Automotive",
+    "status": "published",
+    "participantCount": 54,
+    "deadline": "2026-11-20",
+    "image": "https://images.unsplash.com/photo-1593941707882-a5bba14938c7",
+    "questions": [
+      { "id": "q1", "label": "Do you currently own an Electric Vehicle?", "type": "multiple_choice", "options": ["Yes", "No", "Planning to buy"], "required": true },
+      { "id": "q2", "label": "What is your main concern regarding EVs?", "type": "multiple_choice", "options": ["Price", "Range anxiety", "Charging infrastructure", "Resale value"], "required": true },
+      { "id": "q3", "label": "How much would you pay for a mid-range EV?", "type": "short_answer", "required": true },
+      { "id": "q4", "label": "Which EV brands do you trust most?", "type": "checkbox", "options": ["Tesla", "BYD", "Ford", "Hyundai", "Rivian"], "required": false },
+      { "id": "q5", "label": "Rate the charging convenience in your city.", "type": "linear_scale", "options": ["1", "5"], "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Mental Health in High School",
+    "description": "Anonymously tracking stress levels among high school seniors.",
+    "useCase": "School board wellness program planning.",
+    "category": "Education",
+    "status": "published",
+    "participantCount": 320,
+    "deadline": "2026-06-30",
+    "image": "https://images.unsplash.com/photo-1523240795612-9a054b0db644",
+    "questions": [
+      { "id": "q1", "label": "What grade are you in?", "type": "multiple_choice", "options": ["9th", "10th", "11th", "12th"], "required": true },
+      { "id": "q2", "label": "How many hours of sleep do you get on school nights?", "type": "multiple_choice", "options": ["<4", "4-6", "6-8", "8+"], "required": true },
+      { "id": "q3", "label": "What are your primary sources of stress? (Select all)", "type": "checkbox", "options": ["Grades", "College apps", "Social life", "Family", "Extracurriculars"], "required": true },
+      { "id": "q4", "label": "Rate your overall stress level this week.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q5", "label": "Does your school provide adequate mental health support?", "type": "multiple_choice", "options": ["Yes", "No", "Not sure"], "required": true },
+      { "id": "q6", "label": "What is one thing the school could do to help?", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Sustainability in Fashion 2026",
+    "description": "Checking if consumers are willing to pay a premium for ethically made clothing.",
+    "useCase": "Eco-friendly startup feasibility study.",
+    "category": "Lifestyle",
+    "status": "published",
+    "participantCount": 112,
+    "deadline": "2026-09-05",
+    "image": "https://images.unsplash.com/photo-1523381210434-271e8be1f52b",
+    "questions": [
+      { "id": "q1", "label": "How often do you buy new clothes?", "type": "multiple_choice", "options": ["Weekly", "Monthly", "Once per season", "Rarely"], "required": true },
+      { "id": "q2", "label": "Do you check for sustainability labels?", "type": "multiple_choice", "options": ["Always", "Sometimes", "Never"], "required": true },
+      { "id": "q3", "label": "How much more (%) would you pay for ethical items?", "type": "multiple_choice", "options": ["0%", "10%", "25%", "50%+"], "required": true },
+      { "id": "q4", "label": "What is your favorite sustainable brand?", "type": "short_answer", "required": false },
+      { "id": "q5", "label": "What prevents you from buying more ethical fashion?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Smart Home Device Security",
+    "description": "Measuring consumer trust in IoT devices and smart home assistants.",
+    "useCase": "Cybersecurity firm threat assessment.",
+    "category": "Technology",
+    "status": "published",
+    "participantCount": 78,
+    "deadline": "2026-12-01",
+    "image": "https://images.unsplash.com/photo-1558002038-1055907df827",
+    "questions": [
+      { "id": "q1", "label": "How many smart devices do you have?", "type": "multiple_choice", "options": ["0", "1-3", "4-10", "10+"], "required": true },
+      { "id": "q2", "label": "Rate your trust in smart speakers regarding privacy.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q3", "label": "Which brands do you have in your home?", "type": "checkbox", "options": ["Amazon Alexa", "Google Home", "Apple HomeKit", "Samsung SmartThings"], "required": false },
+      { "id": "q4", "label": "Have you ever experienced a security issue with IoT?", "type": "multiple_choice", "options": ["Yes", "No", "Not sure"], "required": true },
+      { "id": "q5", "label": "What is your biggest fear regarding smart home tech?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Post-Pandemic Travel Intentions",
+    "description": "Analyzing how travel habits have permanently changed since 2020.",
+    "useCase": "Tourism board marketing strategy.",
+    "category": "Travel",
+    "status": "published",
+    "participantCount": 167,
+    "deadline": "2026-07-20",
+    "image": "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1",
+    "questions": [
+      { "id": "q1", "label": "Where do you plan to travel next?", "type": "multiple_choice", "options": ["Domestic", "International", "Staycation", "No travel"], "required": true },
+      { "id": "q2", "label": "What is your primary travel goal?", "type": "multiple_choice", "options": ["Relaxation", "Adventure", "Culture", "Family"], "required": true },
+      { "id": "q3", "label": "How long will your next trip be?", "type": "multiple_choice", "options": ["Weekend", "1 week", "2 weeks", "1 month+"], "required": true },
+      { "id": "q4", "label": "What is your budget for your next trip?", "type": "short_answer", "required": true },
+      { "id": "q5", "label": "How has remote work influenced your travel?", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Crypto & NFT Sentiment 2026",
+    "description": "Gauging retail investor interest in digital assets after the recent market shift.",
+    "useCase": "FinTech app feature prioritization.",
+    "category": "Finance",
+    "status": "published",
+    "participantCount": 92,
+    "deadline": "2026-10-31",
+    "image": "https://images.unsplash.com/photo-1621761191319-c6fb62004040",
+    "questions": [
+      { "id": "q1", "label": "Do you currently hold any cryptocurrency?", "type": "multiple_choice", "options": ["Yes", "No", "Used to"], "required": true },
+      { "id": "q2", "label": "What is your preferred crypto exchange?", "type": "multiple_choice", "options": ["Binance", "Coinbase", "Kraken", "DEX", "Other"], "required": true },
+      { "id": "q3", "label": "Rate your trust in stablecoins.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q4", "label": "Which assets are you most bullish on?", "type": "checkbox", "options": ["Bitcoin", "Ethereum", "Solana", "L2s", "AI tokens"], "required": false },
+      { "id": "q5", "label": "What is your long-term view on NFTs?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Subscription Fatigue 2026",
+    "description": "Investigating how many streaming and SaaS services users are willing to keep.",
+    "useCase": "Media conglomerate churn analysis.",
+    "category": "Media",
+    "status": "published",
+    "participantCount": 134,
+    "deadline": "2026-12-15",
+    "image": "https://images.unsplash.com/photo-1522869635100-9f4c5e86aa37",
+    "questions": [
+      { "id": "q1", "label": "How many streaming services do you pay for?", "type": "multiple_choice", "options": ["0", "1-2", "3-5", "5+"], "required": true },
+      { "id": "q2", "label": "What is your monthly budget for digital subs?", "type": "short_answer", "required": true },
+      { "id": "q3", "label": "Which would you cancel first if needed?", "type": "multiple_choice", "options": ["Video", "Music", "News", "Software"], "required": true },
+      { "id": "q4", "label": "Rate the value for money of Netflix.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q5", "label": "Do you share your accounts? (Select all)", "type": "checkbox", "options": ["Family", "Friends", "Partner", "Don't share"], "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Online Learning vs. Classroom",
+    "description": "Comparing student performance and satisfaction across learning modes.",
+    "useCase": "E-learning platform UX improvements.",
+    "category": "Education",
+    "status": "published",
+    "participantCount": 245,
+    "deadline": "2026-09-30",
+    "image": "https://images.unsplash.com/photo-1501504905252-473c47e087f8",
+    "questions": [
+      { "id": "q1", "label": "Which learning mode do you prefer?", "type": "multiple_choice", "options": ["In-person", "Online", "Hybrid"], "required": true },
+      { "id": "q2", "label": "Rate your focus level during online lectures.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q3", "label": "What is the biggest advantage of online learning?", "type": "multiple_choice", "options": ["Flexibility", "Cost", "Safety", "Comfort"], "required": true },
+      { "id": "q4", "label": "What tools make learning easier?", "type": "checkbox", "options": ["Notion", "Quizlet", "YouTube", "AI Tutors"], "required": false },
+      { "id": "q5", "label": "What is the biggest challenge of in-person learning?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Mental Wellness App Efficacy",
+    "description": "Testing if mindfulness apps actually reduce daily stress for busy professionals.",
+    "useCase": "Product validation for a wellness app.",
+    "category": "Health",
+    "status": "published",
+    "participantCount": 56,
+    "deadline": "2026-11-11",
+    "image": "https://images.unsplash.com/photo-1506126613408-eca07ce68773",
+    "questions": [
+      { "id": "q1", "label": "Have you used a mindfulness app before?", "type": "multiple_choice", "options": ["Yes", "No"], "required": true },
+      { "id": "q2", "label": "Which apps have you tried?", "type": "checkbox", "options": ["Headspace", "Calm", "Insight Timer", "Others"], "required": false },
+      { "id": "q3", "label": "How often do you meditate?", "type": "multiple_choice", "options": ["Daily", "Weekly", "Rarely", "Never"], "required": true },
+      { "id": "q4", "label": "Rate your stress before using the app.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q5", "label": "Describe your mental state after a session.", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Coffee Culture in Urban Cities",
+    "description": "Exploring how 'third place' environments affect local economies.",
+    "useCase": "Urban planning research.",
+    "category": "Lifestyle",
+    "status": "published",
+    "participantCount": 189,
+    "deadline": "2026-08-01",
+    "image": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085",
+    "questions": [
+      { "id": "q1", "label": "How many cups of coffee do you drink a day?", "type": "multiple_choice", "options": ["0", "1", "2-3", "4+"], "required": true },
+      { "id": "q2", "label": "Where do you usually get your coffee?", "type": "multiple_choice", "options": ["Home", "Starbucks", "Local Cafe", "Office"], "required": true },
+      { "id": "q3", "label": "What do you look for in a cafe? (Select all)", "type": "checkbox", "options": ["Wifi", "Comfortable seating", "Coffee quality", "Price"], "required": false },
+      { "id": "q4", "label": "How much do you spend on coffee per week?", "type": "short_answer", "required": true },
+      { "id": "q5", "label": "Rate the coffee culture in your city.", "type": "linear_scale", "options": ["1", "5"], "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "The Rise of Pet Humanization",
+    "description": "Tracking spending habits on premium pet food and services.",
+    "useCase": "Pet industry market report.",
+    "category": "Lifestyle",
+    "status": "published",
+    "participantCount": 72,
+    "deadline": "2026-10-15",
+    "image": "https://images.unsplash.com/photo-1516733725897-1aa73b87c8e8",
+    "questions": [
+      { "id": "q1", "label": "What kind of pet do you have?", "type": "multiple_choice", "options": ["Dog", "Cat", "Bird", "Other", "None"], "required": true },
+      { "id": "q2", "label": "Do you consider your pet a family member?", "type": "multiple_choice", "options": ["Yes", "Absolutely", "No"], "required": true },
+      { "id": "q3", "label": "What premium services do you use?", "type": "checkbox", "options": ["Grooming", "Pet Sitting", "Training", "Health Insurance"], "required": false },
+      { "id": "q4", "label": "How much do you spend on your pet monthly?", "type": "short_answer", "required": true },
+      { "id": "q5", "label": "What is the best thing about being a pet owner?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Space Tourism Expectations",
+    "description": "Would citizens actually go to space if it were affordable?",
+    "useCase": "Aerospace startup consumer survey.",
+    "category": "Science",
+    "status": "published",
+    "participantCount": 43,
+    "deadline": "2026-12-25",
+    "image": "https://images.unsplash.com/photo-1446776811953-b23d57bd21aa",
+    "questions": [
+      { "id": "q1", "label": "Would you travel to space if it cost $10k?", "type": "multiple_choice", "options": ["Yes", "No", "Maybe"], "required": true },
+      { "id": "q2", "label": "Which destination interests you most?", "type": "multiple_choice", "options": ["Orbit", "Moon", "Mars", "ISS"], "required": true },
+      { "id": "q3", "label": "What is your biggest fear about space travel?", "type": "multiple_choice", "options": ["Safety", "Health effects", "Isolation", "Cost"], "required": true },
+      { "id": "q4", "label": "How much training would you be willing to do?", "type": "multiple_choice", "options": ["1 week", "1 month", "6 months", "None"], "required": true },
+      { "id": "q5", "label": "What would you bring with you to space?", "type": "short_answer", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Retail vs. E-commerce 2026",
+    "description": "Why some people still prefer physical stores over AR shopping.",
+    "useCase": "Retail strategy analysis.",
+    "category": "Business",
+    "status": "published",
+    "participantCount": 98,
+    "deadline": "2026-07-15",
+    "image": "https://images.unsplash.com/photo-1441986300917-64674bd600d8",
+    "questions": [
+      { "id": "q1", "label": "How much of your shopping is done online?", "type": "multiple_choice", "options": ["0-25%", "26-50%", "51-75%", "76-100%"], "required": true },
+      { "id": "q2", "label": "Why do you visit physical stores?", "type": "checkbox", "options": ["To touch items", "Instant gratification", "Socializing", "Try on clothes"], "required": true },
+      { "id": "q3", "label": "Have you used AR for shopping yet?", "type": "multiple_choice", "options": ["Yes", "No"], "required": true },
+      { "id": "q4", "label": "Rate your satisfaction with delivery times.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q5", "label": "What could stores do to win you back?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "The Impact of AI on Jobs",
+    "description": "How professionals across different sectors view their job security.",
+    "useCase": "Economic impact study.",
+    "category": "Technology",
+    "status": "published",
+    "participantCount": 156,
+    "deadline": "2026-11-30",
+    "image": "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
+    "questions": [
+      { "id": "q1", "label": "What industry do you work in?", "type": "short_answer", "required": true },
+      { "id": "q2", "label": "Do you use AI tools in your work?", "type": "multiple_choice", "options": ["Daily", "Sometimes", "Never"], "required": true },
+      { "id": "q3", "label": "Rate your fear of AI replacement.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q4", "label": "Has your company provided AI training?", "type": "multiple_choice", "options": ["Yes", "No"], "required": true },
+      { "id": "q5", "label": "How do you think your role will change in 5 years?", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Language Learning Apps Study",
+    "description": "Comparing Duolingo, Babbel, and Rosetta Stone for fluency.",
+    "useCase": "Linguistic research project.",
+    "category": "Education",
+    "status": "published",
+    "participantCount": 84,
+    "deadline": "2026-09-12",
+    "image": "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8",
+    "questions": [
+      { "id": "q1", "label": "Which language are you learning?", "type": "short_answer", "required": true },
+      { "id": "q2", "label": "Which app do you use most?", "type": "multiple_choice", "options": ["Duolingo", "Babbel", "Memrise", "Other"], "required": true },
+      { "id": "q3", "label": "Rate your progress so far.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q4", "label": "What is the hardest part of learning a language?", "type": "multiple_choice", "options": ["Grammar", "Vocab", "Speaking", "Listening"], "required": true },
+      { "id": "q5", "label": "How many minutes a day do you study?", "type": "short_answer", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "Urban Commuting Habits 2026",
+    "description": "Measuring the shift toward micro-mobility and public transit.",
+    "useCase": "City transportation planning.",
+    "category": "Travel",
+    "status": "published",
+    "participantCount": 122,
+    "deadline": "2026-10-01",
+    "image": "https://images.unsplash.com/photo-1449130017114-2f9c01143c6d",
+    "questions": [
+      { "id": "q1", "label": "How do you primarily commute?", "type": "multiple_choice", "options": ["Car", "Public Transit", "Bike", "Walk"], "required": true },
+      { "id": "q2", "label": "How long is your commute (one way)?", "type": "multiple_choice", "options": ["<15 min", "15-30 min", "30-60 min", "1 hr+"], "required": true },
+      { "id": "q3", "label": "Would you use an e-scooter if available?", "type": "multiple_choice", "options": ["Yes", "No"], "required": true },
+      { "id": "q4", "label": "Rate the reliability of your local transit.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q5", "label": "What would make your commute better?", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Virtual Reality in Gaming",
+    "description": "Is VR finally becoming mainstream for core gamers?",
+    "useCase": "Game studio R&D.",
+    "category": "Technology",
+    "status": "published",
+    "participantCount": 65,
+    "deadline": "2026-12-20",
+    "image": "https://images.unsplash.com/photo-1592477976531-a47105244571",
+    "questions": [
+      { "id": "q1", "label": "Do you own a VR headset?", "type": "multiple_choice", "options": ["Yes", "No", "Thinking about it"], "required": true },
+      { "id": "q2", "label": "How many hours a week do you play in VR?", "type": "multiple_choice", "options": ["0", "1-5", "5-10", "10+"], "required": true },
+      { "id": "q3", "label": "What is the main barrier to VR? (Select all)", "type": "checkbox", "options": ["Motion sickness", "Price", "Lack of games", "Space"], "required": false },
+      { "id": "q4", "label": "Rate your immersion level in VR.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q5", "label": "What is the best VR game you've played?", "type": "short_answer", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "2026 Global Workforce Engagement Audit",
+    "description": "A deep dive into employee satisfaction, leadership, and long-term career goals in the post-AI era.",
+    "useCase": "Corporate HR strategy for retention and culture building.",
+    "category": "Business",
+    "status": "published",
+    "participantCount": 420,
+    "deadline": "2026-11-30",
+    "image": "https://images.unsplash.com/photo-1552664730-d307ca884978",
+    "questions": [
+      { "id": "q1", "label": "How long have you been with your current employer?", "type": "multiple_choice", "options": ["<1 year", "1-3 years", "3-5 years", "5+ years"], "required": true },
+      { "id": "q2", "label": "Rate your overall job satisfaction.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q3", "label": "Do you feel your work is fairly compensated?", "type": "multiple_choice", "options": ["Yes", "Somewhat", "No"], "required": true },
+      { "id": "q4", "label": "Which benefits do you value most?", "type": "checkbox", "options": ["Health Insurance", "Remote Work", "Bonus", "Stock Options", "Learning Stipend"], "required": false },
+      { "id": "q5", "label": "How would you rate the communication from leadership?", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q6", "label": "Do you see yourself at this company in 2 years?", "type": "multiple_choice", "options": ["Definitely", "Likely", "Unlikely", "Definitely not"], "required": true },
+      { "id": "q7", "label": "What is the most stressful part of your week?", "type": "short_answer", "required": false },
+      { "id": "q8", "label": "Are you provided with the tools you need to succeed?", "type": "multiple_choice", "options": ["Always", "Mostly", "Rarely", "Never"], "required": true },
+      { "id": "q9", "label": "How many hours of focused work do you achieve daily?", "type": "multiple_choice", "options": ["<2", "2-4", "4-6", "6+"], "required": true },
+      { "id": "q10", "label": "Rate the diversity and inclusion at your workplace.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q11", "label": "What is one thing you would change about your office culture?", "type": "paragraph", "required": true },
+      { "id": "q12", "label": "Any final comments for the HR department?", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Personal Finance & Investment Strategy",
+    "description": "Analyzing how different demographics are protecting their wealth against inflation in 2026.",
+    "useCase": "Wealth management app development.",
+    "category": "Finance",
+    "status": "published",
+    "participantCount": 128,
+    "deadline": "2026-09-15",
+    "image": "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e",
+    "questions": [
+      { "id": "q1", "label": "What is your primary financial goal?", "type": "multiple_choice", "options": ["Retirement", "Home purchase", "Education", "Travel", "Debt reduction"], "required": true },
+      { "id": "q2", "label": "What percentage of your income do you save?", "type": "multiple_choice", "options": ["0%", "1-10%", "11-20%", "21%+"], "required": true },
+      { "id": "q3", "label": "Where is the majority of your wealth held?", "type": "checkbox", "options": ["Cash", "Stocks", "Real Estate", "Crypto", "Gold/Commodities"], "required": true },
+      { "id": "q4", "label": "Rate your risk tolerance for investments.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q5", "label": "Do you use a professional financial advisor?", "type": "multiple_choice", "options": ["Yes", "No", "Use a Robo-advisor"], "required": true },
+      { "id": "q6", "label": "How often do you rebalance your portfolio?", "type": "multiple_choice", "options": ["Monthly", "Quarterly", "Annually", "Never"], "required": true },
+      { "id": "q7", "label": "Are you concerned about currency devaluation?", "type": "multiple_choice", "options": ["Very concerned", "Somewhat", "Not at all"], "required": true },
+      { "id": "q8", "label": "What is your annual household income range?", "type": "short_answer", "required": true },
+      { "id": "q9", "label": "Which tax-advantaged accounts do you use?", "type": "checkbox", "options": ["401k/Pension", "IRA/ISA", "HSA", "Education fund"], "required": false },
+      { "id": "q10", "label": "How do you track your net worth?", "type": "short_answer", "required": false },
+      { "id": "q11", "label": "Describe your investment philosophy in one sentence.", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Smart City Infrastructure & Transit Audit",
+    "description": "Evaluating resident satisfaction with new automated transit and smart energy grids.",
+    "useCase": "Municipal planning for 2027 infrastructure budget.",
+    "category": "Travel",
+    "status": "published",
+    "participantCount": 289,
+    "deadline": "2026-10-20",
+    "image": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
+    "questions": [
+      { "id": "q1", "label": "Which part of the city do you live in?", "type": "short_answer", "required": true },
+      { "id": "q2", "label": "Rate the reliability of the new autonomous shuttles.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q3", "label": "How do you pay for transit most often?", "type": "multiple_choice", "options": ["Mobile App", "Contactless Card", "Monthly Pass", "Biometric Scan"], "required": true },
+      { "id": "q4", "label": "Do you feel safe using public transit at night?", "type": "multiple_choice", "options": ["Yes", "Mostly", "No"], "required": true },
+      { "id": "q5", "label": "Which infrastructure project should be prioritized?", "type": "checkbox", "options": ["Bike Lanes", "Parks", "EV Charging", "Smart Streetlights"], "required": false },
+      { "id": "q6", "label": "Have you noticed a decrease in your energy bill with the smart grid?", "type": "multiple_choice", "options": ["Yes", "No", "Not sure"], "required": true },
+      { "id": "q7", "label": "Rate the air quality in your neighborhood.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q8", "label": "How often do you use the city's mobile citizen portal?", "type": "multiple_choice", "options": ["Daily", "Weekly", "Monthly", "Never"], "required": true },
+      { "id": "q9", "label": "What is the most frustrating part of living in this city?", "type": "paragraph", "required": true },
+      { "id": "q10", "label": "Would you recommend this city to a friend?", "type": "multiple_choice", "options": ["Yes", "No"], "required": true }
+    ]
+  }
+]

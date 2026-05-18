@@ -1,0 +1,74 @@
+[
+    {
+    "surveyorId": "6a057f325e1ef28d44f1a372",
+    "title": "2026 Global Workforce Engagement Audit",
+    "description": "A deep dive into employee satisfaction, leadership, and long-term career goals in the post-AI era.",
+    "useCase": "Corporate HR strategy for retention and culture building.",
+    "category": "Business",
+    "status": "published",
+    "participantCount": 420,
+    "deadline": "2026-11-30",
+    "image": "https://images.unsplash.com/photo-1552664730-d307ca884978",
+    "questions": [
+      { "id": "q1", "label": "How long have you been with your current employer?", "type": "multiple_choice", "options": ["<1 year", "1-3 years", "3-5 years", "5+ years"], "required": true },
+      { "id": "q2", "label": "Rate your overall job satisfaction.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q3", "label": "Do you feel your work is fairly compensated?", "type": "multiple_choice", "options": ["Yes", "Somewhat", "No"], "required": true },
+      { "id": "q4", "label": "Which benefits do you value most?", "type": "checkbox", "options": ["Health Insurance", "Remote Work", "Bonus", "Stock Options", "Learning Stipend"], "required": false },
+      { "id": "q5", "label": "How would you rate the communication from leadership?", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q6", "label": "Do you see yourself at this company in 2 years?", "type": "multiple_choice", "options": ["Definitely", "Likely", "Unlikely", "Definitely not"], "required": true },
+      { "id": "q7", "label": "What is the most stressful part of your week?", "type": "short_answer", "required": false },
+      { "id": "q8", "label": "Are you provided with the tools you need to succeed?", "type": "multiple_choice", "options": ["Always", "Mostly", "Rarely", "Never"], "required": true },
+      { "id": "q9", "label": "How many hours of focused work do you achieve daily?", "type": "multiple_choice", "options": ["<2", "2-4", "4-6", "6+"], "required": true },
+      { "id": "q10", "label": "Rate the diversity and inclusion at your workplace.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q11", "label": "What is one thing you would change about your office culture?", "type": "paragraph", "required": true },
+      { "id": "q12", "label": "Any final comments for the HR department?", "type": "paragraph", "required": false }
+    ]
+  },
+  {
+    "surveyorId": "6a057f655e1ef28d44f1a37f",
+    "title": "Personal Finance & Investment Strategy",
+    "description": "Analyzing how different demographics are protecting their wealth against inflation in 2026.",
+    "useCase": "Wealth management app development.",
+    "category": "Finance",
+    "status": "published",
+    "participantCount": 128,
+    "deadline": "2026-09-15",
+    "image": "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e",
+    "questions": [
+      { "id": "q1", "label": "What is your primary financial goal?", "type": "multiple_choice", "options": ["Retirement", "Home purchase", "Education", "Travel", "Debt reduction"], "required": true },
+      { "id": "q2", "label": "What percentage of your income do you save?", "type": "multiple_choice", "options": ["0%", "1-10%", "11-20%", "21%+"], "required": true },
+      { "id": "q3", "label": "Where is the majority of your wealth held?", "type": "checkbox", "options": ["Cash", "Stocks", "Real Estate", "Crypto", "Gold/Commodities"], "required": true },
+      { "id": "q4", "label": "Rate your risk tolerance for investments.", "type": "linear_scale", "options": ["1", "10"], "required": true },
+      { "id": "q5", "label": "Do you use a professional financial advisor?", "type": "multiple_choice", "options": ["Yes", "No", "Use a Robo-advisor"], "required": true },
+      { "id": "q6", "label": "How often do you rebalance your portfolio?", "type": "multiple_choice", "options": ["Monthly", "Quarterly", "Annually", "Never"], "required": true },
+      { "id": "q7", "label": "Are you concerned about currency devaluation?", "type": "multiple_choice", "options": ["Very concerned", "Somewhat", "Not at all"], "required": true },
+      { "id": "q8", "label": "What is your annual household income range?", "type": "short_answer", "required": true },
+      { "id": "q9", "label": "Which tax-advantaged accounts do you use?", "type": "checkbox", "options": ["401k/Pension", "IRA/ISA", "HSA", "Education fund"], "required": false },
+      { "id": "q10", "label": "How do you track your net worth?", "type": "short_answer", "required": false },
+      { "id": "q11", "label": "Describe your investment philosophy in one sentence.", "type": "paragraph", "required": true }
+    ]
+  },
+  {
+    "surveyorId": "6a057f825e1ef28d44f1a38c",
+    "title": "Smart City Infrastructure & Transit Audit",
+    "description": "Evaluating resident satisfaction with new automated transit and smart energy grids.",
+    "useCase": "Municipal planning for 2027 infrastructure budget.",
+    "category": "Travel",
+    "status": "published",
+    "participantCount": 289,
+    "deadline": "2026-10-20",
+    "image": "https://images.unsplash.com/photo-1449824913935-59a10b8d2000",
+    "questions": [
+      { "id": "q1", "label": "Which part of the city do you live in?", "type": "short_answer", "required": true },
+      { "id": "q2", "label": "Rate the reliability of the new autonomous shuttles.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q3", "label": "How do you pay for transit most often?", "type": "multiple_choice", "options": ["Mobile App", "Contactless Card", "Monthly Pass", "Biometric Scan"], "required": true },
+      { "id": "q4", "label": "Do you feel safe using public transit at night?", "type": "multiple_choice", "options": ["Yes", "Mostly", "No"], "required": true },
+      { "id": "q5", "label": "Which infrastructure project should be prioritized?", "type": "checkbox", "options": ["Bike Lanes", "Parks", "EV Charging", "Smart Streetlights"], "required": false },
+      { "id": "q6", "label": "Have you noticed a decrease in your energy bill with the smart grid?", "type": "multiple_choice", "options": ["Yes", "No", "Not sure"], "required": true },
+      { "id": "q7", "label": "Rate the air quality in your neighborhood.", "type": "linear_scale", "options": ["1", "5"], "required": true },
+      { "id": "q8", "label": "How often do you use the city's mobile citizen portal?", "type": "multiple_choice", "options": ["Daily", "Weekly", "Monthly", "Never"], "required": true },
+      { "id": "q9", "label": "What is the most frustrating part of living in this city?", "type": "paragraph", "required": true },
+      { "id": "q10", "label": "Would you recommend this city to a friend?", "type": "multiple_choice", "options": ["Yes", "No"], "required": true }
+    ]
+  }
+]

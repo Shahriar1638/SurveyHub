@@ -6,7 +6,16 @@ const User = require('../models/User');
 // POST /sign-up
 router.post('/sign-up', async (req, res) => {
   try {
-    const { email, name, avatar } = req.body;
+    const {
+      email,
+      name,
+      avatar = '',
+      bio = '',
+      location = '',
+      occupation = '',
+      socialLinks = {},
+      preferences = [],
+    } = req.body;
     
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -15,7 +24,20 @@ router.post('/sign-up', async (req, res) => {
     }
 
     // Create new user in Mongo
-    const newUser = new User({ email, name, avatar });
+    const newUser = new User({
+      email,
+      name,
+      avatar,
+      bio,
+      location,
+      occupation,
+      socialLinks: {
+        twitter: socialLinks.twitter || '',
+        linkedin: socialLinks.linkedin || '',
+        website: socialLinks.website || '',
+      },
+      preferences: Array.isArray(preferences) ? preferences : [],
+    });
     await newUser.save();
 
     res.status(201).send({ message: 'User registered successfully', user: newUser });

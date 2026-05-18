@@ -28,6 +28,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    coverPhoto: {
+      type: String,
+      default: '',
+    },
     bio: {
       type: String,
       trim: true,
@@ -49,10 +53,29 @@ const userSchema = new mongoose.Schema(
       linkedin: { type: String, default: '' },
       website: { type: String, default: '' },
     },
+    subscription: {
+      plan: { type: String, default: 'free' },
+      status: { type: String, enum: ['active', 'past_due', 'canceled', 'trialing', 'inactive'], default: 'inactive' },
+      autoRenew: { type: Boolean, default: false },
+      provider: { type: String, default: '' },
+      providerCustomerId: { type: String, default: '' },
+      providerSubscriptionId: { type: String, default: '' },
+      currentPeriodEnd: { type: Date },
+    },
     preferences: {
       type: [String], // Array of preferred survey categories
       default: [],
-    }
+    },
+    autoAIInsight: {
+      type: Boolean,
+      default: false,
+    },
+    moderationStats: {
+      reportsResolved: { type: Number, default: 0 },
+      surveysReviewed: { type: Number, default: 0 },
+      usersModerated: { type: Number, default: 0 },
+      totalActions: { type: Number, default: 0 },
+    },
   },
   {
     timestamps: true,

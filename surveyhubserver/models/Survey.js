@@ -35,14 +35,56 @@ const surveySchema = new mongoose.Schema({
     }
   ],
   
-  status: { type: String, enum: ['active', 'expired', 'banned'], default: 'active' },
+  status: { type: String, enum: ['draft', 'published', 'expired', 'banned'], default: 'draft' },
+  publishedAt: Date,
   category: String,
+  participantCount: {
+    type: Number,
+    default: 0,
+    min: 0,
+  },
   deadline: {
       type: String,
       required: true,
       trim: true,
     },
-  image: String
+  image: String,
+
+  // AI INSIGHT: Generated when deadline expires + auto-gen enabled
+  aiInsight: {
+    enabled: { type: Boolean, default: false },
+    autoGenerate: { type: Boolean, default: false },
+    status: { type: String, enum: ['idle', 'pending', 'ready', 'failed'], default: 'idle' },
+    
+    generatedAt: Date,
+    updatedAt: Date,
+    
+    stats: {
+      totalResponses: Number,
+      perQuestion: [
+        {
+          questionId: String,
+          responseCount: Number,
+          optionBreakdown: [
+            {
+              value: String,
+              count: Number
+            }
+          ],
+          topThemes: [String]
+        }
+      ]
+    },
+    
+    summary: String,
+    keyFindings: [String],
+    recommendations: [String],
+    
+    modelInfo: {
+      modelName: String,
+      promptVersion: String
+    }
+  }
 }, { timestamps: true });
 
 // Indexes for faster queries
@@ -50,5 +92,6 @@ surveySchema.index({ surveyorId: 1 });
 surveySchema.index({ status: 1 });
 surveySchema.index({ category: 1 });
 surveySchema.index({ status: 1, createdAt: -1 });
+surveySchema.index({ status: 1, participantCount: -1, createdAt: -1 });
 
 module.exports = mongoose.model('Survey', surveySchema);

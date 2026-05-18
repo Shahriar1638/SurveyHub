@@ -153,7 +153,7 @@ useEffect(() => {
 ### Basic Lazy Loading
 
 ```typescript
-import React, { Suspense } from 'react';
+import { Suspense } from 'react';
 
 // Lazy load heavy component
 const HeavyChart = React.lazy(() => import('./HeavyChart'));
