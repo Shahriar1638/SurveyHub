@@ -5,9 +5,15 @@ features.md
 features_v2.md
 client_folders.md
 BackUp/
+backend/.env.local
+frontend/.env.local
 # clientSide/
 frontend/node_modules/
 prompt.txt
 Homepage_idea.md
 profile_idea.md
 dashboard_idea.md
+# Ignore environment files
+.env
+.env.local
+".env.local" 
