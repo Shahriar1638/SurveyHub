@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
-import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { StatCard } from "../../Components/UI/StatCard";
 import { Card, CardBody } from "../../Components/UI/Card";
 import { PageTransition } from "../../Components/UI/PageTransition";
@@ -60,11 +60,11 @@ export default function AdminHome() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
     let mounted = true;
-    axiosPublic
+    axiosSecure
       .get("/api/homepages/admin")
       .then((r) => {
         if (mounted) setData(r.data);
@@ -78,7 +78,7 @@ export default function AdminHome() {
     return () => {
       mounted = false;
     };
-  }, [axiosPublic]);
+  }, [axiosSecure]);
 
   if (loading) return <Skeleton />;
   if (error)

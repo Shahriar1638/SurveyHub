@@ -19,7 +19,7 @@ app.use(cors({
         'http://localhost:5174',
         'https://practice-2-firebase.web.app',
         'https://practice-2-firebase.firebaseapp.com',
-        'https://surveyhubserver.vercel.app' 
+        'https://surveyhub-bfmp.onrender.com' 
     ],
     credentials: true,
     optionsSuccessStatus: 200

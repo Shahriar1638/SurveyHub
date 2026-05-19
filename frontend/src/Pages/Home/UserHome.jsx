@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
-import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { SurveyCard } from "../../Components/UI/SurveyCard";
 import { StatCard } from "../../Components/UI/StatCard";
 import { PageTransition } from "../../Components/UI/PageTransition";
@@ -47,18 +47,18 @@ export default function UserHome() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [upgradeDismissed, setUpgradeDismissed] = useState(false);
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   useEffect(() => {
     let mounted = true;
     const uid = user?.uid || "";
-    axiosPublic
+    axiosSecure
       .get(`/api/homepages/user${uid ? `?userId=${uid}` : ""}`)
       .then((r) => { if (mounted) setData(r.data); })
       .catch((e) => { if (mounted) setError(e.message || "Failed to load"); })
       .finally(() => { if (mounted) setLoading(false); });
     return () => { mounted = false; };
-  }, [axiosPublic, user]);
+  }, [axiosSecure, user]);
 
   if (loading) return <Skeleton />;
   if (error) return (
