@@ -1,10 +1,15 @@
-import { useContext, useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
+import { FaUser, FaCrown } from "react-icons/fa";
+import { IoShieldHalfOutline } from "react-icons/io5";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { Button } from "../UI/Button";
 import logo from "../../assets/logo.svg";
+import axios from "axios";
+
+const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 // Guest nav links (visible to all visitors)
 const GUEST_LINKS = [
@@ -42,13 +47,75 @@ const ADMIN_LINKS = [
   { name: "Dashboard", path: "/dashboard" },
 ];
 
+// Role indicator icon shown next to avatar (declared outside of render to prevent recreation)
+const RoleIndicator = ({ role, user, isProfileLoading, creditBalance }) => {
+  if (isProfileLoading || !user) return null;
+
+  if (role === "admin") {
+    return (
+      <span title="Administrator">
+        <IoShieldHalfOutline
+          style={{ color: "var(--color-admin)" }}
+          className="w-5 h-5"
+        />
+      </span>
+    );
+  }
+
+  if (role === "surveyor") {
+    return (
+      <span
+        className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
+        style={{
+          backgroundColor: "var(--color-surveyor-light)",
+        }}
+        title="Surveyor — Credit Balance"
+      >
+        <FaCrown
+          style={{ color: "var(--color-surveyor)" }}
+          className="w-3.5 h-3.5"
+        />
+        {creditBalance !== null && (
+          <span
+            className="font-[--font-mono] text-xs font-bold"
+            style={{ color: "var(--color-surveyor-dark)" }}
+          >
+            {creditBalance}
+          </span>
+        )}
+      </span>
+    );
+  }
+
+  // Regular user
+  return (
+    <span title="Member">
+      <FaUser style={{ color: "var(--color-user)" }} className="w-4 h-4" />
+    </span>
+  );
+};
+
 export function Navbar() {
   const { user, logOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const { data: profile, isPending: isProfileLoading } = useProfile();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [creditBalance, setCreditBalance] = useState(null);
 
   const role = profile?.role;
+  const userId = profile?._id;
+
+  // Fetch credit balance only for surveyors
+  useEffect(() => {
+    if (role === "surveyor" && userId) {
+      axios
+        .get(`${API}/api/payments/wallet/${userId}`)
+        .then(({ data }) => {
+          if (data.success) setCreditBalance(data.data?.balance ?? 0);
+        })
+        .catch(() => {});
+    }
+  }, [role, userId]);
 
   // Role-based link selection
   const getLinks = () => {
@@ -124,23 +191,18 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Avatar, Role pill, & Name in a unified Link to Profile */}
+              {/* Avatar + role icon + name → profile link */}
               <Link
                 to="/profile"
-                className="flex items-center gap-3 hover:opacity-80 transition-all rounded-lg p-1.5 hover:bg-[--color-bg-subtle]"
+                className="flex items-center gap-2 hover:opacity-80 transition-all rounded-lg p-1.5 hover:bg-[--color-bg-subtle]"
               >
-                {/* Role pill */}
-                {!isProfileLoading && (
-                  <span
-                    className="type-meta px-2 py-0.5 rounded-full text-xs font-semibold uppercase"
-                    style={{
-                      backgroundColor: `color-mix(in srgb, ${accentColor} 15%, transparent)`,
-                      color: accentColor,
-                    }}
-                  >
-                    {role || "Member"}
-                  </span>
-                )}
+                {/* Role indicator (icon) */}
+                <RoleIndicator
+                  role={role}
+                  user={user}
+                  isProfileLoading={isProfileLoading}
+                  creditBalance={creditBalance}
+                />
 
                 {/* Avatar */}
                 {profile?.avatar || user.photoURL ? (
@@ -287,13 +349,18 @@ export function Navbar() {
                           {profile?.name || user.displayName || user.email}
                         </span>
                         {!isProfileLoading && (
-                          <span
-                            className="text-[9px] font-semibold uppercase tracking-wider w-fit"
-                            style={{
-                              color: accentColor,
-                            }}
-                          >
-                            {role || "Member"}
+                          <span className="flex items-center gap-1">
+                            <RoleIndicator
+                              role={role}
+                              user={user}
+                              isProfileLoading={isProfileLoading}
+                              creditBalance={creditBalance}
+                            />
+                            {role === "surveyor" && creditBalance !== null && (
+                              <span className="type-meta text-[--color-text-tertiary]">
+                                {creditBalance} credits
+                              </span>
+                            )}
                           </span>
                         )}
                       </div>

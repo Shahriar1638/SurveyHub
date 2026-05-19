@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosPublic from "./useAxiosPublic";
+import useAxiosSecure from "./useAxiosSecure";
 
 /**
  * useSurveyDetail — fetches a single survey by ID.
@@ -59,6 +60,24 @@ export function useSubmitResponse(surveyId) {
       queryClient.invalidateQueries({
         queryKey: ["survey-response", surveyId, variables.userId],
       });
+    },
+  });
+}
+
+/**
+ * useSubmitSurveyFeedback — submits feedback for a survey.
+ */
+export function useSubmitSurveyFeedback(surveyId) {
+  const axiosSecure = useAxiosSecure();
+
+  return useMutation({
+    mutationFn: async ({ rating, comment, suggestions }) => {
+      const res = await axiosSecure.post(`/api/surveys/${surveyId}/feedback`, {
+        rating,
+        comment,
+        suggestions,
+      });
+      return res.data;
     },
   });
 }

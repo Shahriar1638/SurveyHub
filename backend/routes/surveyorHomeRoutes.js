@@ -2,15 +2,21 @@ const express = require('express');
 const router = express.Router();
 const Survey = require('../models/Survey');
 const Blog = require('../models/Blog');
+const User = require('../models/User');
 
 router.get('/', async (req, res) => {
   try {
-    const surveyorId = req.user?._id || req.query.surveyorId; // fallback if no auth token
     const surveyorEmail = req.user?.email || req.query.email;
-
-    if (!surveyorId) {
-       return res.status(400).json({ success: false, message: 'Surveyor ID required' });
+    if (!surveyorEmail) {
+       return res.status(400).json({ success: false, message: 'Surveyor email or ID required' });
     }
+
+    const userObj = await User.findOne({ email: surveyorEmail }).lean();
+    if (!userObj) {
+       return res.status(404).json({ success: false, message: 'Surveyor not found' });
+    }
+
+    const surveyorId = userObj._id;
 
     // 1. KPI Row
     const surveys = await Survey.find({ surveyorId });

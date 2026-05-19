@@ -1,15 +1,45 @@
 const mongoose = require('mongoose');
 
+// ── Credit Ledger (Usage Tracking) ──────────────────────────────────────────
+const creditTransactionSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ['purchase', 'survey_creation', 'ai_analysis', 'refund', 'bonus'],
+      required: true,
+    },
+    credits: {
+      type: Number,
+      required: true, // e.g., +100 for purchase, -5 for survey, -2 for AI
+    },
+    surveyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Survey',
+      default: null,
+    },
+    description: {
+      type: String,
+      required: true, // e.g., "Created survey 'Tech Trends'" or "Refund of 20 unused credits"
+    },
+    occurredAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
+// ── Monetary Transactions (Stripe Linkage) ──────────────────────────────────
 const billingEventSchema = new mongoose.Schema(
   {
     eventType: {
       type: String,
-      enum: ['created', 'renewed', 'upgraded', 'downgraded', 'canceled', 'payment_failed', 'refunded'],
+      enum: ['purchase', 'refund'],
       required: true,
     },
     amount: {
       type: Number,
-      default: 0,
+      required: true, // e.g., 20.00
       min: 0,
     },
     currency: {
@@ -18,14 +48,13 @@ const billingEventSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
-    providerInvoiceId: {
-      type: String,
-      default: '',
-      trim: true,
+    creditsTransacted: {
+      type: Number,
+      required: true, // e.g., +200 or -50
     },
-    message: {
-      type: String,
-      default: '',
+    providerPaymentIntentId: {
+      type: String, // Stripe PaymentIntent / Session ID for tracking
+      required: true,
       trim: true,
     },
     occurredAt: {
@@ -36,76 +65,41 @@ const billingEventSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// ── Main Billing/Wallet Schema ──────────────────────────────────────────────
 const subscriptionSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: true,
-      index: true,
-    },
-    provider: {
-      type: String,
-      default: 'stripe',
-      trim: true,
+      unique: true, // One credit wallet/subscription per user (automatically indexes)
     },
     providerCustomerId: {
       type: String,
       default: '',
       trim: true,
     },
-    providerSubscriptionId: {
-      type: String,
-      default: '',
-      trim: true,
-      index: true,
-    },
-    plan: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    status: {
-      type: String,
-      enum: ['active', 'past_due', 'canceled', 'trialing', 'incomplete', 'unpaid'],
-      default: 'active',
-      index: true,
-    },
-    autoRenew: {
-      type: Boolean,
-      default: true,
-    },
-    amount: {
+    // Current credit status
+    balance: {
       type: Number,
       default: 0,
-      min: 0,
+      min: 0, // Prevents balance from dropping below zero (transaction isolation)
     },
-    currency: {
-      type: String,
-      default: 'usd',
-      lowercase: true,
-      trim: true,
+    totalPurchased: {
+      type: Number,
+      default: 0,
     },
-    currentPeriodStart: {
-      type: Date,
+    totalSpent: {
+      type: Number,
+      default: 0,
     },
-    currentPeriodEnd: {
-      type: Date,
-    },
-    canceledAt: {
-      type: Date,
-    },
-    trialEndsAt: {
-      type: Date,
-    },
+    // Historical Logs
+    creditLedger: [creditTransactionSchema],
     billingHistory: [billingEventSchema],
   },
   {
     timestamps: true,
   }
 );
-
-subscriptionSchema.index({ userId: 1, status: 1 });
-subscriptionSchema.index({ providerSubscriptionId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);

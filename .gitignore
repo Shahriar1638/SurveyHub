@@ -1,11 +1,12 @@
-clientSide/.env
+backend/node_modules/
+backend/vercel.json
 Optimization_Architecture_Report.md
 features.md
 features_v2.md
 client_folders.md
 BackUp/
 # clientSide/
-clientSide/node_modules/
+frontend/node_modules/
 prompt.txt
 Homepage_idea.md
 profile_idea.md

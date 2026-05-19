@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Survey = require('../models/Survey');
 const Response = require('../models/response');
+const Feedback = require('../models/feedback');
+const { verifyToken } = require('../middlewares/authMiddleware')();
 
 /**
  * GET /api/surveys
@@ -115,7 +117,7 @@ router.get('/:id', async (req, res) => {
  * Body: { userId, answers: [{ questionId, label, value }], isDraft: boolean }
  * Upserts a response (draft or final). One response per user per survey.
  */
-router.post('/:id/respond', async (req, res) => {
+router.post('/:id/respond', verifyToken, async (req, res) => {
   try {
     const { userId, answers, isDraft = false } = req.body;
     if (!userId || !Array.isArray(answers)) {
@@ -153,7 +155,7 @@ router.post('/:id/respond', async (req, res) => {
  * GET /api/surveys/:id/my-response?userId=xxx
  * Returns the existing draft or submitted response for a user.
  */
-router.get('/:id/my-response', async (req, res) => {
+router.get('/:id/my-response', verifyToken, async (req, res) => {
   try {
     const { userId } = req.query;
     if (!userId) return res.status(400).json({ success: false, message: 'userId required' });
@@ -161,6 +163,49 @@ router.get('/:id/my-response', async (req, res) => {
     res.json({ success: true, data: response || null });
   } catch (err) {
     console.error('Error fetching response:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/surveys/:id/feedback
+ * Submit feedback for a specific survey. Requires authentication.
+ */
+router.post('/:id/feedback', verifyToken, async (req, res) => {
+  try {
+    const { rating, comment, suggestions } = req.body;
+    const userEmail = req.user?.email;
+
+    if (!userEmail) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    if (!comment?.trim()) {
+      return res.status(400).json({ success: false, message: 'Comment is required' });
+    }
+
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    const feedback = new Feedback({
+      surveyId: req.params.id,
+      userEmail,
+      rating,
+      comment: comment.trim(),
+      suggestions: suggestions?.trim() || undefined
+    });
+
+    await feedback.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Feedback submitted successfully',
+      data: feedback
+    });
+  } catch (err) {
+    console.error('Error submitting survey feedback:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

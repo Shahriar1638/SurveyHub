@@ -10,6 +10,8 @@ import FeedbackPage from "../Pages/Feedback/FeedbackPage";
 import BlogsPage from "../Pages/Blogs/BlogsPage";
 import BlogDetailPage from "../Pages/Blogs/BlogDetailPage";
 import SurveyDetailPage from "../Pages/Surveys/SurveyDetailPage";
+import PricingPage from "../Pages/Payment/PricingPage";
+import PaymentSuccessPage from "../Pages/Payment/PaymentSuccessPage";
 
 const Router = createBrowserRouter([
   {
@@ -51,6 +53,18 @@ const Router = createBrowserRouter([
       {
         path: "/blogs/:id",
         element: <BlogDetailPage />,
+      },
+      {
+        path: "/pricing",
+        element: <PricingPage />,
+      },
+      {
+        path: "/payment/success",
+        element: (
+          <PrivateRoute>
+            <PaymentSuccessPage />
+          </PrivateRoute>
+        ),
       },
     ],
   },

@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const SiteFeedback = require('../models/siteFeedback');
+const { verifyToken, verifyAdmin } = require('../middlewares/authMiddleware')();
 
 // POST /api/feedback — Submit site feedback (public route, no auth required)
 router.post('/', async (req, res) => {
@@ -37,7 +38,7 @@ router.post('/', async (req, res) => {
 });
 
 // GET /api/feedback — Admin: list all feedback (add verifyToken + verifyAdmin when ready)
-router.get('/', async (req, res) => {
+router.get('/', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { status, feedbackType, page = 1, limit = 20 } = req.query;
     const filter = {};
@@ -62,7 +63,7 @@ router.get('/', async (req, res) => {
 });
 
 // PATCH /api/feedback/:id — Admin: update feedback status or add a response
-router.patch('/:id', async (req, res) => {
+router.patch('/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { status, adminResponse } = req.body;
     const updates = {};

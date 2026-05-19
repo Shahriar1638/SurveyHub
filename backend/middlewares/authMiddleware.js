@@ -68,5 +68,22 @@ module.exports = () => {
     }
   }
 
-  return { verifyToken, verifyAdmin, verifySurveyor, verifyUser };
+  const verifySurveyorOrAdmin = async (req, res, next) => {
+    try {
+      const email = req.decoded.email;
+      const user = await User.findOne({ email }).lean();
+      if (user?.status === 'banned') {
+        return res.status(403).send({ message: 'User is banned' });
+      }
+      const isAllowed = user?.role === 'surveyor' || user?.role === 'admin';
+      if (!isAllowed) {
+        return res.status(403).send({ message: 'Unauthorized request' });
+      }
+      next();
+    } catch (error) {
+      return res.status(500).send({ message: 'Failed to verify user role' });
+    }
+  }
+
+  return { verifyToken, verifyAdmin, verifySurveyor, verifyUser, verifySurveyorOrAdmin };
 };

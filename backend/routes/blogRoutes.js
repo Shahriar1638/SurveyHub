@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blog');
 const User = require('../models/User');
+const { verifyToken } = require('../middlewares/authMiddleware')();
 
 // ── helper: attach role badge info to a list of emails ─────────────────────
 async function enrichWithRoles(emails) {
@@ -105,7 +106,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // ── POST /api/blogs/:id/react — toggle a reaction (auth required) ───────────
-router.post('/:id/react', async (req, res) => {
+router.post('/:id/react', verifyToken, async (req, res) => {
   try {
     const { userEmail, reactionType } = req.body;
     const valid = ['like', 'insightful', 'disagree', 'interesting', 'funny'];
@@ -148,7 +149,7 @@ router.post('/:id/react', async (req, res) => {
 });
 
 // ── POST /api/blogs/:id/comments — add a comment (auth required) ────────────
-router.post('/:id/comments', async (req, res) => {
+router.post('/:id/comments', verifyToken, async (req, res) => {
   try {
     const { userEmail, text } = req.body;
     if (!userEmail || !text?.trim()) {
@@ -178,7 +179,7 @@ router.post('/:id/comments', async (req, res) => {
 });
 
 // ── POST /api/blogs/:id/comments/:commentId/replies — add a reply ───────────
-router.post('/:id/comments/:commentId/replies', async (req, res) => {
+router.post('/:id/comments/:commentId/replies', verifyToken, async (req, res) => {
   try {
     const { userEmail, text } = req.body;
     if (!userEmail || !text?.trim()) {
