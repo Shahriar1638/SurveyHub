@@ -8,8 +8,8 @@ const useProfile = () => {
   const axiosSecure = useAxiosSecure();
 
   return useQuery({
-    queryKey: [user?.email, "profile"],
-    enabled: !!user?.email && !!localStorage.getItem("access-token"),
+    queryKey: ["profile", user?.email],
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 30, // 30 minutes
     gcTime: 1000 * 60 * 60, // 1 hour (gcTime replaced cacheTime in v5)
     queryFn: async () => {

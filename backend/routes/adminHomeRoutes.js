@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Survey = require('../models/Survey');
+const Report = require('../models/report');
+const Subscription = require('../models/Subscription');
 
 router.get('/', async (req, res) => {
   try {
@@ -18,7 +20,34 @@ router.get('/', async (req, res) => {
       publishedAt: { $gte: startOfMonth }
     });
 
-    // 2. New Registrations Today
+    // Revenue MTD — aggregate from billing history
+    let revenueMTD = 0;
+    try {
+      const revenueAgg = await Subscription.aggregate([
+        { $unwind: '$billingHistory' },
+        { $match: { 'billingHistory.occurredAt': { $gte: startOfMonth }, 'billingHistory.eventType': 'purchase' } },
+        { $group: { _id: null, total: { $sum: '$billingHistory.amount' } } }
+      ]);
+      revenueMTD = revenueAgg[0]?.total || 0;
+    } catch (e) {
+      console.error('Revenue aggregation error:', e.message);
+    }
+
+    // 2. Pending reports count
+    const pendingReports = await Report.countDocuments({ status: 'pending' });
+    const investigatingReports = await Report.countDocuments({ status: 'investigating' });
+
+    // 3. Admin moderation stats (from the requesting admin user)
+    const adminEmail = req.user?.email;
+    let moderationStats = { reportsResolved: 0, surveysReviewed: 0, usersModerated: 0, totalActions: 0 };
+    if (adminEmail) {
+      const adminUser = await User.findOne({ email: adminEmail }).select('moderationStats').lean();
+      if (adminUser?.moderationStats) {
+        moderationStats = adminUser.moderationStats;
+      }
+    }
+
+    // 4. New Registrations Today
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
     const newRegistrationsToday = await User.find({
@@ -32,12 +61,15 @@ router.get('/', async (req, res) => {
           totalUsers,
           activeSurveyors,
           surveysPublishedThisMonth,
-          revenueMTD: 0 // Mocked, needs integration with payments
+          revenueMTD
         },
-        urgentActions: [], // Mocked
-        moderationFeed: [], // Mocked
+        pendingReports,
+        investigatingReports,
+        moderationStats,
         newRegistrationsToday,
-        systemNotices: [] // Mocked
+        urgentActions: [],
+        moderationFeed: [],
+        systemNotices: []
       }
     });
 

@@ -1,11 +1,12 @@
-import { useContext } from "react";
+import { Suspense, lazy, useContext } from "react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { PageTransition } from "../../Components/UI/PageTransition";
-import GuestHome from "./GuestHome";
-import UserHome from "./UserHome";
-import SurveyorHome from "./SurveyorHome";
-import AdminHome from "./AdminHome";
+
+const GuestHome = lazy(() => import("./GuestHome"));
+const UserHome = lazy(() => import("./UserHome"));
+const SurveyorHome = lazy(() => import("./SurveyorHome"));
+const AdminHome = lazy(() => import("./AdminHome"));
 
 // ── Skeleton while profile resolves ──────────────────────────────────────────
 function RoleSkeleton() {
@@ -33,17 +34,20 @@ export default function Home() {
   const { user } = useContext(AuthContext);
   const { data: profile, isPending } = useProfile();
 
-  // Not logged in — show guest page immediately
-  if (!user) return <GuestHome />;
-
-  // Logged in but profile still loading — show skeleton
-  if (isPending) return <RoleSkeleton />;
-
-  const role = profile?.role;
-
-  if (role === "admin")    return <AdminHome />;
-  if (role === "surveyor") return <SurveyorHome />;
-
-  // Default: registered user
-  return <UserHome />;
+  return (
+    <Suspense fallback={<RoleSkeleton />}>
+      {/* Not logged in — show guest page immediately */}
+      {!user ? (
+        <GuestHome />
+      ) : isPending ? (
+        <RoleSkeleton />
+      ) : profile?.role === "admin" ? (
+        <AdminHome />
+      ) : profile?.role === "surveyor" ? (
+        <SurveyorHome />
+      ) : (
+        <UserHome />
+      )}
+    </Suspense>
+  );
 }

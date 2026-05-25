@@ -9,9 +9,10 @@ const useSurveys = (filters = {}) => {
   const axiosSecure = useAxiosSecure();
 
   const { sort, category, search, length, statusFilter, dateFrom, dateTo } = filters;
+  const stableFilters = JSON.stringify({ sort, category, search, length, statusFilter, dateFrom, dateTo });
 
   return useQuery({
-    queryKey: ["surveys", sort, category, search, length, statusFilter, dateFrom, dateTo],
+    queryKey: ["surveys", stableFilters],
     staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async () => {
       const params = new URLSearchParams();

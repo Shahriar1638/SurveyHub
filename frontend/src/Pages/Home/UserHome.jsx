@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { SurveyCard } from "../../Components/UI/SurveyCard";
@@ -43,27 +44,25 @@ function Skeleton() {
 
 export default function UserHome() {
   const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [upgradeDismissed, setUpgradeDismissed] = useState(false);
   const axiosSecure = useAxiosSecure();
 
-  useEffect(() => {
-    let mounted = true;
-    const uid = user?.uid || "";
-    axiosSecure
-      .get(`/api/homepages/user${uid ? `?userId=${uid}` : ""}`)
-      .then((r) => { if (mounted) setData(r.data); })
-      .catch((e) => { if (mounted) setError(e.message || "Failed to load"); })
-      .finally(() => { if (mounted) setLoading(false); });
-    return () => { mounted = false; };
-  }, [axiosSecure, user]);
+  const { data, isPending, error } = useQuery({
+    queryKey: ["home", "user", user?.uid],
+    enabled: Boolean(user?.uid),
+    queryFn: async () => {
+      const uid = user?.uid || "";
+      const response = await axiosSecure.get(
+        `/api/homepages/user${uid ? `?userId=${uid}` : ""}`,
+      );
+      return response.data;
+    },
+  });
 
-  if (loading) return <Skeleton />;
+  if (isPending) return <Skeleton />;
   if (error) return (
     <PageTransition className="container-app mx-auto py-24 text-center">
-      <p className="type-body-base text-[--color-error]">{error}</p>
+      <p className="type-body-base text-[--color-error]">{error.message || "Failed to load"}</p>
     </PageTransition>
   );
 
@@ -84,11 +83,12 @@ export default function UserHome() {
         <div className="container-app mx-auto py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="type-heading-lg text-[--color-text-primary]">
-              {getGreeting()}{name ? `, ${name}` : ""} 👋
+              {getGreeting()}{name ? `, ${name}` : ""}
+              <span className="ml-2 align-middle" aria-hidden="true">👋</span>
             </h1>
             {activity.streakDays > 0 && (
-              <p className="type-meta mt-1" style={{ color: "var(--color-user)" }}>
-                🔥 {activity.streakDays}-day participation streak
+              <p className="type-meta mt-1 text-[--color-user]">
+                <span aria-hidden="true">🔥</span> {activity.streakDays}-day participation streak
               </p>
             )}
           </div>
@@ -135,7 +135,7 @@ export default function UserHome() {
                     participantCount={s.participantCount}
                     status={s.status}
                     actionButton={
-                      <Link to={`/surveys/${s._id}`} className="btn btn-sm" style={{ backgroundColor: "var(--color-user)", color: "white" }}>
+                      <Link to={`/surveys/${s._id}`} className="btn btn-primary btn-sm">
                         Take Survey
                       </Link>
                     }
@@ -192,7 +192,7 @@ export default function UserHome() {
             <div className="grid gap-4 sm:grid-cols-2">
               {blogs.slice(0, 4).map((b) => (
                 <Link key={b._id} to={`/insights/${b._id}`} className="card card-hover p-5 flex gap-4 items-start">
-                  <div className="w-10 h-10 rounded-lg bg-[--color-surveyor-light] flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-[--color-surveyor-light] flex items-center justify-center shrink-0">
                     <svg className="w-5 h-5 text-[--color-surveyor-dark]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>

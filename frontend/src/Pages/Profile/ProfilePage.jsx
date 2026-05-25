@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { motion, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import useProfile from "../../Hooks/useProfile";
@@ -27,6 +28,13 @@ const ROLE_THEME = {
   },
 };
 
+// Map to Tailwind arbitrary value classes for tokens
+const ROLE_CLASS = {
+  user: { light: 'bg-[--color-user-light]', dark: 'text-[--color-user-dark]', accent: 'bg-[--color-user]' },
+  surveyor: { light: 'bg-[--color-surveyor-light]', dark: 'text-[--color-surveyor-dark]', accent: 'bg-[--color-surveyor]' },
+  admin: { light: 'bg-[--color-admin-light]', dark: 'text-[--color-admin-dark]', accent: 'bg-[--color-admin]' },
+};
+
 // ── Default cover gradient if none uploaded ───────────────────────────────────
 const ROLE_COVER_GRADIENT = {
   user: "linear-gradient(135deg, #FEF0E6 0%, #F67724 60%, #C45D18 100%)",
@@ -36,23 +44,32 @@ const ROLE_COVER_GRADIENT = {
 
 // ── EditModal (shared) ────────────────────────────────────────────────────────
 function EditModal({ profile, onClose, onSave, isSaving }) {
-  const [form, setForm] = useState({
+  // Use React Hook Form for better validation and performance
+  const defaults = {
     name: profile?.name || "",
     bio: profile?.bio || "",
     location: profile?.location || "",
     occupation: profile?.occupation || "",
     avatar: profile?.avatar || "",
     coverPhoto: profile?.coverPhoto || "",
-    socialLinks: {
-      twitter: profile?.socialLinks?.twitter || "",
-      linkedin: profile?.socialLinks?.linkedin || "",
-      website: profile?.socialLinks?.website || "",
-    },
-  });
+    twitter: profile?.socialLinks?.twitter || "",
+    linkedin: profile?.socialLinks?.linkedin || "",
+    website: profile?.socialLinks?.website || "",
+  };
 
-  const set = (key, val) => setForm((p) => ({ ...p, [key]: val }));
-  const setSocial = (key, val) =>
-    setForm((p) => ({ ...p, socialLinks: { ...p.socialLinks, [key]: val } }));
+  const { register, handleSubmit, setValue, watch } = useForm({ defaultValues: defaults });
+
+  const submit = (d) => {
+    const payload = {
+      ...d,
+      socialLinks: {
+        twitter: d.twitter || undefined,
+        linkedin: d.linkedin || undefined,
+        website: d.website || undefined,
+      },
+    };
+    onSave(payload);
+  };
 
   return (
     <motion.div
@@ -98,71 +115,42 @@ function EditModal({ profile, onClose, onSave, isSaving }) {
 
         {/* Body */}
         <div className="overflow-y-auto p-6 flex flex-col gap-4">
-          {[
-            { label: "Name", key: "name", type: "text" },
-            { label: "Location", key: "location", type: "text" },
-            { label: "Occupation", key: "occupation", type: "text" },
-            { label: "Avatar URL", key: "avatar", type: "text" },
-            { label: "Cover Photo URL", key: "coverPhoto", type: "text" },
-          ].map(({ label, key, type }) => (
-            <div key={key}>
-              <label className="form-label mb-1 block">{label}</label>
-              <input
-                type={type}
-                value={form[key]}
-                onChange={(e) => set(key, e.target.value)}
-                className="form-input"
-              />
-            </div>
-          ))}
+          <form onSubmit={handleSubmit(submit)} className="flex flex-col gap-4">
+            {[
+              { label: "Name", name: "name", type: "text" },
+              { label: "Location", name: "location", type: "text" },
+              { label: "Occupation", name: "occupation", type: "text" },
+              { label: "Avatar URL", name: "avatar", type: "text" },
+              { label: "Cover Photo URL", name: "coverPhoto", type: "text" },
+            ].map(({ label, name, type }) => (
+              <div key={name}>
+                <label className="form-label mb-1 block">{label}</label>
+                <input type={type} {...register(name)} className="form-input" />
+              </div>
+            ))}
 
-          <div>
-            <label className="form-label mb-1 block">Bio</label>
-            <textarea
-              value={form.bio}
-              onChange={(e) => set("bio", e.target.value)}
-              rows={3}
-              maxLength={500}
-              className="form-input resize-none"
-            />
-            <p className="type-body-sm text-[--color-text-tertiary] mt-1">
-              {form.bio.length}/500
-            </p>
-          </div>
+            <div>
+              <label className="form-label mb-1 block">Bio</label>
+              <textarea {...register('bio')} rows={3} maxLength={500} className="form-input resize-none" />
+              <p className="type-body-sm text-[--color-text-tertiary] mt-1">
+                {String(watch('bio') || '').length}/500
+              </p>
+            </div>
 
           <div className="border-t border-[--color-border] pt-4">
             <p className="form-label mb-2">Social Links</p>
             {[
-              {
-                label: "Twitter / X",
-                key: "twitter",
-                placeholder: "https://twitter.com/...",
-              },
-              {
-                label: "LinkedIn",
-                key: "linkedin",
-                placeholder: "https://linkedin.com/in/...",
-              },
-              {
-                label: "Website",
-                key: "website",
-                placeholder: "https://yoursite.com",
-              },
-            ].map(({ label, key, placeholder }) => (
-              <div key={key} className="mb-3">
-                <label className="type-body-sm text-[--color-text-secondary] mb-1 block">
-                  {label}
-                </label>
-                <input
-                  type="url"
-                  value={form.socialLinks[key]}
-                  onChange={(e) => setSocial(key, e.target.value)}
-                  placeholder={placeholder}
-                  className="form-input"
-                />
+              { label: 'Twitter / X', name: 'twitter', placeholder: 'https://twitter.com/...' },
+              { label: 'LinkedIn', name: 'linkedin', placeholder: 'https://linkedin.com/in/...' },
+              { label: 'Website', name: 'website', placeholder: 'https://yoursite.com' },
+            ].map(({ label, name, placeholder }) => (
+              <div key={name} className="mb-3">
+                <label className="type-body-sm text-[--color-text-secondary] mb-1 block">{label}</label>
+                <input type="url" {...register(name)} placeholder={placeholder} className="form-input" />
               </div>
             ))}
           </div>
+        </form>
         </div>
 
         {/* Footer */}
@@ -171,10 +159,9 @@ function EditModal({ profile, onClose, onSave, isSaving }) {
             Cancel
           </button>
           <button
-            onClick={() => onSave(form)}
+            onClick={handleSubmit(submit)}
             disabled={isSaving}
-            className="btn btn-primary btn-sm text-white"
-            style={{ background: "var(--color-visitor)" }}
+            className={`btn btn-primary btn-sm text-white ${ROLE_CLASS[profile?.role || 'user']?.accent || ''}`}
           >
             {isSaving ? "Saving…" : "Save Changes"}
           </button>
@@ -201,11 +188,10 @@ function ProfileHero({ profile, theme, onEdit }) {
       />
 
       {/* Avatar + edit button row */}
-      <div className="flex items-end justify-between px-6 -mt-12 sm:-mt-14">
+          <div className="flex items-end justify-between px-6 -mt-12 sm:-mt-14">
         {/* Avatar */}
         <div
-          className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-[--color-bg-surface] shadow-[--shadow-md] overflow-hidden flex items-center justify-center text-white text-3xl font-bold shrink-0"
-          style={{ background: profile?.avatar ? "transparent" : theme.accent }}
+          className={`w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-[--color-bg-surface] shadow-[--shadow-md] overflow-hidden flex items-center justify-center text-white text-3xl font-bold shrink-0 ${profile?.avatar ? '' : (ROLE_CLASS[profile?.role || 'user']?.accent || '')}`}
         >
           {profile?.avatar ? (
             <img
@@ -245,8 +231,7 @@ function ProfileHero({ profile, theme, onEdit }) {
           </h1>
           {/* Role pill */}
           <span
-            className="type-meta px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide"
-            style={{ background: theme.light, color: theme.dark }}
+            className={`type-meta px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide ${ROLE_CLASS[profile?.role || 'user']?.light || ''} ${ROLE_CLASS[profile?.role || 'user']?.dark || ''}`}
           >
             {profile?.role}
           </span>

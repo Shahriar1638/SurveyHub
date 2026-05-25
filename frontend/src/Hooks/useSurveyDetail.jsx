@@ -23,12 +23,12 @@ export function useSurveyDetail(id) {
  * useMyResponse — fetches an existing draft or submitted response for a user.
  */
 export function useMyResponse(surveyId, userId) {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   return useQuery({
     queryKey: ["survey-response", surveyId, userId],
     queryFn: async () => {
-      const res = await axiosPublic.get(
+      const res = await axiosSecure.get(
         `/api/surveys/${surveyId}/my-response?userId=${userId}`
       );
       return res.data.data; // null if no existing response
@@ -42,12 +42,12 @@ export function useMyResponse(surveyId, userId) {
  * useSubmitResponse — submits or saves a draft response.
  */
 export function useSubmitResponse(surveyId) {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ userId, answers, isDraft }) => {
-      const res = await axiosPublic.post(`/api/surveys/${surveyId}/respond`, {
+      const res = await axiosSecure.post(`/api/surveys/${surveyId}/respond`, {
         userId,
         answers,
         isDraft,
@@ -69,6 +69,7 @@ export function useSubmitResponse(surveyId) {
  */
 export function useSubmitSurveyFeedback(surveyId) {
   const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({ rating, comment, suggestions }) => {
@@ -78,6 +79,13 @@ export function useSubmitSurveyFeedback(surveyId) {
         suggestions,
       });
       return res.data;
+    },
+    onSuccess: () => {
+      // refresh survey data (feedback counts, etc.)
+      queryClient.invalidateQueries({ queryKey: ["survey", surveyId] });
+    },
+    onError: (err) => {
+      console.error("submitSurveyFeedback error:", err);
     },
   });
 }

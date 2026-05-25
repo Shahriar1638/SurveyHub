@@ -26,10 +26,8 @@ export function SurveyCard({
   return (
     <Card hover className="overflow-hidden flex flex-col h-full relative">
       {status && (
-        <div
-          className="absolute top-0 left-0 w-full h-1"
-          style={{ backgroundColor: statusColor }}
-        />
+        // use design-system band classes instead of inline styles
+        <div className={`absolute top-0 left-0 w-full h-1 survey-card-band ${statusBadge}`} />
       )}
 
       <div className="p-5 flex-1 flex flex-col">
@@ -55,7 +53,7 @@ export function SurveyCard({
       </div>
 
       {(author || actionButton) && (
-        <div className="px-5 pb-5 pt-0 flex justify-between items-center border-t border-[--color-border] mt-auto pt-4">
+        <div className="px-5 pb-5 flex justify-between items-center border-t border-[--color-border] mt-auto pt-4">
           <div className="flex items-center gap-2">
             {author && (
               <>

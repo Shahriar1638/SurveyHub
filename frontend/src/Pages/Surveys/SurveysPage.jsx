@@ -27,32 +27,27 @@ function questionLengthLabel(count) {
   if (count < 10)
     return {
       label: "Short",
-      color: "var(--color-success)",
-      bg: "var(--color-success-light)",
+      className: "bg-[--color-success-light] text-[--color-success]",
     };
   if (count <= 15)
     return {
       label: "Medium",
-      color: "var(--color-warning)",
-      bg: "var(--color-warning-light)",
+      className: "bg-[--color-warning-light] text-[--color-warning]",
     };
   return {
     label: "Long",
-    color: "var(--color-user)",
-    bg: "var(--color-user-light)",
+    className: "bg-[--color-user-light] text-[--color-user]",
   };
 }
 
 const STATUS_CONFIG = {
   published: {
     label: "Active",
-    color: "var(--color-success)",
-    bg: "var(--color-success-light)",
+    className: "bg-[--color-success-light] text-[--color-success]",
   },
   expired: {
     label: "Expired",
-    color: "var(--color-text-secondary)",
-    bg: "var(--color-bg-inset)",
+    className: "bg-[--color-bg-inset] text-[--color-text-secondary]",
   },
 };
 
@@ -91,21 +86,17 @@ function SurveyListCard({ survey }) {
     survey.status === "published";
   const statusCfg = STATUS_CONFIG[survey.status] || STATUS_CONFIG.published;
   const qLen = questionLengthLabel(survey.questions?.length || 0);
-
-  const topBorderColor =
+  const topBorderClass =
     survey.status === "expired"
-      ? "var(--color-border-strong)"
+      ? "bg-[--color-border-strong]"
       : isSoon
-        ? "var(--color-warning)"
-        : "var(--color-success)";
+        ? "bg-[--color-warning]"
+        : "bg-[--color-success]";
 
   return (
     <Card hover className="overflow-hidden flex flex-col h-full relative group">
       {/* Status colour band */}
-      <div
-        className="absolute top-0 left-0 w-full h-[3px]"
-        style={{ backgroundColor: topBorderColor }}
-      />
+      <div className={`absolute top-0 left-0 w-full h-[3px] ${topBorderClass}`} />
 
       {/* Card image */}
       {survey.image && (
@@ -126,29 +117,17 @@ function SurveyListCard({ survey }) {
             <span className="badge badge-visitor">{survey.category}</span>
           )}
           <span
-            className="badge"
-            style={{ background: qLen.bg, color: qLen.color }}
+            className={`badge ${qLen.className}`}
           >
             {qLen.label} · {survey.questions?.length || 0}Q
           </span>
           {isSoon && (
-            <span
-              className="badge"
-              style={{
-                background: "var(--color-warning-light)",
-                color: "var(--color-warning)",
-              }}
-            >
+            <span className="badge bg-[--color-warning-light] text-[--color-warning]">
               ⏳ {daysLeft === 0 ? "Ends today" : `${daysLeft}d left`}
             </span>
           )}
           {survey.status === "expired" && (
-            <span
-              className="badge"
-              style={{ background: statusCfg.bg, color: statusCfg.color }}
-            >
-              Expired
-            </span>
+            <span className={`badge ${statusCfg.className}`}>Expired</span>
           )}
         </div>
 
@@ -191,13 +170,7 @@ function SurveyListCard({ survey }) {
         </span>
         <Link
           to={`/surveys/${survey._id}`}
-          className="btn btn-sm btn-primary text-white"
-          style={{
-            background: "var(--color-visitor)",
-            color: "white",
-            fontSize: "0.75rem",
-            padding: "0.35rem 0.85rem",
-          }}
+          className="btn btn-sm btn-primary text-white bg-[--color-visitor] hover:bg-[--color-visitor-dark] text-[0.75rem] py-1.5 px-3.5"
         >
           {survey.status === "expired" ? "View Results" : "Take Survey"}
         </Link>
@@ -510,8 +483,7 @@ export default function SurveysPage() {
                 <select
                   value={filters.sort}
                   onChange={(e) => handleFilterChange("sort", e.target.value)}
-                  className="form-input py-1.5! px-3! text-sm! w-auto"
-                  style={{ width: "auto", minWidth: "160px" }}
+                  className="form-input py-1.5! px-3! text-sm! w-auto min-w-40"
                 >
                   {SORT_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>

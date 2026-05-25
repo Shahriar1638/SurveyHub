@@ -9,8 +9,8 @@ export const useProfileStats = () => {
   const axiosSecure = useAxiosSecure();
 
   return useQuery({
-    queryKey: [user?.email, "profile-stats"],
-    enabled: !!user?.email && !!localStorage.getItem("access-token"),
+    queryKey: ["profile-stats", user?.email],
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
       const res = await axiosSecure.get("/api/profile/stats");
@@ -32,8 +32,8 @@ export const useUpdateProfile = () => {
     },
     onSuccess: () => {
       // Invalidate both profile caches so they refetch fresh data
-      queryClient.invalidateQueries({ queryKey: [user?.email, "profile"] });
-      queryClient.invalidateQueries({ queryKey: [user?.email, "profile-stats"] });
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["profile-stats", user?.email] });
     },
   });
 };

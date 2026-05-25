@@ -2,6 +2,11 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const { z } = require('zod');
+
+const avatarUploadSchema = z.object({
+  image: z.string().min(1, 'Image data is required'),
+});
 
 // POST /sign-up
 router.post('/sign-up', async (req, res) => {
@@ -44,6 +49,50 @@ router.post('/sign-up', async (req, res) => {
   } catch (error) {
     console.error('Sign-up error:', error);
     res.status(500).send({ message: 'Database registration failed', error: error.message });
+  }
+});
+
+// POST /upload-avatar
+router.post('/upload-avatar', async (req, res) => {
+  try {
+    const parsed = avatarUploadSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).send({
+        message: 'Invalid upload payload',
+        errors: parsed.error.flatten(),
+      });
+    }
+
+    const apiKey = process.env.IMGBB_API_KEY;
+    const uploadUrl = process.env.IMGBB_UPLOAD_URL || 'https://api.imgbb.com/1/upload';
+
+    if (!apiKey) {
+      return res.status(500).send({ message: 'Image upload configuration is missing.' });
+    }
+
+    const formData = new FormData();
+    formData.append('image', parsed.data.image);
+
+    const response = await fetch(`${uploadUrl}?key=${apiKey}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (!response.ok || !result?.success) {
+      return res.status(502).send({
+        message: result?.error?.message || 'Image upload failed',
+      });
+    }
+
+    return res.status(200).send({
+      message: 'Image uploaded successfully',
+      url: result.data.url,
+    });
+  } catch (error) {
+    console.error('Avatar upload error:', error);
+    return res.status(500).send({ message: 'Image upload failed', error: error.message });
   }
 });
 

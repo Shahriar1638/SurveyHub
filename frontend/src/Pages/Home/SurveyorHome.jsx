@@ -1,6 +1,7 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
+import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { SurveyCard } from "../../Components/UI/SurveyCard";
@@ -48,35 +49,25 @@ function Skeleton() {
 
 export default function SurveyorHome() {
   const { user } = useContext(AuthContext);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const axiosSecure = useAxiosSecure();
 
-  useEffect(() => {
-    let mounted = true;
-    const uid = user?.uid || "";
-    axiosSecure
-      .get(`/api/homepages/surveyor${uid ? `?surveyorId=${uid}` : ""}`)
-      .then((r) => {
-        if (mounted) setData(r.data);
-      })
-      .catch((e) => {
-        if (mounted) setError(e.message || "Failed to load");
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, [axiosSecure, user]);
+  const { data, isPending, error } = useQuery({
+    queryKey: ["home", "surveyor", user?.uid],
+    enabled: Boolean(user?.uid),
+    queryFn: async () => {
+      const uid = user?.uid || "";
+      const response = await axiosSecure.get(
+        `/api/homepages/surveyor${uid ? `?surveyorId=${uid}` : ""}`,
+      );
+      return response.data;
+    },
+  });
 
-  if (loading) return <Skeleton />;
+  if (isPending) return <Skeleton />;
   if (error)
     return (
       <PageTransition className="container-app mx-auto py-24 text-center">
-        <p className="type-body-base text-[--color-error]">{error}</p>
+        <p className="type-body-base text-[--color-error]">{error.message || "Failed to load"}</p>
       </PageTransition>
     );
 
@@ -98,7 +89,8 @@ export default function SurveyorHome() {
         <div className="container-app mx-auto py-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="type-heading-xl text-[--color-text-primary]">
-              Welcome back{name ? `, ${name}` : ""} 🔵
+              Welcome back{name ? `, ${name}` : ""}
+              <span className="ml-2 align-middle" aria-hidden="true">🔵</span>
             </h1>
             <p className="type-body-sm text-[--color-text-secondary] mt-1">
               Your surveyor workspace
@@ -205,12 +197,10 @@ export default function SurveyorHome() {
               >
                 <Link
                   to={action.to}
-                  className="card card-hover p-5 flex flex-col gap-3 h-full"
-                  style={{ backgroundColor: "var(--color-surveyor-light)" }}
+                  className="card card-hover p-5 flex flex-col gap-3 h-full bg-[--color-surveyor-light]"
                 >
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center"
-                    style={{ backgroundColor: "var(--color-surveyor-dark)" }}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center bg-[--color-surveyor-dark]"
                   >
                     <svg
                       className="w-5 h-5 text-white"
@@ -247,13 +237,7 @@ export default function SurveyorHome() {
       {aiReady.length > 0 && (
         <section className="py-6 bg-[--color-surveyor-light]">
           <div className="container-app mx-auto">
-            <div
-              className="card p-5 border-l-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
-              style={{
-                borderLeftColor: "var(--color-surveyor)",
-                backgroundColor: "white",
-              }}
-            >
+            <div className="card p-5 border-l-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-l-[--color-surveyor] bg-white">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span className="badge badge-surveyor">AI Ready</span>
@@ -270,10 +254,7 @@ export default function SurveyorHome() {
                   responses — ready for insights →
                 </p>
               </div>
-              <Link
-                to="/analytics"
-                className="btn btn-surveyor btn-sm flex-shrink-0"
-              >
+              <Link to="/analytics" className="btn btn-surveyor btn-sm shrink-0">
                 Open AI Lab →
               </Link>
             </div>
@@ -314,10 +295,10 @@ export default function SurveyorHome() {
                     participantCount={s.responseCount}
                     status={s.status}
                     actionButton={
-                      <Link
-                        to={`/surveys/${s._id}/edit`}
-                        className="btn btn-sm btn-secondary"
-                      >
+                        <Link
+                          to={`/surveys/${s._id}/edit`}
+                          className="btn btn-sm btn-secondary"
+                        >
                         Edit
                       </Link>
                     }
@@ -346,10 +327,7 @@ export default function SurveyorHome() {
               <p className="type-body-sm text-[--color-text-secondary] mt-1 max-w-xs">
                 Create your first survey and start collecting responses.
               </p>
-              <Link
-                to="/create-survey"
-                className="btn btn-surveyor btn-sm mt-4"
-              >
+              <Link to="/create-survey" className="btn btn-surveyor btn-sm mt-4">
                 Create Survey
               </Link>
             </div>
@@ -393,7 +371,7 @@ export default function SurveyorHome() {
                     </div>
                     <Link
                       to={`/surveys/${d._id}/edit`}
-                      className="btn btn-surveyor btn-sm flex-shrink-0"
+                      className="btn btn-surveyor btn-sm shrink-0"
                     >
                       Pay &amp; Publish
                     </Link>
@@ -423,7 +401,7 @@ export default function SurveyorHome() {
               <div className="flex flex-col gap-3">
                 {blogActivity.slice(0, 4).map((a) => (
                   <div key={a._id} className="card p-4 flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-[--color-bg-subtle] flex items-center justify-center flex-shrink-0 text-sm font-bold text-[--color-text-secondary]">
+                    <div className="w-8 h-8 rounded-full bg-[--color-bg-subtle] flex items-center justify-center shrink-0 text-sm font-bold text-[--color-text-secondary]">
                       {(a.commenterName || "U")[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">

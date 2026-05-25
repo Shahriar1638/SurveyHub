@@ -4,9 +4,8 @@ import { motion } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { PageTransition } from "../../Components/UI/PageTransition";
-import axios from "axios";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 const PACKAGES = [
   {
@@ -97,6 +96,8 @@ export default function PricingPage() {
 
   const userId = profile?._id;
 
+  const axiosSecure = useAxiosSecure();
+
   const handlePurchase = async (packageId) => {
     if (!user) {
       navigate("/login");
@@ -105,7 +106,7 @@ export default function PricingPage() {
     setError("");
     setLoadingId(packageId);
     try {
-      const { data } = await axios.post(`${API}/api/payments/create-checkout-session`, {
+      const { data } = await axiosSecure.post(`/api/payments/create-checkout-session`, {
         packageId,
         userId,
       });

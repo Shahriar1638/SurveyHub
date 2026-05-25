@@ -1,49 +1,64 @@
 import axios from "axios";
 import { useNavigate } from "react-router";
-import { useContext, useEffect } from "react";
-import { AuthContext } from "../Firebase_AuthProvider/AuthProvider";
+import { useContext, useEffect, useRef } from "react";
+import { AuthContext, TOKEN_KEY } from "../Firebase_AuthProvider/AuthProvider";
 
 const axiosSecure = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+let requestInterceptorId = null;
+let responseInterceptorId = null;
+let currentToken = localStorage.getItem(TOKEN_KEY);
+let currentLogOut = null;
+let currentNavigate = null;
+
 const useAxiosSecure = () => {
   const navigate = useNavigate();
-  const { logOut } = useContext(AuthContext);
+  const { logOut, user } = useContext(AuthContext);
+  const tokenRef = useRef(localStorage.getItem(TOKEN_KEY));
 
   useEffect(() => {
-    const requestInterceptor = axiosSecure.interceptors.request.use(
-      function (config) {
-        const token = localStorage.getItem("access-token");
-        if (token) {
-          config.headers.authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      (error) => {
-        return Promise.reject(error);
-      }
-    );
+    currentLogOut = logOut;
+    currentNavigate = navigate;
+    const token = localStorage.getItem(TOKEN_KEY);
+    tokenRef.current = token;
+    currentToken = token;
 
-    const responseInterceptor = axiosSecure.interceptors.response.use(
-      function (response) {
-        return response;
-      },
-      async function (error) {
-        const status = error?.response?.status;
-        if (status === 401 || status === 403) {
-          await logOut();
-          navigate("/login");
+    if (requestInterceptorId === null) {
+      requestInterceptorId = axiosSecure.interceptors.request.use(
+        function (config) {
+          if (currentToken) {
+            config.headers.authorization = `Bearer ${currentToken}`;
+          }
+          return config;
+        },
+        (error) => {
+          return Promise.reject(error);
         }
-        return Promise.reject(error);
-      }
-    );
+      );
+    }
 
-    return () => {
-      axiosSecure.interceptors.request.eject(requestInterceptor);
-      axiosSecure.interceptors.response.eject(responseInterceptor);
-    };
-  }, [logOut, navigate]);
+    if (responseInterceptorId === null) {
+      responseInterceptorId = axiosSecure.interceptors.response.use(
+        function (response) {
+          return response;
+        },
+        async function (error) {
+          const status = error?.response?.status;
+          if (status === 401 || status === 403) {
+            if (typeof currentLogOut === "function") {
+              await currentLogOut();
+            }
+            if (typeof currentNavigate === "function") {
+              currentNavigate("/login");
+            }
+          }
+          return Promise.reject(error);
+        }
+      );
+    }
+  }, [logOut, navigate, user?.email]);
 
   return axiosSecure;
 };

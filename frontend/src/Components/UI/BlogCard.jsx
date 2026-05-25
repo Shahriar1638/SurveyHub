@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router";
+import { useMemo } from "react";
 import { motion } from "motion/react";
 
 // ── Role badge ──────────────────────────────────────────────────────────────
@@ -43,19 +44,26 @@ export function Avatar({ author, size = 9 }) {
       : author?.role === "surveyor"
       ? "var(--color-surveyor-dark)"
       : "var(--color-user)";
+  const SIZE_MAP = {
+    7: "w-7 h-7",
+    8: "w-8 h-8",
+    9: "w-9 h-9",
+    10: "w-10 h-10",
+  };
+  const sizeClass = SIZE_MAP[size] || "w-9 h-9";
 
   if (author?.avatar || author?.photoURL) {
     return (
       <img
         src={author.avatar || author.photoURL}
         alt={author.name || author.email}
-        className={`w-${size} h-${size} rounded-full object-cover ring-2 ring-[--color-border] flex-shrink-0`}
+        className={`${sizeClass} rounded-full object-cover ring-2 ring-[--color-border] shrink-0`}
       />
     );
   }
   return (
     <div
-      className={`w-${size} h-${size} rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0`}
+      className={`${sizeClass} rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0`}
       style={{ backgroundColor: roleColor }}
     >
       {initials}
@@ -106,9 +114,18 @@ export function ReactionBar({ counts, userReaction, onReact, readonly = false })
 // ── Blog card (feed item) ───────────────────────────────────────────────────
 export function BlogCard({ blog, index }) {
   const navigate = useNavigate();
-  const totalReactions = Object.values(blog.reactionCounts || {}).reduce((s, v) => s + v, 0);
-  const readTime = Math.max(1, Math.ceil((blog.content || "").length / 1200));
-  const excerpt = blog.content?.replace(/<[^>]+>/g, "").slice(0, 220);
+  const totalReactions = useMemo(
+    () => Object.values(blog.reactionCounts || {}).reduce((s, v) => s + v, 0),
+    [blog.reactionCounts]
+  );
+  const readTime = useMemo(
+    () => Math.max(1, Math.ceil((blog.content || "").length / 1200)),
+    [blog.content]
+  );
+  const excerpt = useMemo(
+    () => (blog.content || "").replace(/<[^>]+>/g, "").slice(0, 220),
+    [blog.content]
+  );
 
   return (
     <motion.article
@@ -176,7 +193,7 @@ export function BlogCardSkeleton() {
   return (
     <div className="card p-6 animate-pulse">
       <div className="flex items-center gap-3 mb-4">
-        <div className="w-9 h-9 rounded-full bg-[--color-bg-inset] flex-shrink-0" />
+        <div className="w-9 h-9 rounded-full bg-[--color-bg-inset] shrink-0" />
         <div className="flex-1 space-y-1.5">
           <div className="h-3.5 w-28 bg-[--color-bg-inset] rounded" />
           <div className="h-3 w-20 bg-[--color-bg-inset] rounded" />

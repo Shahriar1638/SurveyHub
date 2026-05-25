@@ -1,7 +1,8 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import { useForm, useWatch } from "react-hook-form";
 
 // ── Feedback type config ─────────────────────────────────────────────────────
 const FEEDBACK_TYPES = [
@@ -119,16 +120,11 @@ function Toast({ message, type, onClose }) {
 }
 
 // ── Upload attachments to imgbb ──────────────────────────────────────────────
-async function uploadToImgbb(file) {
-  const form = new FormData();
-  form.append("image", file);
-  const res = await fetch(
-    `${import.meta.env.VITE_IMGBB_WEBHOOK_URL}?key=${import.meta.env.VITE_IMGBB_API_KEY}`,
-    { method: "POST", body: form },
-  );
-  const data = await res.json();
-  if (!data.success) throw new Error("Image upload failed");
-  return data.data.url;
+// Upload attachments via backend proxy (server will forward to ImgBB)
+async function uploadToServerImage(axiosInstance, base64Image) {
+  const res = await axiosInstance.post('/api/feedback/upload', { image: base64Image });
+  if (!res?.data?.success) throw new Error('Image upload failed');
+  return res.data.url;
 }
 
 // ── Main Page ────────────────────────────────────────────────────────────────
@@ -140,87 +136,85 @@ export default function FeedbackPage() {
 function FeedbackForm() {
   const { user } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
-
-  const [form, setForm] = useState({
-    email: user?.email || "",
-    feedbackType: "",
-    affectedPage: "",
-    comment: "",
-  });
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState(null);
-  const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
-  const set = (key, val) => {
-    setForm((p) => ({ ...p, [key]: val }));
-    if (errors[key]) setErrors((e) => ({ ...e, [key]: null }));
-  };
+  // React Hook Form setup
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    control,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      email: user?.email || "",
+      feedbackType: "",
+      affectedPage: "",
+      comment: "",
+    },
+  });
 
-  const validate = () => {
-    const e = {};
-    if (!form.email?.trim()) e.email = "Email is required";
-    else if (!/\S+@\S+\.\S+/.test(form.email))
-      e.email = "Enter a valid email address";
-    if (!form.feedbackType) e.feedbackType = "Please select a feedback type";
-    if (!form.comment?.trim()) e.comment = "Comment is required";
-    else if (form.comment.trim().length < 10)
-      e.comment = "Comment must be at least 10 characters";
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  };
+  // keep email in sync if user changes (e.g., login state updates)
+  if (user?.email) setValue('email', user.email);
+
+  
 
   const handleFileChange = (e) => {
     const picked = Array.from(e.target.files).slice(0, 3 - files.length);
     setFiles((prev) => [...prev, ...picked].slice(0, 3));
   };
 
-  const removeFile = (idx) =>
-    setFiles((prev) => prev.filter((_, i) => i !== idx));
+  const removeFile = useCallback((idx) => setFiles((prev) => prev.filter((_, i) => i !== idx)), [setFiles]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
-
+  const onSubmit = handleSubmit(async (data) => {
     setSubmitting(true);
     try {
-      // Upload attachments if any
+      // Upload attachments via server proxy if any
       let attachmentUrls = [];
       if (files.length > 0) {
         setUploading(true);
-        attachmentUrls = await Promise.all(files.map(uploadToImgbb));
+        // Convert files to base64 and upload sequentially (small number)
+        const toBase64 = (file) => new Promise((res, rej) => {
+          const reader = new FileReader();
+          reader.onload = () => res(String(reader.result).replace(/^data:.+;base64,/, ''));
+          reader.onerror = rej;
+          reader.readAsDataURL(file);
+        });
+
+        const base64s = await Promise.all(files.map(toBase64));
+        for (const b of base64s) {
+          const url = await uploadToServerImage(axiosPublic, b);
+          attachmentUrls.push(url);
+        }
         setUploading(false);
       }
 
-      await axiosPublic.post("/api/feedback", {
-        userEmail: form.email,
-        feedbackType: form.feedbackType,
-        affectedPage: form.affectedPage || undefined,
-        comment: form.comment,
+      await axiosPublic.post('/api/feedback', {
+        userEmail: data.email || undefined,
+        feedbackType: data.feedbackType,
+        affectedPage: data.affectedPage || undefined,
+        comment: data.comment,
         attachments: attachmentUrls,
       });
 
       setSubmitted(true);
-      setToast({
-        type: "success",
-        message: "We'll review your feedback and get back to you soon.",
-      });
-    } catch {
-      setToast({
-        type: "error",
-        message: "Something went wrong. Please try again.",
-      });
+      setToast({ type: 'success', message: "We'll review your feedback and get back to you soon." });
+    } catch (err) {
+      console.error('Feedback submit error', err);
+      setToast({ type: 'error', message: 'Something went wrong. Please try again.' });
     } finally {
       setSubmitting(false);
       setUploading(false);
     }
-  };
+  });
 
-  const selectedType = FEEDBACK_TYPES.find(
-    (t) => t.value === form.feedbackType,
-  );
+  const feedbackTypeValue = useWatch({ control, name: 'feedbackType', defaultValue: '' });
+  const selectedType = FEEDBACK_TYPES.find((t) => t.value === feedbackTypeValue);
+  const commentValue = useWatch({ control, name: 'comment', defaultValue: '' });
 
   // ── Success State ────────────────────────────────────────────────────────
   if (submitted) {
@@ -251,14 +245,12 @@ function FeedbackForm() {
             className="btn btn-secondary btn-md"
             onClick={() => {
               setSubmitted(false);
-              setForm({
-                email: user?.email || "",
-                feedbackType: "",
-                affectedPage: "",
-                comment: "",
-              });
+              setValue('email', user?.email || '');
+              setValue('feedbackType', '');
+              setValue('affectedPage', '');
+              setValue('comment', '');
               setFiles([]);
-              setErrors({});
+              setToast(null);
             }}
           >
             Submit Another
@@ -325,7 +317,7 @@ function FeedbackForm() {
             transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
           >
             <form
-              onSubmit={handleSubmit}
+              onSubmit={onSubmit}
               noValidate
               className="card p-6 md:p-8 flex flex-col gap-7"
             >
@@ -337,16 +329,18 @@ function FeedbackForm() {
                 <input
                   id="feedback-email"
                   type="email"
-                  value={form.email}
-                  onChange={(e) => set("email", e.target.value)}
                   placeholder="you@example.com"
                   readOnly={!!user?.email}
                   className={`form-input ${user?.email ? "bg-[--color-bg-subtle] cursor-default" : ""} ${errors.email ? "error" : ""}`}
+                  {...register('email', {
+                    required: user?.email ? false : 'Email is required',
+                    pattern: { value: /\S+@\S+\.\S+/, message: 'Enter a valid email address' },
+                  })}
                 />
                 {user?.email && (
                   <p className="form-helper mt-1">Using your logged-in email</p>
                 )}
-                {errors.email && <p className="form-error">{errors.email}</p>}
+                {errors.email && <p className="form-error">{errors.email.message}</p>}
               </div>
 
               {/* Feedback Type */}
@@ -356,13 +350,13 @@ function FeedbackForm() {
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-1">
                   {FEEDBACK_TYPES.map((type) => {
-                    const isSelected = form.feedbackType === type.value;
+                    const isSelected = feedbackTypeValue === type.value;
                     return (
                       <button
                         key={type.value}
                         type="button"
                         id={`feedback-type-${type.value}`}
-                        onClick={() => set("feedbackType", type.value)}
+                        onClick={() => setValue('feedbackType', type.value)}
                         className="flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all duration-150"
                         style={{
                           borderColor: isSelected
@@ -396,7 +390,7 @@ function FeedbackForm() {
                   })}
                 </div>
                 {errors.feedbackType && (
-                  <p className="form-error mt-2">{errors.feedbackType}</p>
+                  <p className="form-error mt-2">{errors.feedbackType.message}</p>
                 )}
               </div>
 
@@ -410,9 +404,8 @@ function FeedbackForm() {
                 </label>
                 <select
                   id="feedback-page"
-                  value={form.affectedPage}
-                  onChange={(e) => set("affectedPage", e.target.value)}
                   className="form-input"
+                  {...register('affectedPage')}
                 >
                   <option value="">Select a page…</option>
                   {AFFECTED_PAGES.map((p) => (
@@ -431,8 +424,6 @@ function FeedbackForm() {
                 <textarea
                   id="feedback-comment"
                   rows={5}
-                  value={form.comment}
-                  onChange={(e) => set("comment", e.target.value)}
                   placeholder={
                     selectedType?.value === "bug"
                       ? "Describe what happened, the steps to reproduce it, and what you expected…"
@@ -441,15 +432,16 @@ function FeedbackForm() {
                         : "Share your thoughts, experience, or any concerns…"
                   }
                   className={`form-input resize-none ${errors.comment ? "error" : ""}`}
+                  {...register('comment', { required: 'Comment is required', minLength: { value: 10, message: 'Comment must be at least 10 characters' } })}
                 />
                 <div className="flex items-center justify-between mt-1">
                   {errors.comment ? (
-                    <p className="form-error">{errors.comment}</p>
+                    <p className="form-error">{errors.comment.message}</p>
                   ) : (
                     <span className="form-helper">Minimum 10 characters</span>
                   )}
                   <span className="type-meta text-[--color-text-tertiary]">
-                    {form.comment.length}
+                    {commentValue.length}
                   </span>
                 </div>
               </div>

@@ -1,17 +1,19 @@
-/* eslint-disable no-unused-vars */
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { motion } from "motion/react";
-import AOS from "aos";
-import "aos/dist/aos.css";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { SurveyCard } from "../../Components/UI/SurveyCard";
-import { PageTransition } from "../../Components/UI/PageTransition";
 
 gsap.registerPlugin(ScrollTrigger);
+
+const STAT_FALLBACKS = {
+  totalPublishedSurveys: 12847,
+  totalResponses: 2100000,
+  totalInsightPosts: 4300,
+  activeSurveyors: 340000,
+};
 
 // ── Animated counter helper ────────────────────────────────────
 function CountUp({ end, duration = 2 }) {
@@ -46,7 +48,7 @@ function CountUp({ end, duration = 2 }) {
 // ── Skeleton loader ────────────────────────────────────────────
 function Skeleton() {
   return (
-    <PageTransition className="container-marketing mx-auto py-24">
+    <div className="container-marketing mx-auto py-24">
       <div className="animate-pulse space-y-8">
         <div className="h-12 w-3/4 bg-[--color-bg-inset] rounded-xl" />
         <div className="h-6 w-1/2 bg-[--color-bg-inset] rounded-lg" />
@@ -56,7 +58,7 @@ function Skeleton() {
           ))}
         </div>
       </div>
-    </PageTransition>
+    </div>
   );
 }
 
@@ -66,16 +68,6 @@ export default function GuestHome() {
   const [error, setError] = useState(null);
   const heroRef = useRef(null);
   const axiosPublic = useAxiosPublic();
-
-  // AOS — scroll entrance
-  useEffect(() => {
-    AOS.init({
-      duration: 500,
-      easing: "ease-out-cubic",
-      once: true,
-      offset: 60,
-    });
-  }, []);
 
   // Fetch
   useEffect(() => {
@@ -119,9 +111,9 @@ export default function GuestHome() {
   if (loading) return <Skeleton />;
   if (error)
     return (
-      <PageTransition className="container-marketing mx-auto py-24 text-center">
+      <div className="container-marketing mx-auto py-24 text-center">
         <p className="type-body-base text-[--color-error]">{error}</p>
-      </PageTransition>
+      </div>
     );
 
   const stats = data?.data?.stats || {};
@@ -129,7 +121,7 @@ export default function GuestHome() {
   const insight = data?.data?.aiInsightSpotlight || null;
 
   return (
-    <PageTransition>
+    <>
       {/* ══════════════════════════════════════════════════
           SECTION 1 — Hero
       ══════════════════════════════════════════════════ */}
@@ -170,19 +162,19 @@ export default function GuestHome() {
           {[
             {
               label: "Surveys Published",
-              value: stats.totalPublishedSurveys ?? 12847,
+              value: stats.totalPublishedSurveys ?? STAT_FALLBACKS.totalPublishedSurveys,
             },
             {
               label: "Responses Collected",
-              value: stats.totalResponses ?? 2100000,
+              value: stats.totalResponses ?? STAT_FALLBACKS.totalResponses,
             },
             {
               label: "Insights Generated",
-              value: stats.totalInsightPosts ?? 4300,
+              value: stats.totalInsightPosts ?? STAT_FALLBACKS.totalInsightPosts,
             },
             {
               label: "Active Surveyors",
-              value: stats.activeSurveyors ?? 340000,
+              value: stats.activeSurveyors ?? STAT_FALLBACKS.activeSurveyors,
             },
           ].map(({ label, value }) => (
             <div key={label} className="flex flex-col gap-1">
@@ -199,7 +191,7 @@ export default function GuestHome() {
           SECTION 3 — Featured Surveys
       ══════════════════════════════════════════════════ */}
       <section className="py-20 container-marketing mx-auto">
-        <div data-aos="fade-up" className="mb-10">
+        <div className="mb-10">
           <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
             Trending Now
           </p>
@@ -215,8 +207,8 @@ export default function GuestHome() {
         {featured.length > 0 ? (
           <>
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {featured.slice(0, 6).map((s, i) => (
-                <div key={s._id} data-aos="fade-up" data-aos-delay={i * 100}>
+              {featured.slice(0, 6).map((s) => (
+                <div key={s._id}>
                   <div className="relative group">
                     <SurveyCard
                       title={s.title}
@@ -270,7 +262,7 @@ export default function GuestHome() {
       ══════════════════════════════════════════════════ */}
       <section className="py-20 bg-[--color-bg-subtle]">
         <div className="container-marketing mx-auto">
-          <div data-aos="fade-up" className="text-center mb-12">
+          <div className="text-center mb-12">
             <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
               Simple Process
             </p>
@@ -302,12 +294,11 @@ export default function GuestHome() {
                 title: "AI Generates Insights",
                 body: "Gemini AI analyses your data and drafts a rich Insight Blog post ready to publish.",
               },
-            ].map((step, i) => (
+            ].map((step) => (
               <div
                 key={step.num}
                 className="step-item flex flex-col items-center text-center"
-                data-aos="fade-up"
-                data-aos-delay={i * 150}
+                
               >
                 <div className="w-16 h-16 rounded-full bg-[--color-navy] flex items-center justify-center mb-5 relative z-10">
                   <svg
@@ -345,7 +336,7 @@ export default function GuestHome() {
       <section className="py-20 container-marketing mx-auto">
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           {/* Left text */}
-          <div data-aos="fade-right">
+          <div>
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-admin-light] text-[--color-admin] mb-5">
               AI Insight Spotlight
             </span>
@@ -365,7 +356,7 @@ export default function GuestHome() {
           </div>
 
           {/* Right — insight card preview */}
-          <div data-aos="fade-left" data-aos-delay="100" className="relative">
+          <div className="relative">
             <div className="card p-6 relative overflow-hidden">
               {insight ? (
                 <>
@@ -377,7 +368,7 @@ export default function GuestHome() {
                     {insight.content?.slice(0, 180)}...
                   </p>
                   {/* Gradient blur gate */}
-                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 h-24 bg-linear-to-t from-white to-transparent" />
                 </>
               ) : (
                 <div className="py-10 text-center">
@@ -402,7 +393,7 @@ export default function GuestHome() {
                 </div>
               )}
             </div>
-            <div className="absolute -inset-1 bg-gradient-to-tr from-[--color-surveyor-light] to-transparent rounded-2xl -z-10" />
+            <div className="absolute -inset-1 bg-linear-to-tr from-[--color-surveyor-light] to-transparent rounded-2xl -z-10" />
           </div>
         </div>
       </section>
@@ -412,7 +403,7 @@ export default function GuestHome() {
       ══════════════════════════════════════════════════ */}
       <section className="py-20 bg-[--color-bg-subtle]">
         <div className="container-marketing mx-auto">
-          <div data-aos="fade-up" className="text-center mb-12">
+          <div className="text-center mb-12">
             <h2 className="type-heading-lg text-[--color-text-primary]">
               Simple, Transparent Pricing
             </h2>
@@ -423,7 +414,7 @@ export default function GuestHome() {
 
           <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
             {/* Free */}
-            <div className="card p-8" data-aos="zoom-in" data-aos-delay="100">
+            <div className="card p-8">
               <div className="badge badge-visitor mb-4">Free</div>
               <div className="font-[--font-mono] text-4xl font-medium text-[--color-text-primary] mb-1">
                 $0
@@ -440,7 +431,7 @@ export default function GuestHome() {
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2 type-body-sm">
                     <svg
-                      className="w-4 h-4 text-[--color-success] flex-shrink-0"
+                      className="w-4 h-4 text-[--color-success] shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -467,8 +458,6 @@ export default function GuestHome() {
             {/* Surveyor */}
             <div
               className="card p-8 border-2 border-[--color-surveyor]"
-              data-aos="zoom-in"
-              data-aos-delay="200"
               style={{ boxShadow: "var(--shadow-lg)" }}
             >
               <div className="badge badge-surveyor mb-4">Surveyor</div>
@@ -488,7 +477,7 @@ export default function GuestHome() {
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2 type-body-sm">
                     <svg
-                      className="w-4 h-4 text-[--color-surveyor-dark] flex-shrink-0"
+                      className="w-4 h-4 text-[--color-surveyor-dark] shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -520,8 +509,6 @@ export default function GuestHome() {
       ══════════════════════════════════════════════════ */}
       <section
         className="py-20 bg-[--color-navy] text-center"
-        data-aos="fade-up"
-        data-aos-offset="0"
       >
         <div className="container-marketing mx-auto">
           <h2 className="type-display-lg text-white mb-4">
@@ -539,6 +526,6 @@ export default function GuestHome() {
           </Link>
         </div>
       </section>
-    </PageTransition>
+    </>
   );
 }

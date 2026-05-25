@@ -1,41 +1,43 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useForm } from "react-hook-form";
 import { useSubmitSurveyFeedback } from "../../Hooks/useSurveyDetail";
 
 export default function SurveyFeedback({ surveyId }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [rating, setRating] = useState(5);
-  const [comment, setComment] = useState("");
-  const [suggestions, setSuggestions] = useState("");
-  const [error, setError] = useState(null);
-  
   const submitMutation = useSubmitSurveyFeedback(surveyId);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!comment.trim()) {
-      setError("Please provide a comment.");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    setError,
+    setValue,
+    watch,
+    formState,
+  } = useForm({
+    defaultValues: { rating: 5, comment: "", suggestions: "" },
+  });
+  const rating = watch("rating");
+
+  const onSubmit = async (values) => {
+    if (!values.comment?.trim()) {
+      setError("comment", { type: "validate", message: "Please provide a comment." });
       return;
     }
-    setError(null);
     try {
-      await submitMutation.mutateAsync({ rating, comment, suggestions });
+      await submitMutation.mutateAsync(values);
+      reset();
       setIsOpen(false);
-      // Reset form
-      setRating(5);
-      setComment("");
-      setSuggestions("");
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to submit feedback");
+      // attach to form error - keep simple for now
+      console.error("Feedback submit failed", err);
     }
   };
 
   return (
     <>
-      <button
-        onClick={() => setIsOpen(true)}
-        className="btn btn-secondary btn-sm"
-      >
+      <button onClick={() => setIsOpen(true)} className="btn btn-secondary btn-sm">
         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
         </svg>
@@ -85,18 +87,15 @@ export default function SurveyFeedback({ surveyId }) {
                       <p className="type-body-sm text-[--color-text-secondary]">
                         Your feedback has been submitted successfully and will help surveyors improve.
                       </p>
-                      <button
-                        onClick={() => setIsOpen(false)}
-                        className="btn btn-primary w-full mt-6"
-                      >
+                      <button onClick={() => setIsOpen(false)} className="btn btn-primary w-full mt-6">
                         Close
                       </button>
                     </div>
                   ) : (
-                    <form onSubmit={handleSubmit} className="space-y-4">
-                      {error && (
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                      {formState.errors?.root && (
                         <div className="p-3 rounded bg-[--color-error-light] text-[--color-error] text-sm">
-                          {error}
+                          {formState.errors.root.message}
                         </div>
                       )}
 
@@ -107,8 +106,8 @@ export default function SurveyFeedback({ surveyId }) {
                             <button
                               key={star}
                               type="button"
-                              onClick={() => setRating(star)}
-                              className={`p-1 transition-colors ${rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                              onClick={() => setValue("rating", star, { shouldDirty: true })}
+                              className={`p-1 transition-colors ${star <= Number(rating || 5) ? "text-[--color-warning]" : "text-[--color-border]"}`}
                             >
                               <svg className="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
                                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
@@ -118,42 +117,27 @@ export default function SurveyFeedback({ surveyId }) {
                         </div>
                         <p className="form-helper">How clear and well-structured was this survey?</p>
                       </div>
+                      <input type="hidden" {...register("rating", { valueAsNumber: true })} />
 
                       <div>
                         <label className="form-label">Comment <span className="text-[--color-error]">*</span></label>
-                        <textarea
-                          required
-                          value={comment}
-                          onChange={(e) => setComment(e.target.value)}
-                          className="form-input min-h-[100px] resize-y"
-                          placeholder="Share your thoughts on the survey..."
-                        />
+                          <textarea
+                            {...register('comment', { required: 'Please provide a comment.' })}
+                            className="form-input min-h-25 resize-y"
+                            placeholder="Share your thoughts on the survey..."
+                          />
+                        {formState.errors.comment && <p className="text-[--color-error] text-sm">{formState.errors.comment.message}</p>}
                       </div>
 
                       <div>
                         <label className="form-label">Suggestions (Optional)</label>
-                        <textarea
-                          value={suggestions}
-                          onChange={(e) => setSuggestions(e.target.value)}
-                          className="form-input min-h-[80px] resize-y"
-                          placeholder="Any suggestions for improvement?"
-                        />
+                        <textarea {...register('suggestions')} className="form-input min-h-20 resize-y" placeholder="Any suggestions for improvement?" />
                       </div>
 
                       <div className="pt-4 border-t border-[--color-border] flex items-center justify-end gap-3">
-                        <button
-                          type="button"
-                          onClick={() => setIsOpen(false)}
-                          className="btn btn-secondary"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          disabled={submitMutation.isPending}
-                          className="btn btn-primary"
-                        >
-                          {submitMutation.isPending ? "Submitting..." : "Submit Feedback"}
+                        <button type="button" onClick={() => setIsOpen(false)} className="btn btn-secondary">Cancel</button>
+                        <button type="submit" disabled={submitMutation.isPending} className="btn btn-primary">
+                          {submitMutation.isPending ? 'Submitting...' : 'Submit Feedback'}
                         </button>
                       </div>
                     </form>

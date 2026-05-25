@@ -2,9 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { PageTransition } from "../../Components/UI/PageTransition";
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 export default function PaymentSuccessPage() {
   const [searchParams] = useSearchParams();
@@ -12,13 +10,15 @@ export default function PaymentSuccessPage() {
   const [status, setStatus] = useState("loading"); // loading | success | error
   const [details, setDetails] = useState(null);
 
+  const axiosSecure = useAxiosSecure();
+
   useEffect(() => {
     if (!sessionId) {
       setStatus("error");
       return;
     }
-    axios
-      .get(`${API}/api/payments/verify-session/${sessionId}`)
+    axiosSecure
+      .get(`/api/payments/verify-session/${sessionId}`)
       .then(({ data }) => {
         if (data.success) {
           setDetails(data);

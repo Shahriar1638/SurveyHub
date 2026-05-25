@@ -1,9 +1,11 @@
 import { Link } from "react-router";
 import logo from "../../assets/logo.svg";
 
+const YEAR = new Date().getFullYear();
+
 export function Footer() {
   return (
-    <footer className="border-t border-[--color-border] bg-[--color-bg-elevated] py-12 mt-auto">
+    <footer className="border-t border-[--color-border] bg-[--color-bg-surface] py-12 mt-auto">
       <div className="container-app mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="flex flex-col gap-4">
           <Link to="/" className="flex items-center gap-2">
@@ -77,7 +79,7 @@ export function Footer() {
 
       <div className="container-app mx-auto px-4 mt-12 pt-8 border-t border-[--color-border] flex flex-col md:flex-row items-center justify-between gap-4">
         <p className="type-meta text-[--color-text-tertiary]">
-          &copy; {new Date().getFullYear()} SurveyHub. All rights reserved.
+          &copy; {YEAR} SurveyHub. All rights reserved.
         </p>
         <div className="flex items-center gap-4">
           <a

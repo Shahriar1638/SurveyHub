@@ -1,4 +1,4 @@
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useEffect, useMemo } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { FaUser, FaCrown } from "react-icons/fa";
@@ -7,16 +7,14 @@ import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { Button } from "../UI/Button";
 import logo from "../../assets/logo.svg";
-import axios from "axios";
-
-const API = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 // Guest nav links (visible to all visitors)
 const GUEST_LINKS = [
   { name: "Home", path: "/" },
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Pricings", path: "/pricing" },
+  { name: "Pricing", path: "/pricing" },
   { name: "Feedback & Support", path: "/feedback" },
 ];
 
@@ -25,7 +23,7 @@ const USER_LINKS = [
   { name: "Home", path: "/" },
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Pricings", path: "/pricing" },
+  { name: "Pricing", path: "/pricing" },
   { name: "Feedback & Support", path: "/feedback" },
 ];
 
@@ -34,7 +32,7 @@ const SURVEYOR_LINKS = [
   { name: "Home", path: "/" },
   { name: "Explore Surveys", path: "/surveys" },
   { name: "Blogs", path: "/blogs" },
-  { name: "Pricings", path: "/pricing" },
+  { name: "Pricing", path: "/pricing" },
   { name: "Feedback & Support", path: "/feedback" },
   { name: "Dashboard", path: "/dashboard" },
 ];
@@ -104,44 +102,46 @@ export function Navbar() {
 
   const role = profile?.role;
   const userId = profile?._id;
+  const axiosSecure = useAxiosSecure();
 
   // Fetch credit balance only for surveyors
   useEffect(() => {
     if (role === "surveyor" && userId) {
-      axios
-        .get(`${API}/api/payments/wallet/${userId}`)
+      axiosSecure
+        .get(`/api/payments/wallet/${userId}`)
         .then(({ data }) => {
-          if (data.success) setCreditBalance(data.data?.balance ?? 0);
+          if (data?.success) setCreditBalance(data.data?.balance ?? 0);
+          else setCreditBalance(0);
         })
-        .catch(() => {});
+        .catch((err) => {
+          console.error("credit fetch error", err?.message || err);
+          setCreditBalance(0);
+        });
     }
-  }, [role, userId]);
+  }, [role, userId, axiosSecure]);
 
-  // Role-based link selection
-  const getLinks = () => {
+  // Memoized role-based link selection
+  const links = useMemo(() => {
     if (!user) return GUEST_LINKS;
     if (role === "admin") return ADMIN_LINKS;
     if (role === "surveyor") return SURVEYOR_LINKS;
     return USER_LINKS;
-  };
+  }, [user, role]);
 
-  // Role accent color for active indicator
-  const getRoleAccent = () => {
+  // Memoized role accent color for active indicator
+  const accentColor = useMemo(() => {
     if (!user) return "var(--color-visitor)";
     if (role === "admin") return "var(--color-admin)";
     if (role === "surveyor") return "var(--color-surveyor)";
     return "var(--color-user)";
-  };
-
-  const links = getLinks();
-  const accentColor = getRoleAccent();
+  }, [user, role]);
 
   return (
     <nav
       className="sticky top-0 z-50 w-full border-b border-[--color-border] backdrop-blur-md"
       style={{
         backgroundColor:
-          "color-mix(in srgb, var(--color-bg-primary) 85%, transparent)",
+          "color-mix(in srgb, var(--color-bg-surface) 85%, transparent)",
       }}
     >
       <div className="container-app mx-auto flex h-[64px] w-full items-center justify-between px-4">

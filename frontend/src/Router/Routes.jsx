@@ -1,19 +1,21 @@
+import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
 import MainLayout from "../Layout/MainLayout";
-import Login from "../Pages/Auth/Login";
-import SignUp from "../Pages/Auth/SignUp";
-import Home from "../Pages/Home/Home";
+const Login = lazy(() => import("../Pages/Auth/Login"));
+const SignUp = lazy(() => import("../Pages/Auth/SignUp"));
+const Home = lazy(() => import("../Pages/Home/Home"));
 import PrivateRoute from "./PrivateRoute";
-import SurveysPage from "../Pages/Surveys/SurveysPage";
-import ProfilePage from "../Pages/Profile/ProfilePage";
-import FeedbackPage from "../Pages/Feedback/FeedbackPage";
-import BlogsPage from "../Pages/Blogs/BlogsPage";
-import BlogDetailPage from "../Pages/Blogs/BlogDetailPage";
-import SurveyDetailPage from "../Pages/Surveys/SurveyDetailPage";
-import PricingPage from "../Pages/Payment/PricingPage";
-import PaymentSuccessPage from "../Pages/Payment/PaymentSuccessPage";
+const SurveysPage = lazy(() => import("../Pages/Surveys/SurveysPage"));
+const ProfilePage = lazy(() => import("../Pages/Profile/ProfilePage"));
+const FeedbackPage = lazy(() => import("../Pages/Feedback/FeedbackPage"));
+const BlogsPage = lazy(() => import("../Pages/Blogs/BlogsPage"));
+const BlogDetailPage = lazy(() => import("../Pages/Blogs/BlogDetailPage"));
+const SurveyDetailPage = lazy(() => import("../Pages/Surveys/SurveyDetailPage"));
+const PricingPage = lazy(() => import("../Pages/Payment/PricingPage"));
+const PaymentSuccessPage = lazy(() => import("../Pages/Payment/PaymentSuccessPage"));
+const Dashboard = lazy(() => import("../Pages/Dashboard/Dashboard"));
 
-const Router = createBrowserRouter([
+const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
@@ -76,6 +78,14 @@ const Router = createBrowserRouter([
     path: "/sign-up",
     element: <SignUp />,
   },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+    ),
+  },
 ]);
 
-export default Router;
+export default router;

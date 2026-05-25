@@ -1,0 +1,1 @@
+import{r as e}from"./useAxiosPublic-CyXTEHRT.js";import{i as t}from"./AuthProvider-DuEY2Jkc.js";var n=e();function r({children:e,className:r=``}){return(0,n.jsx)(t.div,{initial:{opacity:0,y:8},animate:{opacity:1,y:0},exit:{opacity:0,y:8},transition:{duration:.3,ease:[.16,1,.3,1]},className:r,children:e})}export{r as t};

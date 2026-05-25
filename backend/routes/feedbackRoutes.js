@@ -3,6 +3,38 @@ const router = express.Router();
 const SiteFeedback = require('../models/siteFeedback');
 const { verifyToken, verifyAdmin } = require('../middlewares/authMiddleware')();
 
+// POST /api/feedback/upload — Proxy image uploads to ImgBB using server-side API key
+router.post('/upload', async (req, res) => {
+  try {
+    const { image } = req.body; // expect base64 string (without data:<mime>;base64, but imgbb accepts either)
+    if (!image) return res.status(400).json({ success: false, message: 'No image provided' });
+
+    const apiKey = process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY;
+    if (!apiKey) return res.status(500).json({ success: false, message: 'ImgBB API key not configured on server' });
+
+    const params = new URLSearchParams();
+    params.append('image', image);
+
+    const imgbbRes = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
+    const data = await imgbbRes.json();
+    if (!data || !data.success) {
+      console.error('ImgBB upload failed', data);
+      return res.status(502).json({ success: false, message: 'Image upload failed' });
+    }
+
+    return res.json({ success: true, url: data.data.url });
+  } catch (error) {
+    console.error('Error proxying image upload:', error);
+    return res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // POST /api/feedback — Submit site feedback (public route, no auth required)
 router.post('/', async (req, res) => {
   try {

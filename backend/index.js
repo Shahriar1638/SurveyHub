@@ -9,7 +9,6 @@ const envPath = fs.existsSync(path.resolve(__dirname, '.env.local'))
   : path.resolve(__dirname, '.env');
 require('dotenv').config({ path: envPath });
 
-
 const port = process.env.PORT || 3000;
 
 // middleware
@@ -67,6 +66,7 @@ async function run() {
     app.use('/api/feedback', require('./routes/feedbackRoutes'));
     app.use('/api/blogs', require('./routes/blogRoutes'));
     app.use('/api/payments', require('./routes/paymentRoutes'));
+    app.use('/api/dashboard', verifyToken, require('./routes/dashboardRoutes'));
     // Send a ping to confirm a successful connection
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
