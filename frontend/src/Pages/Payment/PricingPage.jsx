@@ -146,8 +146,8 @@ export default function PricingPage() {
             transition={{ duration: 0.4 }}
             className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest mb-4"
             style={{
-              backgroundColor: "var(--color-surveyor-light)",
-              color: "var(--color-surveyor-dark)",
+              backgroundColor: "var(--color-visitor-light)",
+              color: "var(--color-visitor-dark)",
             }}
           >
             Credit-Based Pricing

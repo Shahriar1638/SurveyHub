@@ -18,7 +18,7 @@ const { verifyToken } = require('../middlewares/authMiddleware')();
  */
 router.get('/', async (req, res) => {
   try {
-    const { sort, category, search, length, statusFilter, dateFrom, dateTo } = req.query;
+    const { sort, category, search, length, statusFilter, dateFrom, dateTo, userId } = req.query;
 
     // Base query: only show published or expired surveys
     const query = { status: { $in: ['published', 'expired'] } };
@@ -77,6 +77,20 @@ router.get('/', async (req, res) => {
       surveys = surveys.filter(s => s.questions.length >= 10 && s.questions.length <= 15);
     } else if (length === 'long') {
       surveys = surveys.filter(s => s.questions.length > 15);
+    }
+
+    // If userId provided, attach participation flags
+    if (userId) {
+      const surveyIds = surveys.map(s => s._id);
+      const participations = await Response.find(
+        { surveyId: { $in: surveyIds }, userId, status: 'submitted' },
+        { surveyId: 1, _id: 0 }
+      ).lean();
+      const participatedIds = new Set(participations.map(p => p.surveyId.toString()));
+      surveys = surveys.map(s => ({
+        ...s,
+        hasParticipated: participatedIds.has(s._id.toString()),
+      }));
     }
 
     // Get unique categories for filter options

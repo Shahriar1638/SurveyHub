@@ -1,5 +1,5 @@
 import { useState, useContext, useMemo } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, Outlet, NavLink, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../Hooks/useProfile";
@@ -11,15 +11,12 @@ import {
   ClipboardDocumentListIcon,
   MegaphoneIcon,
   ChatBubbleLeftEllipsisIcon,
-  Cog6ToothIcon,
   ArrowLeftStartOnRectangleIcon,
   ArrowLeftIcon,
-  ChartBarIcon,
   BeakerIcon,
   PencilSquareIcon,
   InboxIcon,
   Bars3Icon,
-  XMarkIcon,
   DocumentMagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
@@ -60,38 +57,62 @@ const USER_NAV = [
 ];
 
 // ── Sidebar nav item ─────────────────────────────────────────────────────────
-function NavItem({ item, isActive, onClick, accentColor, accentLight }) {
+function NavItem({ item, accentColor, accentLight, onNav }) {
   const Icon = item.icon;
   return (
-    <button
-      onClick={() => onClick(item.id)}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium font-[--font-ui] transition-all duration-150 ${
+    <NavLink
+      to={item.id}
+      end={item.id === "overview"}
+      onClick={onNav}
+      className={({ isActive }) =>
+        `group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] transition-all duration-200 ease-[var(--ease-out-expo)] ${
+          isActive
+            ? ""
+            : "text-[--color-text-secondary] hover:text-[--color-text-primary]"
+        }`
+      }
+      style={({ isActive }) =>
         isActive
-          ? "border-l-2"
-          : "text-[--color-text-secondary] hover:bg-[--color-bg-subtle] hover:text-[--color-text-primary] border-l-2 border-transparent"
-      }`}
-      style={
-        isActive
-          ? {
-              backgroundColor: accentLight,
-              color: accentColor,
-              borderLeftColor: accentColor,
-            }
+          ? { backgroundColor: accentLight, color: accentColor }
           : undefined
       }
     >
-      <Icon className="w-5 h-5 shrink-0" />
-      <span className="truncate">{item.name}</span>
-    </button>
+      {({ isActive }) => (
+        <>
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200"
+            style={
+              isActive
+                ? { backgroundColor: accentColor, color: "white" }
+                : undefined
+            }
+          >
+            <Icon
+              className="w-[18px] h-[18px]"
+              style={!isActive ? { color: "var(--color-text-tertiary)" } : undefined}
+            />
+          </div>
+          <span className="truncate">{item.name}</span>
+          {isActive && (
+            <div
+              className="ml-auto w-1.5 h-1.5 rounded-full shrink-0"
+              style={{ backgroundColor: accentColor }}
+            />
+          )}
+        </>
+      )}
+    </NavLink>
   );
 }
 
 // ── Main layout ──────────────────────────────────────────────────────────────
-export default function DashboardLayout({ children, activeSection, onSectionChange }) {
+export default function DashboardLayout() {
   const { user, logOut } = useContext(AuthContext);
   const navigate = useNavigate();
   const { data: profile } = useProfile();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  const activeSection = location.pathname.split("/").pop();
 
   const role = profile?.role;
 
@@ -114,25 +135,28 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
     return "var(--color-user-light)";
   }, [role]);
 
-  const roleLabel = role === "admin" ? "Administrator" : role === "surveyor" ? "Surveyor" : "User";
-
   // ── Sidebar content (shared between desktop & mobile) ──────────────────────
   const sidebarContent = (
     <div className="flex flex-col h-full">
       {/* Workspace header */}
-      <div className="px-5 pt-5 pb-4 border-b border-[--color-border]">
-        <Link to="/" className="flex items-center gap-2.5 mb-4">
-          <img src={logo} alt="SurveyHub" className="h-7 w-7 rounded-md object-cover" />
+      <div className="px-5 pt-6 pb-5">
+        <Link to="/" className="flex items-center gap-3 mb-5 group/logo">
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: accentLight }}>
+            <img src={logo} alt="SurveyHub" className="h-5 w-5 object-cover" />
+          </div>
           <span className="type-heading-sm text-[--color-text-primary] tracking-tight text-base">
             SurveyHub
           </span>
         </Link>
-        <div className="flex items-center gap-3">
+
+        {/* User info */}
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-[--color-bg-subtle]/60">
           {profile?.avatar || user?.photoURL ? (
             <img
               src={profile?.avatar || user?.photoURL}
               alt=""
-              className="w-9 h-9 rounded-full object-cover ring-2 ring-[--color-border] shrink-0"
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+              style={{ boxShadow: `0 0 0 2px ${accentLight}` }}
             />
           ) : (
             <div
@@ -142,39 +166,35 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
               {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
             </div>
           )}
-          <div className="min-w-0">
-            <p className="type-label-sm text-[--color-text-primary] truncate text-sm">
+          <div className="min-w-0 flex-1">
+            <p className="type-label-sm text-[--color-text-primary] truncate text-sm leading-tight">
               {profile?.name || user?.displayName || "User"}
             </p>
-            <span
-              className="badge text-[10px] mt-0.5"
-              style={{ backgroundColor: accentLight, color: accentColor }}
-            >
-              {roleLabel}
-            </span>
+            <p className="text-[11px] font-[--font-ui] text-[--color-text-tertiary] truncate capitalize leading-tight mt-0.5">
+              {role || "Member"}
+            </p>
           </div>
         </div>
       </div>
 
+      {/* Divider */}
+      <div className="mx-5 h-px bg-[--color-border]" />
+
       {/* Nav groups */}
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-5">
+      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-6">
         {navGroups.map((group) => (
           <div key={group.group}>
-            <p className="px-3 mb-2 text-[10px] font-semibold font-[--font-ui] text-[--color-text-tertiary] uppercase tracking-[0.08em]">
+            <p className="px-3 mb-2.5 text-[10px] font-semibold font-[--font-ui] text-[--color-text-tertiary] uppercase tracking-[0.1em]">
               {group.group}
             </p>
-            <div className="space-y-0.5">
+            <div className="space-y-1">
               {group.items.map((item) => (
                 <NavItem
                   key={item.id}
                   item={item}
-                  isActive={activeSection === item.id}
-                  onClick={(id) => {
-                    onSectionChange?.(id);
-                    setMobileOpen(false);
-                  }}
                   accentColor={accentColor}
                   accentLight={accentLight}
+                  onNav={() => setMobileOpen(false)}
                 />
               ))}
             </div>
@@ -183,21 +203,36 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
       </nav>
 
       {/* Bottom section */}
-      <div className="px-3 py-4 border-t border-[--color-border] space-y-0.5">
+      <div className="mx-5 h-px bg-[--color-border]" />
+      <div className="px-3 py-4 space-y-1">
         <button
           onClick={() => navigate("/")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:bg-[--color-bg-subtle] hover:text-[--color-text-primary] transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:text-[--color-text-primary] transition-all duration-200 ease-[var(--ease-out-expo)]"
+          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-bg-subtle)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
         >
-          <ArrowLeftIcon className="w-5 h-5 shrink-0" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+            <ArrowLeftIcon className="w-[18px] h-[18px] text-[--color-text-tertiary]" />
+          </div>
           Back to Site
         </button>
         <button
           onClick={async () => {
             try { await logOut(); } finally { navigate("/"); }
           }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:bg-[--color-bg-subtle] hover:text-[--color-error] transition-colors"
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:text-[--color-error] transition-all duration-200 ease-[var(--ease-out-expo)]"
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "var(--color-error-light)";
+            e.currentTarget.style.color = "var(--color-error)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "transparent";
+            e.currentTarget.style.color = "var(--color-text-secondary)";
+          }}
         >
-          <ArrowLeftStartOnRectangleIcon className="w-5 h-5 shrink-0" />
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
+            <ArrowLeftStartOnRectangleIcon className="w-[18px] h-[18px] text-[--color-text-tertiary]" />
+          </div>
           Log Out
         </button>
       </div>
@@ -207,7 +242,7 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
   return (
     <div className="flex h-screen bg-[--color-bg-base] overflow-hidden">
       {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex w-64 bg-[--color-bg-surface] border-r border-[--color-border] flex-col shrink-0">
+      <aside className="hidden lg:flex w-64 bg-[--color-bg-surface] flex-col shrink-0" style={{ boxShadow: "1px 0 0 0 var(--color-border), 4px 0 12px -4px rgba(0,0,0,0.04)" }}>
         {sidebarContent}
       </aside>
 
@@ -219,7 +254,7 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+              className="fixed inset-0 bg-black/40 backdrop-blur-[2px] z-40 lg:hidden"
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
@@ -227,7 +262,8 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="fixed left-0 top-0 h-full w-64 bg-[--color-bg-surface] border-r border-[--color-border] z-50 lg:hidden shadow-xl"
+              className="fixed left-0 top-0 h-full w-64 bg-[--color-bg-surface] z-50 lg:hidden"
+              style={{ boxShadow: "4px 0 24px -4px rgba(0,0,0,0.12)" }}
             >
               {sidebarContent}
             </motion.aside>
@@ -254,7 +290,7 @@ export default function DashboardLayout({ children, activeSection, onSectionChan
         {/* Scrollable content */}
         <main className="flex-1 overflow-y-auto">
           <div className="container-app mx-auto px-4 lg:px-8 py-6 lg:py-8">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

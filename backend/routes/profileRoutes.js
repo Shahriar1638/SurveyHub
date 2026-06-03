@@ -4,7 +4,6 @@ const User = require('../models/User');
 const Survey = require('../models/Survey');
 const Response = require('../models/response');
 const Blog = require('../models/Blog');
-const Follower = require('../models/Follower');
 
 // ── GET /api/profile/me ───────────────────────────────────────────────────────
 // Returns the authenticated user's full profile
@@ -102,16 +101,13 @@ router.get('/stats', async (req, res) => {
       // Blogs published
       const blogsPublished = await Blog.countDocuments({ author: userId, status: 'active' });
 
-      // Follower count
-      const followers = await Follower.countDocuments({ following: userId });
-
       // Active surveys
       const activeSurveys = await Survey.find(
         { createdBy: userId, status: 'published' },
         { title: 1, participantCount: 1, deadline: 1, category: 1, image: 1 }
       ).sort({ createdAt: -1 }).limit(6).lean();
 
-      stats = { totalResponses, blogsPublished, followers, activeSurveys };
+      stats = { totalResponses, blogsPublished, activeSurveys };
     }
 
     else if (user.role === 'admin') {

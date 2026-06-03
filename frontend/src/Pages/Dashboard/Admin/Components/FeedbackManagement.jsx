@@ -1,7 +1,7 @@
-/* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useAdminFeedback } from "../../../../Hooks/useDashboardAdmin";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
@@ -14,10 +14,46 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const columnHelper = createColumnHelper();
+
+const columns = [
+  columnHelper.accessor((row) => row.feedbackType?.replace("_", " ") || "general", {
+    id: "type", header: "Type", cell: (info) => (
+      <span className="badge badge-draft text-[10px] capitalize">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("comment", {
+    header: "Comment", cell: (info) => (
+      <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-75">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor((row) => row.userEmail || "Anonymous", {
+    id: "user", header: "User", cell: (info) => (
+      <span className="type-meta text-[--color-text-secondary] truncate block max-w-40">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("status", {
+    header: "Status", cell: (info) => (
+      <span className={`badge text-[10px] ${
+        info.getValue() === "open" ? "badge-pending"
+          : info.getValue() === "resolved" ? "badge-published" : "badge-draft"
+      }`}>{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor(
+    (row) => new Date(row.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+    { id: "date", header: "Date", cell: (info) => (
+      <span className="type-meta text-[--color-text-tertiary] whitespace-nowrap">{info.getValue()}</span>
+    )},
+  ),
+];
+
 export default function FeedbackManagement() {
   const [statusFilter, setStatusFilter] = useState("");
   const { data: feedbackData, isLoading } = useAdminFeedback({ status: statusFilter || undefined });
-  const items = feedbackData?.data || [];
+  const items = useMemo(() => feedbackData?.data || [], [feedbackData]);
+
+  const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -61,53 +97,24 @@ export default function FeedbackManagement() {
         <motion.div variants={item} className="table-wrapper">
           <table className="data-table">
             <thead>
-              <tr>
-                <th>Type</th>
-                <th>Comment</th>
-                <th>User</th>
-                <th>Status</th>
-                <th>Date</th>
-              </tr>
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <th key={h.id}>
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody>
-              {items.map((fb) => (
-                <tr key={fb._id}>
-                  <td>
-                    <span className="badge badge-draft text-[10px] capitalize">
-                      {fb.feedbackType?.replace("_", " ") || "general"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-[300px]">
-                      {fb.comment}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-meta text-[--color-text-secondary] truncate block max-w-[160px]">
-                      {fb.userEmail || "Anonymous"}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge text-[10px] ${
-                        fb.status === "open"
-                          ? "badge-pending"
-                          : fb.status === "resolved"
-                            ? "badge-published"
-                            : "badge-draft"
-                      }`}
-                    >
-                      {fb.status}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-meta text-[--color-text-tertiary] whitespace-nowrap">
-                      {new Date(fb.createdAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </td>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import { motion } from "motion/react";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useUserParticipation } from "../../../../Hooks/useDashboardUser";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
@@ -12,9 +14,45 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const columnHelper = createColumnHelper();
+
+const columns = [
+  columnHelper.accessor("surveyTitle", {
+    header: "Survey Title", cell: (info) => (
+      <span className="type-label-sm text-[--color-text-primary] line-clamp-1">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("surveyCategory", {
+    header: "Category", cell: (info) => (
+      <span className="badge badge-draft text-[10px] capitalize">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor(
+    (row) => new Date(row.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+    { id: "dateTaken", header: "Date Taken", cell: (info) => (
+      <span className="type-meta text-[--color-text-secondary]">{info.getValue()}</span>
+    )},
+  ),
+  columnHelper.accessor((row) => `${row.questionsCount} Questions`, {
+    id: "length", header: "Length", cell: (info) => (
+      <span className="type-meta text-[--color-text-secondary]">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor((row) => row.rewardPoints, {
+    id: "rewards", header: () => <span className="text-right block">Rewards</span>,
+    cell: (info) => (
+      <span className="type-label-sm text-[--color-user-dark] font-[--font-mono] font-bold text-right block">
+        +{info.getValue()} pts
+      </span>
+    ),
+  }),
+];
+
 export default function ParticipationLedger() {
   const { data: ledger, isLoading } = useUserParticipation();
-  const list = ledger || [];
+  const list = useMemo(() => ledger || [], [ledger]);
+
+  const table = useReactTable({ data: list, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -45,46 +83,24 @@ export default function ParticipationLedger() {
         <motion.div variants={item} className="table-wrapper">
           <table className="data-table">
             <thead>
-              <tr>
-                <th>Survey Title</th>
-                <th>Category</th>
-                <th>Date Taken</th>
-                <th>Length</th>
-                <th className="text-right">Rewards</th>
-              </tr>
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <th key={h.id}>
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody>
-              {list.map((row) => (
-                <tr key={row.responseId}>
-                  <td>
-                    <span className="type-label-sm text-[--color-text-primary] line-clamp-1">
-                      {row.surveyTitle}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="badge badge-draft text-[10px] capitalize">
-                      {row.surveyCategory}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-meta text-[--color-text-secondary]">
-                      {new Date(row.submittedAt).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-meta text-[--color-text-secondary]">
-                      {row.questionsCount} Questions
-                    </span>
-                  </td>
-                  <td className="text-right">
-                    <span className="type-label-sm text-[--color-user-dark] font-[--font-mono] font-bold">
-                      +{row.rewardPoints} pts
-                    </span>
-                  </td>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

@@ -6,7 +6,7 @@ export function StatCard({
   delta,
   deltaType = "positive", // positive, negative, neutral
   icon: Icon,
-  roleAccent = "surveyor", // surveyor, admin, user, visitor
+  roleAccent = "user", // surveyor, admin, user, visitor
 }) {
   const accentLight = `var(--color-${roleAccent}-light)`;
   const accentDark = `var(--color-${roleAccent}-dark)`;

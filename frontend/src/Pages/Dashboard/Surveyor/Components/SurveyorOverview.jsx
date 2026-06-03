@@ -8,6 +8,8 @@ import {
 } from "@heroicons/react/24/outline";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "../../../../Components/UI/StatCard";
+import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
+import useProfile from "../../../../Hooks/useProfile";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -30,7 +32,9 @@ const mockTrendData = [
   { day: "Sun", responses: 22 },
 ];
 
-export default function SurveyorOverview({ data, profile }) {
+export default function SurveyorOverview() {
+  const { data } = useDashboardSurveyor();
+  const { data: profile } = useProfile();
   const kpis = data?.kpis || {};
 
   return (

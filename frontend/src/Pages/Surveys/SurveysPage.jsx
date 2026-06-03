@@ -1,26 +1,19 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useContext } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import useSurveys from "../../Hooks/useSurveys";
+import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
+import useProfile from "../../Hooks/useProfile";
 import { Card } from "../../Components/UI/Card";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
-function timeAgo(dateStr) {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const days = Math.floor(diff / 86400000);
-  if (days === 0) return "Today";
-  if (days === 1) return "Yesterday";
-  if (days < 30) return `${days}d ago`;
-  const months = Math.floor(days / 30);
-  return `${months}mo ago`;
-}
-
 function deadlineDaysLeft(deadlineStr) {
+  if (!deadlineStr) return null;
+  const dl = new Date(deadlineStr);
+  if (isNaN(dl.getTime())) return null;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const dl = new Date(deadlineStr);
-  const diff = Math.ceil((dl - today) / 86400000);
-  return diff;
+  return Math.ceil((dl - today) / 86400000);
 }
 
 function questionLengthLabel(count) {
@@ -77,7 +70,7 @@ const itemVariants = {
 };
 
 // ── SurveyCard (enhanced for this page) ──────────────────────────────────────
-function SurveyListCard({ survey }) {
+function SurveyListCard({ survey, user, profile }) {
   const daysLeft = survey.deadline ? deadlineDaysLeft(survey.deadline) : null;
   const isSoon =
     daysLeft !== null &&
@@ -146,17 +139,15 @@ function SurveyListCard({ survey }) {
         {/* Meta */}
         <div className="mt-auto flex items-center gap-2 type-meta text-[--color-text-tertiary]">
           <span>{survey.participantCount ?? 0} responses</span>
-          <span>·</span>
-          <span>{timeAgo(survey.createdAt)}</span>
-          {survey.deadline && (
+          {survey.status === "published" && daysLeft !== null && (
             <>
               <span>·</span>
               <span>
-                Due{" "}
-                {new Date(survey.deadline).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
+                {daysLeft === 0
+                  ? "Ends today"
+                  : daysLeft === 1
+                    ? "1 day left"
+                    : `${daysLeft} days left`}
               </span>
             </>
           )}
@@ -165,15 +156,58 @@ function SurveyListCard({ survey }) {
 
       {/* Footer */}
       <div className="px-5 pb-5 pt-3 border-t border-[--color-border] flex justify-between items-center">
-        <span className="type-body-sm text-[--color-text-tertiary] truncate max-w-[60%]">
-          {survey.surveyorEmail || "Surveyor"}
-        </span>
-        <Link
-          to={`/surveys/${survey._id}`}
-          className="btn btn-sm btn-primary text-white bg-[--color-visitor] hover:bg-[--color-visitor-dark] text-[0.75rem] py-1.5 px-3.5"
-        >
-          {survey.status === "expired" ? "View Results" : "Take Survey"}
-        </Link>
+        {survey.deadline && (
+          <span className="type-body-sm text-[--color-text-tertiary]">
+            Due{" "}
+            {new Date(survey.deadline).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+        )}
+
+        {!user ? (
+          <Link
+            to="/login"
+            className="btn btn-sm text-[0.75rem] py-1.5 px-3.5 bg-[--color-visitor] text-white hover:bg-[--color-visitor-dark]"
+          >
+            Login to participate
+          </Link>
+        ) : survey.status === "expired" ? (
+          (() => {
+            const isCreator = profile?._id === survey.surveyorId;
+            const hasParticipated = survey.hasParticipated;
+            if (isCreator) {
+              return (
+                <span className="type-body-sm text-[--color-text-tertiary] italic">
+                  Check dashboard for results
+                </span>
+              );
+            }
+            if (hasParticipated) {
+              return (
+                <Link
+                  to={`/dashboard/surveys/${survey._id}`}
+                  className="btn btn-sm text-[0.75rem] py-1.5 px-3.5 bg-[--color-success-light] text-[--color-success] font-semibold"
+                >
+                  Check Results
+                </Link>
+              );
+            }
+            return (
+              <span className="type-body-sm text-[--color-error] font-semibold">
+                Expired
+              </span>
+            );
+          })()
+        ) : (
+          <Link
+            to={`/surveys/${survey._id}`}
+            className="btn btn-sm btn-primary text-white bg-[--color-visitor] hover:bg-[--color-visitor-dark] text-[0.75rem] py-1.5 px-3.5"
+          >
+            Take Survey
+          </Link>
+        )}
       </div>
     </Card>
   );
@@ -391,10 +425,13 @@ const DEFAULT_FILTERS = {
 };
 
 export default function SurveysPage() {
+  const { user } = useContext(AuthContext);
+  const { data: profile } = useProfile();
   const [filters, setFilters] = useState(DEFAULT_FILTERS);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
-  const { data, isPending, isError } = useSurveys(filters);
+  const filtersWithUser = { ...filters, userId: profile?._id || null };
+  const { data, isPending, isError } = useSurveys(filtersWithUser);
 
   const surveys = data?.data || [];
   const categories = data?.categories || [];
@@ -621,7 +658,7 @@ export default function SurveysPage() {
               >
                 {surveys.map((survey) => (
                   <motion.div key={survey._id} variants={itemVariants}>
-                    <SurveyListCard survey={survey} />
+                    <SurveyListCard survey={survey} user={user} profile={profile} />
                   </motion.div>
                 ))}
               </motion.div>

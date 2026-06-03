@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "../../../../Components/UI/StatCard";
+import { useAdminOverview } from "../../../../Hooks/useDashboardAdmin";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -30,7 +31,8 @@ const mockRevenueData = [
   { month: "Jun", revenue: 1040 },
 ];
 
-export default function AdminOverview({ overview }) {
+export default function AdminOverview() {
+  const { data: overview } = useAdminOverview();
   const health = overview?.health || {};
   const modStats = overview?.moderationStats || {};
 

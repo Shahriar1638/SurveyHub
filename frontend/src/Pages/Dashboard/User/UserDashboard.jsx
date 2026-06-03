@@ -1,42 +1,16 @@
 import { useContext } from "react";
+import { Link, useLocation } from "react-router";
 import { AuthContext } from "../../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../../Hooks/useProfile";
-import { useUserOverview } from "../../../Hooks/useDashboardUser";
 import { PageTransition } from "../../../Components/UI/PageTransition";
 
-import UserOverview from "./Components/UserOverview";
-import ParticipationLedger from "./Components/ParticipationLedger";
-import UserReports from "./Components/UserReports";
-import UserSupport from "./Components/UserSupport";
-
-export default function UserDashboard({ activeSection, onSectionChange }) {
+export default function UserDashboard({ children }) {
   const { user } = useContext(AuthContext);
   const { data: profile } = useProfile();
-  const { data: overview, isLoading } = useUserOverview();
+  const location = useLocation();
+  const activeSection = location.pathname.split("/").pop();
 
   const firstName = (profile?.name || user?.displayName || "Member").split(" ")[0];
-
-  if (isLoading) {
-    return (
-      <div className="animate-pulse space-y-8">
-        <div className="h-10 w-1/3 bg-[--color-bg-inset] rounded-xl" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 bg-[--color-bg-inset] rounded-xl" />
-          ))}
-        </div>
-        <div className="h-56 bg-[--color-bg-inset] rounded-xl" />
-      </div>
-    );
-  }
-
-  // Section mapping
-  const sections = {
-    overview: <UserOverview overview={overview} profile={profile} onTabChange={onSectionChange} />,
-    participation: <ParticipationLedger />,
-    reports: <UserReports />,
-    support: <UserSupport />,
-  };
 
   return (
     <PageTransition>
@@ -51,17 +25,13 @@ export default function UserDashboard({ activeSection, onSectionChange }) {
           </p>
         </div>
         {activeSection === "overview" && (
-          <button
-            onClick={() => onSectionChange?.("participation")}
-            className="btn btn-user btn-md font-semibold text-white flex items-center gap-2"
-          >
+          <Link to="/dashboard/participation" className="btn btn-user btn-md font-semibold text-white flex items-center gap-2">
             View History
-          </button>
+          </Link>
         )}
       </div>
 
-      {/* Active section */}
-      {sections[activeSection] || sections.overview}
+      {children}
     </PageTransition>
   );
 }

@@ -53,8 +53,8 @@ export default function BlogsPage() {
               <span
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-3"
                 style={{
-                  backgroundColor: "var(--color-surveyor-light)",
-                  color: "var(--color-surveyor-dark)",
+                  backgroundColor: "var(--color-visitor-light)",
+                  color: "var(--color-visitor-dark)",
                 }}
               >
                 <svg

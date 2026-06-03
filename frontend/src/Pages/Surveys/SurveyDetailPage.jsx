@@ -54,6 +54,83 @@ export default function SurveyDetailPage() {
     id,
     userId,
   );
+  const submitMutation = useSubmitResponse(id);
+  const [submitted, setSubmitted] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [answers, setAnswers] = useState({});
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const isExpired = survey?.status === "expired";
+  const daysLeft = survey?.deadline ? deadlineDaysLeft(survey.deadline) : null;
+  const answeredCount = Object.keys(answers).length;
+  const canRespond = !isExpired && existingResponse?.status !== "submitted";
+  const isCreator = profile?._id === survey?.surveyorId;
+
+  const handleChange = useCallback((questionId, value) => {
+    setAnswers(prev => ({ ...prev, [questionId]: value }));
+    setValidationErrors(prev => ({ ...prev, [questionId]: null }));
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    const errors = {};
+    survey?.questions?.forEach(q => {
+      if (q.required && !answers[q.id]) {
+        errors[q.id] = true;
+      }
+    });
+    setValidationErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    try {
+      await submitMutation.mutateAsync({
+        userId,
+        answers: Object.entries(answers).map(([questionId, value]) => ({
+          questionId,
+          value,
+        })),
+        isDraft: false,
+      });
+      setSubmitted(true);
+    } catch (err) {
+      console.error("Submit failed:", err);
+    }
+  }, [answers, survey, userId, submitMutation]);
+
+  const handleSaveDraft = useCallback(async () => {
+    try {
+      await submitMutation.mutateAsync({
+        userId,
+        answers: Object.entries(answers).map(([questionId, value]) => ({
+          questionId,
+          value,
+        })),
+        isDraft: true,
+      });
+      setDraftSaved(true);
+      setTimeout(() => setDraftSaved(false), 2500);
+    } catch (err) {
+      console.error("Save draft failed:", err);
+    }
+  }, [answers, userId, submitMutation]);
+
+  // Initialize answers from existing draft
+  useEffect(() => {
+    if (existingResponse?.answers) {
+      const initial = {};
+      existingResponse.answers.forEach(a => {
+        initial[a.questionId] = a.value;
+      });
+      setAnswers(initial);
+    }
+  }, [existingResponse]);
+
+  // Redirect if expired + user participated
+  useEffect(() => {
+    if (survey && isExpired && existingResponse?.status === "submitted") {
+      navigate(`/dashboard/surveys/${id}`, { replace: true });
+    }
+  }, [survey, isExpired, existingResponse, id, navigate]);
+
   // ── Success screen ──
   if (submitted) {
     return (
@@ -185,10 +262,19 @@ export default function SurveyDetailPage() {
             )}
 
             {isExpired && (
-              <div className="mt-5 p-4 rounded-lg border bg-[--color-bg-inset] border-[--color-border-strong]">
-                <p className="type-body-sm text-[--color-text-secondary]">
-                  📋 This survey has closed. Responses are no longer accepted.
+              <div className="mt-5 p-4 rounded-lg border bg-[--color-error-light] border-[--color-error]">
+                <p className="type-body-sm font-medium text-[--color-error]">
+                  {isCreator
+                    ? "📊 This survey has ended. Check your dashboard for results."
+                    : user
+                      ? "📋 This survey has closed. Responses are no longer accepted."
+                      : "📋 This survey has closed."}
                 </p>
+                {!user && (
+                  <Link to="/login" className="mt-2 inline-block type-body-sm text-[--color-error] underline font-medium">
+                    Login to participate
+                  </Link>
+                )}
               </div>
             )}
             {!user && !isExpired && (
@@ -214,6 +300,7 @@ export default function SurveyDetailPage() {
           </div>
         </div>
 
+        {!isExpired && (
         <div className="container-app mx-auto px-4 py-10 max-w-3xl">
           <div className="flex flex-col gap-5">
             {survey.questions.map((question, idx) => {
@@ -294,6 +381,7 @@ export default function SurveyDetailPage() {
             </div>
           )}
         </div>
+        )}
 
         <AnimatePresence>
           {user && !isExpired && !submitted && (

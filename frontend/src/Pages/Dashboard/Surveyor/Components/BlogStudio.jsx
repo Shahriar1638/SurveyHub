@@ -5,6 +5,7 @@ import {
   ChatBubbleLeftIcon,
   HeartIcon,
 } from "@heroicons/react/24/outline";
+import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -16,7 +17,8 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function BlogStudio({ data }) {
+export default function BlogStudio() {
+  const { data } = useDashboardSurveyor();
   const blogs = data?.recentBlogActivity || [];
 
   return (

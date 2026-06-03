@@ -9,6 +9,8 @@ import {
   TrashIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
+import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -55,13 +57,67 @@ function AIStatus({ aiInsight }) {
   );
 }
 
-export default function MySurveys({ data }) {
-  const navigate = useNavigate();
+const columnHelper = createColumnHelper();
+
+const columns = [
+  columnHelper.accessor("title", {
+    header: "Title", cell: (info) => (
+      <span className="type-label-sm text-[--color-text-primary] line-clamp-1">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("status", {
+    header: "Status", cell: (info) => <StatusBadge status={info.getValue()} />,
+  }),
+  columnHelper.accessor((row) => row.participantCount ?? 0, {
+    id: "responses", header: "Responses", cell: (info) => (
+      <span className="type-meta text-[--color-text-primary]">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("aiInsight", {
+    header: "AI Insight", cell: (info) => <AIStatus aiInsight={info.getValue()} />,
+  }),
+  columnHelper.display({
+    id: "actions",
+    header: () => <span className="text-right block">Actions</span>,
+    cell: ({ row }) => {
+      const survey = row.original;
+      return (
+        <div className="flex items-center justify-end gap-1">
+          <button
+            title="Edit"
+            className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
+          >
+            <PencilSquareIcon className="w-4 h-4" />
+          </button>
+          {survey.status === "published" && (
+            <button
+              title="Pause"
+              className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-warning] transition-colors"
+            >
+              <PauseIcon className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            title="Delete"
+            className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-secondary] hover:text-[--color-admin] transition-colors"
+          >
+            <TrashIcon className="w-4 h-4" />
+          </button>
+        </div>
+      );
+    },
+  }),
+];
+
+export default function MySurveys() {
+  const { data } = useDashboardSurveyor();
   const allSurveys = useMemo(() => {
     const pub = (data?.publishedSurveys || []).map((s) => ({ ...s, _source: "published" }));
     const draft = (data?.draftSurveys || []).map((s) => ({ ...s, _source: "draft" }));
     return [...pub, ...draft];
   }, [data]);
+
+  const table = useReactTable({ data: allSurveys, columns, getCoreRowModel: getCoreRowModel() });
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
@@ -90,57 +146,24 @@ export default function MySurveys({ data }) {
         <motion.div variants={item} className="table-wrapper">
           <table className="data-table">
             <thead>
-              <tr>
-                <th>Title</th>
-                <th>Status</th>
-                <th>Responses</th>
-                <th>AI Insight</th>
-                <th className="text-right">Actions</th>
-              </tr>
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <th key={h.id}>
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody>
-              {allSurveys.map((survey) => (
-                <tr key={survey._id}>
-                  <td>
-                    <span className="type-label-sm text-[--color-text-primary] line-clamp-1">
-                      {survey.title}
-                    </span>
-                  </td>
-                  <td>
-                    <StatusBadge status={survey.status} />
-                  </td>
-                  <td>
-                    <span className="type-meta text-[--color-text-primary]">
-                      {survey.participantCount ?? 0}
-                    </span>
-                  </td>
-                  <td>
-                    <AIStatus aiInsight={survey.aiInsight} />
-                  </td>
-                  <td>
-                    <div className="flex items-center justify-end gap-1">
-                      <button
-                        title="Edit"
-                        className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
-                      >
-                        <PencilSquareIcon className="w-4 h-4" />
-                      </button>
-                      {survey.status === "published" && (
-                        <button
-                          title="Pause"
-                          className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-warning] transition-colors"
-                        >
-                          <PauseIcon className="w-4 h-4" />
-                        </button>
-                      )}
-                      <button
-                        title="Delete"
-                        className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-secondary] hover:text-[--color-admin] transition-colors"
-                      >
-                        <TrashIcon className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

@@ -1,19 +1,22 @@
-import { lazy } from "react";
 import { createBrowserRouter } from "react-router";
 import MainLayout from "../Layout/MainLayout";
-const Login = lazy(() => import("../Pages/Auth/Login"));
-const SignUp = lazy(() => import("../Pages/Auth/SignUp"));
-const Home = lazy(() => import("../Pages/Home/Home"));
+import DashboardLayout from "../Layout/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
-const SurveysPage = lazy(() => import("../Pages/Surveys/SurveysPage"));
-const ProfilePage = lazy(() => import("../Pages/Profile/ProfilePage"));
-const FeedbackPage = lazy(() => import("../Pages/Feedback/FeedbackPage"));
-const BlogsPage = lazy(() => import("../Pages/Blogs/BlogsPage"));
-const BlogDetailPage = lazy(() => import("../Pages/Blogs/BlogDetailPage"));
-const SurveyDetailPage = lazy(() => import("../Pages/Surveys/SurveyDetailPage"));
-const PricingPage = lazy(() => import("../Pages/Payment/PricingPage"));
-const PaymentSuccessPage = lazy(() => import("../Pages/Payment/PaymentSuccessPage"));
-const Dashboard = lazy(() => import("../Pages/Dashboard/Dashboard"));
+import DashboardSection from "../Pages/Dashboard/DashboardSection";
+import {
+  Login,
+  SignUp,
+  Home,
+  SurveysPage,
+  ProfilePage,
+  FeedbackPage,
+  BlogsPage,
+  BlogDetailPage,
+  SurveyDetailPage,
+  PricingPage,
+  PaymentSuccessPage,
+  Dashboard,
+} from "./lazyPages";
 
 const router = createBrowserRouter([
   {
@@ -26,15 +29,15 @@ const router = createBrowserRouter([
       },
       {
         path: "/surveys",
-        element: (
-          <PrivateRoute>
-            <SurveysPage />
-          </PrivateRoute>
-        ),
+        element: <SurveysPage />,
       },
       {
         path: "/surveys/:id",
-        element: <SurveyDetailPage />,
+        element: (
+          <PrivateRoute>
+            <SurveyDetailPage />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/profile",
@@ -82,9 +85,14 @@ const router = createBrowserRouter([
     path: "/dashboard",
     element: (
       <PrivateRoute>
-        <Dashboard />
+        <DashboardLayout />
       </PrivateRoute>
     ),
+    children: [
+      { index: true, element: <Dashboard /> },
+      { path: ":section", element: <DashboardSection /> },
+      { path: "surveys/:id", element: <Dashboard /> },
+    ],
   },
 ]);
 

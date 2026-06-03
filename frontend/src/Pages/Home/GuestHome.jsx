@@ -216,11 +216,15 @@ export default function GuestHome() {
                       participantCount={s.participantCount}
                       status={s.status}
                     />
-                    {/* Guest lock overlay */}
+                    {/* Guest overlay */}
                     <div className="absolute inset-0 bg-white/70 backdrop-blur-[2px] rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center">
-                      <Link to="/login" className="btn btn-primary btn-sm">
-                        Sign in to vote
-                      </Link>
+                      {s.status === "expired" ? (
+                        <span className="type-body-sm text-[--color-error] font-semibold">Expired</span>
+                      ) : (
+                        <Link to="/login" className="btn btn-primary btn-sm">
+                          Login to participate
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -337,7 +341,7 @@ export default function GuestHome() {
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           {/* Left text */}
           <div>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-admin-light] text-[--color-admin] mb-5">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-visitor-light] text-[--color-visitor-dark] mb-5">
               AI Insight Spotlight
             </span>
             <h2 className="type-heading-lg text-[--color-text-primary] mb-4">
@@ -508,7 +512,8 @@ export default function GuestHome() {
           SECTION 7 — Final CTA Banner
       ══════════════════════════════════════════════════ */}
       <section
-        className="py-20 bg-[--color-navy] text-center"
+        className="py-20 text-center"
+        style={{ backgroundColor: "var(--color-navy)" }}
       >
         <div className="container-marketing mx-auto">
           <h2 className="type-display-lg text-white mb-4">

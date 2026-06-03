@@ -1,3 +1,4 @@
+import { Link } from "react-router";
 import { motion } from "motion/react";
 import {
   ChartBarIcon,
@@ -6,6 +7,8 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { StatCard } from "../../../../Components/UI/StatCard";
+import { useUserOverview } from "../../../../Hooks/useDashboardUser";
+import useProfile from "../../../../Hooks/useProfile";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -17,7 +20,9 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
-export default function UserOverview({ overview, profile, onTabChange }) {
+export default function UserOverview() {
+  const { data: overview } = useUserOverview();
+  const { data: profile } = useProfile();
   const stats = overview || {};
 
   return (
@@ -52,7 +57,7 @@ export default function UserOverview({ overview, profile, onTabChange }) {
 
       {/* Welcome Card & Fast Actions */}
       <motion.div variants={item} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 card p-6 bg-gradient-to-br from-[--color-user-light] to-white border-[--color-user-light] relative overflow-hidden flex flex-col justify-between min-h-[220px]">
+        <div className="lg:col-span-2 card p-6 bg-linear-to-br from-[--color-user-light] to-white border-[--color-user-light] relative overflow-hidden flex flex-col justify-between min-h-[220px]">
           <div>
             <h3 className="type-heading-md text-[--color-user-dark] font-bold">Your SurveyHub Experience</h3>
             <p className="type-body-sm text-[--color-text-secondary] mt-2 max-w-md">
@@ -60,18 +65,12 @@ export default function UserOverview({ overview, profile, onTabChange }) {
             </p>
           </div>
           <div className="flex items-center gap-4 mt-6">
-            <button
-              onClick={() => onTabChange?.("participation")}
-              className="btn btn-user btn-sm font-semibold text-white"
-            >
+            <Link to="/dashboard/participation" className="btn btn-user btn-sm font-semibold text-white">
               Check Participation Ledger
-            </button>
-            <button
-              onClick={() => onTabChange?.("support")}
-              className="btn btn-secondary btn-sm"
-            >
+            </Link>
+            <Link to="/dashboard/support" className="btn btn-secondary btn-sm">
               Get Support
-            </button>
+            </Link>
           </div>
         </div>
 

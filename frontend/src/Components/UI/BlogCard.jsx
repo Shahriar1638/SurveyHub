@@ -96,10 +96,10 @@ export function ReactionBar({ counts, userReaction, onReact, readonly = false })
               readonly ? "cursor-default" : "cursor-pointer hover:scale-105 active:scale-95"
             } ${isActive ? "ring-2" : ""}`}
             style={{
-              backgroundColor: isActive ? "var(--color-surveyor-light)" : "var(--color-bg-subtle)",
-              color: isActive ? "var(--color-surveyor-dark)" : "var(--color-text-secondary)",
-              ringColor: isActive ? "var(--color-surveyor)" : "transparent",
-              border: isActive ? "1px solid var(--color-surveyor)" : "1px solid var(--color-border)",
+              backgroundColor: isActive ? "var(--color-visitor-light)" : "var(--color-bg-subtle)",
+              color: isActive ? "var(--color-visitor-dark)" : "var(--color-text-secondary)",
+              ringColor: isActive ? "var(--color-visitor)" : "transparent",
+              border: isActive ? "1px solid var(--color-visitor)" : "1px solid var(--color-border)",
             }}
           >
             <span>{emoji}</span>
@@ -158,7 +158,7 @@ export function BlogCard({ blog, index }) {
       </div>
 
       {/* Title & excerpt */}
-      <h2 className="type-heading-sm text-[--color-text-primary] mb-2 group-hover:text-[--color-surveyor-dark] transition-colors line-clamp-2">
+      <h2 className="type-heading-sm text-[--color-text-primary] mb-2 group-hover:text-[--color-visitor] transition-colors line-clamp-2">
         {blog.title}
       </h2>
       <p className="type-body-sm text-[--color-text-secondary] line-clamp-3 mb-4">

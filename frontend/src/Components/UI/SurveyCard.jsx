@@ -33,7 +33,7 @@ export function SurveyCard({
       <div className="p-5 flex-1 flex flex-col">
         {category && (
           <div className="mb-2">
-            <span className="badge badge-visitor">{category}</span>
+            <span className="badge" style={{ backgroundColor: "var(--color-bg-subtle)", color: "var(--color-text-secondary)" }}>{category}</span>
           </div>
         )}
 

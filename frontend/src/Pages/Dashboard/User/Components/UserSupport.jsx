@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChatBubbleLeftEllipsisIcon,
@@ -9,6 +9,7 @@ import {
   QuestionMarkCircleIcon,
   PaperAirplaneIcon,
 } from "@heroicons/react/24/outline";
+import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useUserSupport, useSubmitSupportTicket } from "../../../../Hooks/useDashboardUser";
 import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
@@ -23,6 +24,51 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const columnHelper = createColumnHelper();
+
+const columns = [
+  columnHelper.accessor((row) => row.feedbackType?.replace("_", " ") || "general", {
+    id: "type", header: "Type", cell: (info) => (
+      <span className="badge badge-draft text-[10px] capitalize leading-none">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("comment", {
+    header: "Inquiry / Comment", cell: (info) => (
+      <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-[280px]">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor((row) => row.affectedPage || "—", {
+    id: "affectedPage", header: "Affected Page", cell: (info) => (
+      <span className="type-meta text-[--color-text-secondary]">{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.accessor("status", {
+    header: "Status", cell: (info) => (
+      <span className={`badge text-[9px] capitalize ${
+        info.getValue() === "open" ? "badge-pending"
+          : info.getValue() === "resolved" ? "badge-published" : "badge-draft"
+      }`}>{info.getValue()}</span>
+    ),
+  }),
+  columnHelper.display({
+    id: "adminResponse",
+    header: () => <span className="text-right block">Admin Response</span>,
+    cell: ({ row }) => {
+      const ticket = row.original;
+      return ticket.adminResponse?.message ? (
+        <div className="inline-block text-left max-w-[240px] p-2 bg-[--color-user-light] border border-[--color-user-light]/40 rounded-lg text-xs">
+          <span className="type-label-sm text-[--color-user-dark] block font-bold text-[10px] uppercase">Reply from Admin:</span>
+          <p className="type-body-sm text-[--color-text-primary] italic mt-0.5 font-[500]">
+            "{ticket.adminResponse.message}"
+          </p>
+        </div>
+      ) : (
+        <span className="type-meta text-[--color-text-tertiary] italic">Awaiting Response…</span>
+      );
+    },
+  }),
+];
+
 export default function UserSupport() {
   const { data: tickets, isLoading } = useUserSupport();
   const submitTicketMutation = useSubmitSupportTicket();
@@ -30,7 +76,9 @@ export default function UserSupport() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
-  const list = tickets || [];
+  const list = useMemo(() => tickets || [], [tickets]);
+
+  const table = useReactTable({ data: list, columns, getCoreRowModel: getCoreRowModel() });
 
   const onSubmit = async (data) => {
     try {
@@ -97,57 +145,24 @@ export default function UserSupport() {
         <motion.div variants={item} className="table-wrapper">
           <table className="data-table">
             <thead>
-              <tr>
-                <th>Type</th>
-                <th>Inquiry / Comment</th>
-                <th>Affected Page</th>
-                <th>Status</th>
-                <th className="text-right">Admin Response</th>
-              </tr>
+              {table.getHeaderGroups().map((hg) => (
+                <tr key={hg.id}>
+                  {hg.headers.map((h) => (
+                    <th key={h.id}>
+                      {h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}
+                    </th>
+                  ))}
+                </tr>
+              ))}
             </thead>
             <tbody>
-              {list.map((ticket) => (
-                <tr key={ticket._id}>
-                  <td>
-                    <span className="badge badge-draft text-[10px] capitalize leading-none">
-                      {ticket.feedbackType?.replace("_", " ") || "general"}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-[280px]">
-                      {ticket.comment}
-                    </span>
-                  </td>
-                  <td>
-                    <span className="type-meta text-[--color-text-secondary]">
-                      {ticket.affectedPage || "—"}
-                    </span>
-                  </td>
-                  <td>
-                    <span
-                      className={`badge text-[9px] capitalize ${
-                        ticket.status === "open"
-                          ? "badge-pending"
-                          : ticket.status === "resolved"
-                            ? "badge-published"
-                            : "badge-draft"
-                      }`}
-                    >
-                      {ticket.status}
-                    </span>
-                  </td>
-                  <td className="text-right">
-                    {ticket.adminResponse?.message ? (
-                      <div className="inline-block text-left max-w-[240px] p-2 bg-[--color-user-light] border border-[--color-user-light]/40 rounded-lg text-xs">
-                        <span className="type-label-sm text-[--color-user-dark] block font-bold text-[10px] uppercase">Reply from Admin:</span>
-                        <p className="type-body-sm text-[--color-text-primary] italic mt-0.5 font-[500]">
-                          "{ticket.adminResponse.message}"
-                        </p>
-                      </div>
-                    ) : (
-                      <span className="type-meta text-[--color-text-tertiary] italic">Awaiting Response…</span>
-                    )}
-                  </td>
+              {table.getRowModel().rows.map((row) => (
+                <tr key={row.id}>
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
                 </tr>
               ))}
             </tbody>

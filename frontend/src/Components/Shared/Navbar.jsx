@@ -25,6 +25,7 @@ const USER_LINKS = [
   { name: "Blogs", path: "/blogs" },
   { name: "Pricing", path: "/pricing" },
   { name: "Feedback & Support", path: "/feedback" },
+  { name: "Dashboard", path: "/dashboard" },
 ];
 
 // Surveyor nav links
