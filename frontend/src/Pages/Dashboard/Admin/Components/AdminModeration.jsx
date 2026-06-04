@@ -7,6 +7,7 @@ import {
   EyeIcon,
 } from "@heroicons/react/24/outline";
 import { useAdminReports } from "../../../../Hooks/useDashboardAdmin";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import ReportSidePanel from "../ReportSidePanel";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
@@ -32,8 +33,10 @@ function ReportStatusBadge({ status }) {
 
 export default function AdminModeration() {
   const [statusFilter, setStatusFilter] = useState("pending");
-  const { data: reportData, isLoading } = useAdminReports({ status: statusFilter });
+  const { data: reportData, isLoading, isError } = useAdminReports({ status: statusFilter });
   const [selectedReport, setSelectedReport] = useState(null);
+
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load reports.</p></div>;
 
   const reports = reportData?.data || [];
 

@@ -35,7 +35,7 @@ const surveySchema = new mongoose.Schema({
     }
   ],
   
-  status: { type: String, enum: ['draft', 'published', 'expired', 'banned'], default: 'draft' },
+  status: { type: String, enum: ['draft', 'published', 'expired', 'banned', 'pending'], default: 'draft' },
   publishedAt: Date,
   category: String,
   participantCount: {

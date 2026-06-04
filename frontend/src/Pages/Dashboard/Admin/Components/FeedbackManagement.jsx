@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useAdminFeedback } from "../../../../Hooks/useDashboardAdmin";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -50,8 +51,10 @@ const columns = [
 
 export default function FeedbackManagement() {
   const [statusFilter, setStatusFilter] = useState("");
-  const { data: feedbackData, isLoading } = useAdminFeedback({ status: statusFilter || undefined });
+  const { data: feedbackData, isLoading, isError } = useAdminFeedback({ status: statusFilter || undefined });
   const items = useMemo(() => feedbackData?.data || [], [feedbackData]);
+
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load feedback.</p></div>;
 
   const table = useReactTable({ data: items, columns, getCoreRowModel: getCoreRowModel() });
 

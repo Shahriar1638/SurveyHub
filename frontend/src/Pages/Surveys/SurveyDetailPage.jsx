@@ -131,6 +131,51 @@ export default function SurveyDetailPage() {
     }
   }, [survey, isExpired, existingResponse, id, navigate]);
 
+  // Ctrl+S / Cmd+S keyboard shortcut to save draft
+  useEffect(() => {
+    const handler = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+        e.preventDefault();
+        if (!submitMutation.isPending && user && !isExpired && !submitted) {
+          handleSaveDraft();
+        }
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [handleSaveDraft, submitMutation.isPending, user, isExpired, submitted]);
+
+  // ── Loading state ──
+  if (isLoading) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="flex flex-col items-center gap-3">
+            <div className="spinner w-8 h-8 text-[--color-visitor]" />
+            <p className="type-body-sm text-[--color-text-tertiary]">Loading survey…</p>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
+
+  // ── Error state ──
+  if (isError || !survey) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="type-heading-lg text-[--color-text-primary] mb-2">Survey not found</h1>
+            <p className="type-body-base text-[--color-text-secondary] mb-6">This survey may have been removed or the link is invalid.</p>
+            <button onClick={() => navigate("/surveys")} className="btn btn-primary btn-md">
+              ← Back to Surveys
+            </button>
+          </div>
+        </div>
+      </PageTransition>
+    );
+  }
+
   // ── Success screen ──
   if (submitted) {
     return (
@@ -409,20 +454,33 @@ export default function SurveyDetailPage() {
                 title="Save Draft (Ctrl+S)"
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-[--shadow-lg] transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-50 bg-[--color-bg-surface] border-[1.5px] border-[--color-border-strong] text-[--color-text-primary]"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-                  />
-                </svg>
-                Save Draft
-                <kbd
-                  className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono border border-[--color-border] text-[--color-text-tertiary]"
-                >
-                  Ctrl+S
-                </kbd>
+                {submitMutation.isPending ? (
+                  <>
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }}
+                      className="w-4 h-4 border-2 border-[--color-text-tertiary]/30 border-t-[--color-text-primary] rounded-full block"
+                    />
+                    Saving…
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                      />
+                    </svg>
+                    Save Draft
+                    <kbd
+                      className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono border border-[--color-border] text-[--color-text-tertiary]"
+                    >
+                      Ctrl+S
+                    </kbd>
+                  </>
+                )}
               </button>
             </motion.div>
           )}

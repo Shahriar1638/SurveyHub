@@ -23,7 +23,7 @@ export default function MultipleChoice({ question, value, onChange, disabled }) 
 
           <span
             className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
-              value === opt ? "border-[--color-visitor] bg-[--color-visitor]" : "border-[--color-border-strong] bg-transparent"
+              value === opt ? "border-[--color-visitor] bg-[--color-visitor]" : "border-[--color-text-tertiary] bg-transparent"
             }`}
           >
             {value === opt && <span className="w-2 h-2 rounded-full bg-white" />}

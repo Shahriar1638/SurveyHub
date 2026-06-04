@@ -25,8 +25,8 @@ const blogSchema = new mongoose.Schema({
   surveyorEmail: { type: String, required: true },
   status: {
     type: String,
-    enum: ['active', 'banned'],
-    default: 'active',
+    enum: ['draft', 'active', 'banned'],
+    default: 'draft',
   },
   title: { type: String, required: true },
   content: { type: String, required: true }, // Markdown or HTML content

@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useUserParticipation } from "../../../../Hooks/useDashboardUser";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -49,8 +50,10 @@ const columns = [
 ];
 
 export default function ParticipationLedger() {
-  const { data: ledger, isLoading } = useUserParticipation();
+  const { data: ledger, isLoading, isError } = useUserParticipation();
   const list = useMemo(() => ledger || [], [ledger]);
+
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load participation data.</p></div>;
 
   const table = useReactTable({ data: list, columns, getCoreRowModel: getCoreRowModel() });
 

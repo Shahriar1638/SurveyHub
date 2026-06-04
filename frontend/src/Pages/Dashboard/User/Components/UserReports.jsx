@@ -115,8 +115,10 @@ function ReportCard({ report }) {
 }
 
 export default function UserReports() {
-  const { data: reports, isLoading } = useUserReports();
+  const { data: reports, isLoading, isError } = useUserReports();
   const list = reports || [];
+
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load reports.</p></div>;
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">

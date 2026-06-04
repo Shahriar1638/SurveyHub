@@ -31,8 +31,10 @@ function RoleSkeleton() {
 
 // ── Home — single entry point, delegates by role ──────────────────────────────
 export default function Home() {
-  const { user } = useContext(AuthContext);
+  const { user, loading: authLoading } = useContext(AuthContext);
   const { data: profile, isPending } = useProfile();
+
+  if (authLoading) return <RoleSkeleton />;
 
   return (
     <Suspense fallback={<RoleSkeleton />}>

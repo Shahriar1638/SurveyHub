@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Routes from "./Router/Routes";
 import AuthProvider from "./Firebase_AuthProvider/AuthProvider.jsx";
 import { RouterProvider } from "react-router";
-import { ThreeDot } from "react-loading-indicators";
+import { LoadingPage } from "./Components/UI/LoadingSpinner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -24,13 +24,7 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <Suspense
-          fallback={
-            <div className="flex min-h-screen items-center justify-center">
-              <ThreeDot color="#32cd32" size="medium" text="" textColor="" />
-            </div>
-          }
-        >
+        <Suspense fallback={<LoadingPage />}>
           <RouterProvider router={Routes} />
         </Suspense>
       </QueryClientProvider>

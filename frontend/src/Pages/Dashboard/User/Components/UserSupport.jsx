@@ -70,13 +70,15 @@ const columns = [
 ];
 
 export default function UserSupport() {
-  const { data: tickets, isLoading } = useUserSupport();
+  const { data: tickets, isLoading, isError } = useUserSupport();
   const submitTicketMutation = useSubmitSupportTicket();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm();
 
   const list = useMemo(() => tickets || [], [tickets]);
+
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load support tickets.</p></div>;
 
   const table = useReactTable({ data: list, columns, getCoreRowModel: getCoreRowModel() });
 

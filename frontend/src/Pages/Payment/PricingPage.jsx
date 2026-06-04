@@ -4,6 +4,7 @@ import { motion } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { PageTransition } from "../../Components/UI/PageTransition";
+import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 
@@ -89,7 +90,7 @@ const PACKAGES = [
 
 export default function PricingPage() {
   const { user } = useContext(AuthContext);
-  const { data: profile } = useProfile();
+  const { data: profile, isPending } = useProfile();
   const navigate = useNavigate();
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
@@ -97,6 +98,8 @@ export default function PricingPage() {
   const userId = profile?._id;
 
   const axiosSecure = useAxiosSecure();
+
+  if (isPending) return <LoadingSpinner />;
 
   const handlePurchase = async (packageId) => {
     if (!user) {

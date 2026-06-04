@@ -8,6 +8,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "../../../../Components/UI/StatCard";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
 import useProfile from "../../../../Hooks/useProfile";
 
@@ -33,8 +34,12 @@ const mockTrendData = [
 ];
 
 export default function SurveyorOverview() {
-  const { data } = useDashboardSurveyor();
+  const { data, isLoading, isError } = useDashboardSurveyor();
   const { data: profile } = useProfile();
+
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load dashboard.</p></div>;
+
   const kpis = data?.kpis || {};
 
   return (

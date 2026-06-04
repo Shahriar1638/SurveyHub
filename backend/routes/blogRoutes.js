@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blog');
 const User = require('../models/User');
-const { verifyToken } = require('../middlewares/authMiddleware')();
+const { verifyToken, verifySurveyor } = require('../middlewares/authMiddleware')();
 
 // ── helper: attach role badge info to a list of emails ─────────────────────
 async function enrichWithRoles(emails) {
@@ -55,6 +55,94 @@ router.get('/', async (req, res) => {
     });
   } catch (err) {
     console.error('Error fetching blogs:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── GET /api/blogs/mine — surveyor's own blogs (active + draft) ──────────────
+router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blogs = await Blog.find({ surveyorEmail: req.decoded.email })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, data: blogs });
+  } catch (err) {
+    console.error('Error fetching own blogs:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── POST /api/blogs — Create a new blog post ────────────────────────────────
+router.post('/', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const { title, content, surveyId } = req.body;
+
+    if (!title?.trim()) {
+      return res.status(400).json({ success: false, message: 'Title is required' });
+    }
+    if (!content?.trim()) {
+      return res.status(400).json({ success: false, message: 'Content is required' });
+    }
+
+    const blog = await Blog.create({
+      surveyorEmail: req.decoded.email,
+      title: title.trim(),
+      content: content.trim(),
+      surveyId: surveyId || undefined,
+      status: 'draft',
+    });
+
+    res.status(201).json({ success: true, data: blog });
+  } catch (err) {
+    console.error('Error creating blog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── PUT /api/blogs/:id — Update a blog post (owner only) ────────────────────
+router.put('/:id', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+    if (blog.surveyorEmail !== req.decoded.email) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const { title, content, surveyId, status } = req.body;
+
+    if (title !== undefined) blog.title = title.trim();
+    if (content !== undefined) blog.content = content.trim();
+    if (surveyId !== undefined) blog.surveyId = surveyId || undefined;
+    if (status !== undefined && ['draft', 'active'].includes(status)) {
+      blog.status = status;
+    }
+
+    await blog.save();
+    res.json({ success: true, data: blog });
+  } catch (err) {
+    console.error('Error updating blog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── DELETE /api/blogs/:id — Delete a blog post (owner only) ─────────────────
+router.delete('/:id', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+    if (blog.surveyorEmail !== req.decoded.email) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    await Blog.findByIdAndDelete(req.params.id);
+    res.json({ success: true, message: 'Blog deleted' });
+  } catch (err) {
+    console.error('Error deleting blog:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

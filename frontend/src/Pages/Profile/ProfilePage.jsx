@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { Link } from "react-router";
 import useProfile from "../../Hooks/useProfile";
 import { useProfileStats, useUpdateProfile } from "../../Hooks/useProfileData";
+import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
 import UserProfile from "./UserProfile";
 import SurveyorProfile from "./SurveyorProfile";
 import AdminProfile from "./AdminProfile";
@@ -338,7 +339,7 @@ function ProfileSkeleton() {
 
 // ── Main Profile Page ─────────────────────────────────────────────────────────
 export default function ProfilePage() {
-  const { data: profile, isPending: profileLoading } = useProfile();
+  const { data: profile, isPending: profileLoading, isError: profileError } = useProfile();
   const { data: stats, isPending: statsLoading } = useProfileStats();
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile();
   const [editOpen, setEditOpen] = useState(false);
@@ -356,6 +357,14 @@ export default function ProfilePage() {
     return (
       <div className="container-marketing py-8">
         <ProfileSkeleton />
+      </div>
+    );
+  }
+
+  if (profileError) {
+    return (
+      <div className="container-marketing py-8 text-center">
+        <p className="type-body-sm text-[--color-error]">Failed to load profile.</p>
       </div>
     );
   }

@@ -26,7 +26,7 @@ export default function SurveyorDashboard({ children }) {
           </p>
         </div>
         {activeSection === "overview" && (
-          <Link to="/dashboard/surveys" className="btn btn-surveyor btn-md flex items-center gap-2">
+          <Link to="/dashboard/create-survey" className="btn btn-surveyor btn-md flex items-center gap-2">
             <PlusIcon className="w-4 h-4" />
             Create Survey
           </Link>

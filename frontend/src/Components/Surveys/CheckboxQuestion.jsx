@@ -37,7 +37,7 @@ export default function CheckboxQuestion({ question, value, onChange, disabled }
 
             <span
               className={`w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-all duration-150 ${
-                isSelected ? "bg-[--color-visitor] border-[--color-visitor]" : "border-[--color-border-strong] bg-transparent"
+                isSelected ? "bg-[--color-visitor] border-[--color-visitor]" : "border-[--color-text-tertiary] bg-transparent"
               }`}
             >
               {isSelected && (

@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -110,7 +111,8 @@ const columns = [
 ];
 
 export default function MySurveys() {
-  const { data } = useDashboardSurveyor();
+  const navigate = useNavigate();
+  const { data, isLoading, isError } = useDashboardSurveyor();
   const allSurveys = useMemo(() => {
     const pub = (data?.publishedSurveys || []).map((s) => ({ ...s, _source: "published" }));
     const draft = (data?.draftSurveys || []).map((s) => ({ ...s, _source: "draft" }));
@@ -119,12 +121,15 @@ export default function MySurveys() {
 
   const table = useReactTable({ data: allSurveys, columns, getCoreRowModel: getCoreRowModel() });
 
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load surveys.</p></div>;
+
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item} className="flex items-center justify-between">
         <h2 className="type-heading-lg text-[--color-text-primary]">My Surveys</h2>
         <button
-          onClick={() => navigate("/surveys")}
+          onClick={() => navigate("/dashboard/create-survey")}
           className="btn btn-surveyor btn-sm flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />

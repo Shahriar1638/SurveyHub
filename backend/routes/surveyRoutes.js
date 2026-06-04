@@ -3,7 +3,8 @@ const router = express.Router();
 const Survey = require('../models/Survey');
 const Response = require('../models/response');
 const Feedback = require('../models/feedback');
-const { verifyToken } = require('../middlewares/authMiddleware')();
+const User = require('../models/User');
+const { verifyToken, verifySurveyor } = require('../middlewares/authMiddleware')();
 
 /**
  * GET /api/surveys
@@ -161,6 +162,120 @@ router.post('/:id/respond', verifyToken, async (req, res) => {
     res.json({ success: true, data: response, isDraft });
   } catch (err) {
     console.error('Error submitting response:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/surveys — Create a new survey (draft or published)
+ * Body: { title, description, useCase, category, deadline, image, questions, status }
+ */
+router.post('/', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const { title, description, useCase, category, deadline, image, questions, status } = req.body;
+
+    if (!title?.trim()) {
+      return res.status(400).json({ success: false, message: 'Title is required' });
+    }
+    if (!deadline?.trim()) {
+      return res.status(400).json({ success: false, message: 'Deadline is required' });
+    }
+    if (!Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one question is required' });
+    }
+
+    // Look up surveyor by email
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const validStatuses = ['draft', 'published'];
+    const surveyStatus = validStatuses.includes(status) ? status : 'draft';
+
+    const survey = await Survey.create({
+      surveyorId: user._id,
+      title: title.trim(),
+      description: description?.trim() || undefined,
+      useCase: useCase?.trim() || undefined,
+      category: category?.trim() || undefined,
+      deadline: deadline.trim(),
+      image: image?.trim() || undefined,
+      questions,
+      status: surveyStatus,
+      publishedAt: surveyStatus === 'published' ? new Date() : undefined,
+    });
+
+    res.status(201).json({ success: true, data: survey });
+  } catch (err) {
+    console.error('Error creating survey:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * PUT /api/surveys/:id — Update a survey (owner only)
+ */
+router.put('/:id', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    // Verify ownership
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || survey.surveyorId.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const { title, description, useCase, category, deadline, image, questions, status } = req.body;
+
+    if (title !== undefined) survey.title = title.trim();
+    if (description !== undefined) survey.description = description?.trim() || undefined;
+    if (useCase !== undefined) survey.useCase = useCase?.trim() || undefined;
+    if (category !== undefined) survey.category = category?.trim() || undefined;
+    if (deadline !== undefined) survey.deadline = deadline.trim();
+    if (image !== undefined) survey.image = image?.trim() || undefined;
+    if (questions !== undefined) survey.questions = questions;
+    if (status !== undefined && ['draft', 'published'].includes(status)) {
+      survey.status = status;
+      if (status === 'published' && !survey.publishedAt) {
+        survey.publishedAt = new Date();
+      }
+    }
+
+    await survey.save();
+    res.json({ success: true, data: survey });
+  } catch (err) {
+    console.error('Error updating survey:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * DELETE /api/surveys/:id — Delete a survey (owner only)
+ */
+router.delete('/:id', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    // Verify ownership
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || survey.surveyorId.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    await Survey.findByIdAndDelete(req.params.id);
+    // Also delete associated responses
+    await Response.deleteMany({ surveyId: req.params.id });
+
+    res.json({ success: true, message: 'Survey deleted' });
+  } catch (err) {
+    console.error('Error deleting survey:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

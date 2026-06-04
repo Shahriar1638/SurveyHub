@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useAuditLogs } from "../../../../Hooks/useDashboardAdmin";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -48,8 +49,10 @@ const columns = [
 ];
 
 export default function AuditLogs() {
-  const { data: logData, isLoading } = useAuditLogs({ limit: 30 });
+  const { data: logData, isLoading, isError } = useAuditLogs({ limit: 30 });
   const logs = useMemo(() => logData?.data || [], [logData]);
+
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load audit logs.</p></div>;
 
   const table = useReactTable({ data: logs, columns, getCoreRowModel: getCoreRowModel() });
 

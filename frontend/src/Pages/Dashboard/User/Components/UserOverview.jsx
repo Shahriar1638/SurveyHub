@@ -7,6 +7,7 @@ import {
   CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { StatCard } from "../../../../Components/UI/StatCard";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import { useUserOverview } from "../../../../Hooks/useDashboardUser";
 import useProfile from "../../../../Hooks/useProfile";
 
@@ -21,8 +22,12 @@ const item = {
 };
 
 export default function UserOverview() {
-  const { data: overview } = useUserOverview();
+  const { data: overview, isLoading, isError } = useUserOverview();
   const { data: profile } = useProfile();
+
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load dashboard.</p></div>;
+
   const stats = overview || {};
 
   return (

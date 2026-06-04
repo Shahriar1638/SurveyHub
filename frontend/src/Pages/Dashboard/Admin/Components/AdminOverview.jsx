@@ -9,6 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { StatCard } from "../../../../Components/UI/StatCard";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import { useAdminOverview } from "../../../../Hooks/useDashboardAdmin";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
@@ -32,7 +33,11 @@ const mockRevenueData = [
 ];
 
 export default function AdminOverview() {
-  const { data: overview } = useAdminOverview();
+  const { data: overview, isLoading, isError } = useAdminOverview();
+
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load admin overview.</p></div>;
+
   const health = overview?.health || {};
   const modStats = overview?.moderationStats || {};
 

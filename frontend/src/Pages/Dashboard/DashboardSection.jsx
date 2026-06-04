@@ -2,6 +2,7 @@ import { useContext } from "react";
 import { Navigate, useParams } from "react-router";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
+import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
 
 import UserDashboard from "./User/UserDashboard";
 import SurveyorDashboard from "./Surveyor/SurveyorDashboard";
@@ -14,8 +15,10 @@ import UserSupport from "./User/Components/UserSupport";
 
 import SurveyorOverview from "./Surveyor/Components/SurveyorOverview";
 import MySurveys from "./Surveyor/Components/MySurveys";
+import CreateSurvey from "./Surveyor/Components/CreateSurvey";
 import AiAnalytics from "./Surveyor/Components/AiAnalytics";
 import BlogStudio from "./Surveyor/Components/BlogStudio";
+import CreateBlog from "./Surveyor/Components/CreateBlog";
 import FeedbackInbox from "./Surveyor/Components/FeedbackInbox";
 
 import AdminOverview from "./Admin/Components/AdminOverview";
@@ -34,8 +37,10 @@ const USER_SECTIONS = {
 const SURVEYOR_SECTIONS = {
   overview: SurveyorOverview,
   surveys: MySurveys,
+  "create-survey": CreateSurvey,
   analytics: AiAnalytics,
   "blog-studio": BlogStudio,
+  "create-blog": CreateBlog,
   "feedback-inbox": FeedbackInbox,
 };
 
@@ -65,7 +70,7 @@ export default function DashboardSection() {
   const { section } = useParams();
 
   if (!user) return <Navigate to="/login" replace />;
-  if (isPending) return null;
+  if (isPending) return <LoadingSpinner />;
 
   const role = profile?.role;
   if (!role || !["user", "surveyor", "admin"].includes(role)) return <Navigate to="/" replace />;

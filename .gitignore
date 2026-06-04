@@ -13,6 +13,7 @@ prompt.txt
 Homepage_idea.md
 profile_idea.md
 dashboard_idea.md
+start.txt
 # Ignore environment files
 .env
 .env.local

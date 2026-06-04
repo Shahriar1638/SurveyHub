@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import {
   PlusIcon,
@@ -6,6 +7,7 @@ import {
   HeartIcon,
 } from "@heroicons/react/24/outline";
 import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -18,14 +20,18 @@ const item = {
 };
 
 export default function BlogStudio() {
-  const { data } = useDashboardSurveyor();
+  const navigate = useNavigate();
+  const { data, isLoading, isError } = useDashboardSurveyor();
   const blogs = data?.recentBlogActivity || [];
+
+  if (isLoading) return <LoadingSpinner />;
+  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load blog data.</p></div>;
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <motion.div variants={item} className="flex items-center justify-between">
         <h2 className="type-heading-lg text-[--color-text-primary]">Blog Studio</h2>
-        <button className="btn btn-surveyor btn-sm flex items-center gap-2">
+        <button onClick={() => navigate("/dashboard/create-blog")} className="btn btn-surveyor btn-sm flex items-center gap-2">
           <PlusIcon className="w-4 h-4" />
           New Blog Post
         </button>
