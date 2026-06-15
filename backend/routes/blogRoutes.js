@@ -2,6 +2,13 @@ const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blog');
 const User = require('../models/User');
+const validate = require('../validations/validate');
+const {
+  createBlogSchema,
+  updateBlogSchema,
+  blogReactionSchema,
+  blogCommentSchema,
+} = require('../validations/schemas');
 const { verifyToken, verifySurveyor } = require('../middlewares/authMiddleware')();
 
 // ── helper: attach role badge info to a list of emails ─────────────────────
@@ -74,16 +81,9 @@ router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
 });
 
 // ── POST /api/blogs — Create a new blog post ────────────────────────────────
-router.post('/', verifyToken, verifySurveyor, async (req, res) => {
+router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async (req, res) => {
   try {
     const { title, content, surveyId } = req.body;
-
-    if (!title?.trim()) {
-      return res.status(400).json({ success: false, message: 'Title is required' });
-    }
-    if (!content?.trim()) {
-      return res.status(400).json({ success: false, message: 'Content is required' });
-    }
 
     const blog = await Blog.create({
       surveyorEmail: req.decoded.email,
@@ -101,7 +101,7 @@ router.post('/', verifyToken, verifySurveyor, async (req, res) => {
 });
 
 // ── PUT /api/blogs/:id — Update a blog post (owner only) ────────────────────
-router.put('/:id', verifyToken, verifySurveyor, async (req, res) => {
+router.put('/:id', verifyToken, verifySurveyor, validate(updateBlogSchema), async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id);
     if (!blog) {
@@ -194,13 +194,9 @@ router.get('/:id', async (req, res) => {
 });
 
 // ── POST /api/blogs/:id/react — toggle a reaction (auth required) ───────────
-router.post('/:id/react', verifyToken, async (req, res) => {
+router.post('/:id/react', verifyToken, validate(blogReactionSchema), async (req, res) => {
   try {
     const { userEmail, reactionType } = req.body;
-    const valid = ['like', 'insightful', 'disagree', 'interesting', 'funny'];
-    if (!userEmail || !valid.includes(reactionType)) {
-      return res.status(400).json({ success: false, message: 'Invalid reaction' });
-    }
 
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ success: false, message: 'Not found' });
@@ -237,12 +233,9 @@ router.post('/:id/react', verifyToken, async (req, res) => {
 });
 
 // ── POST /api/blogs/:id/comments — add a comment (auth required) ────────────
-router.post('/:id/comments', verifyToken, async (req, res) => {
+router.post('/:id/comments', verifyToken, validate(blogCommentSchema), async (req, res) => {
   try {
     const { userEmail, text } = req.body;
-    if (!userEmail || !text?.trim()) {
-      return res.status(400).json({ success: false, message: 'userEmail and text are required' });
-    }
 
     const blog = await Blog.findById(req.params.id);
     if (!blog || blog.status === 'banned') {
@@ -267,12 +260,9 @@ router.post('/:id/comments', verifyToken, async (req, res) => {
 });
 
 // ── POST /api/blogs/:id/comments/:commentId/replies — add a reply ───────────
-router.post('/:id/comments/:commentId/replies', verifyToken, async (req, res) => {
+router.post('/:id/comments/:commentId/replies', verifyToken, validate(blogCommentSchema), async (req, res) => {
   try {
     const { userEmail, text } = req.body;
-    if (!userEmail || !text?.trim()) {
-      return res.status(400).json({ success: false, message: 'userEmail and text are required' });
-    }
 
     const blog = await Blog.findById(req.params.id);
     if (!blog || blog.status === 'banned') {

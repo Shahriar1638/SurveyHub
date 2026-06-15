@@ -2,14 +2,11 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
-const { z } = require('zod');
-
-const avatarUploadSchema = z.object({
-  image: z.string().min(1, 'Image data is required'),
-});
+const validate = require('../validations/validate');
+const { signUpSchema, loginSchema, avatarUploadSchema } = require('../validations/schemas');
 
 // POST /sign-up
-router.post('/sign-up', async (req, res) => {
+router.post('/sign-up', validate(signUpSchema), async (req, res) => {
   try {
     const {
       email,
@@ -53,15 +50,9 @@ router.post('/sign-up', async (req, res) => {
 });
 
 // POST /upload-avatar
-router.post('/upload-avatar', async (req, res) => {
+router.post('/upload-avatar', validate(avatarUploadSchema), async (req, res) => {
   try {
-    const parsed = avatarUploadSchema.safeParse(req.body);
-    if (!parsed.success) {
-      return res.status(400).send({
-        message: 'Invalid upload payload',
-        errors: parsed.error.flatten(),
-      });
-    }
+    const parsed = { data: req.body };
 
     const apiKey = process.env.IMGBB_API_KEY;
     const uploadUrl = process.env.IMGBB_UPLOAD_URL || 'https://api.imgbb.com/1/upload';
@@ -97,7 +88,7 @@ router.post('/upload-avatar', async (req, res) => {
 });
 
 // POST /login
-router.post('/login', async (req, res) => {
+router.post('/login', validate(loginSchema), async (req, res) => {
   try {
     const { email } = req.body;
     

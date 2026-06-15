@@ -4,6 +4,8 @@ const User = require('../models/User');
 const Survey = require('../models/Survey');
 const Response = require('../models/response');
 const Blog = require('../models/Blog');
+const validate = require('../validations/validate');
+const { updateProfileSchema } = require('../validations/schemas');
 
 // ── GET /api/profile/me ───────────────────────────────────────────────────────
 // Returns the authenticated user's full profile
@@ -23,17 +25,13 @@ router.get('/me', async (req, res) => {
 
 // ── PATCH /api/profile/me ─────────────────────────────────────────────────────
 // Update the authenticated user's profile fields
-router.patch('/me', async (req, res) => {
+router.patch('/me', validate(updateProfileSchema), async (req, res) => {
   try {
     const email = req.user?.email;
     if (!email) return res.status(401).json({ success: false, message: 'Unauthorized' });
 
-    // Whitelist of fields that can be updated
-    const allowed = ['name', 'avatar', 'coverPhoto', 'bio', 'location', 'occupation', 'socialLinks', 'preferences', 'autoAIInsight'];
-    const updates = {};
-    allowed.forEach(field => {
-      if (req.body[field] !== undefined) updates[field] = req.body[field];
-    });
+    // req.body is already validated and parsed by Zod
+    const updates = req.body;
 
     const updated = await User.findOneAndUpdate(
       { email },
@@ -138,6 +136,34 @@ router.get('/recent-actions', async (req, res) => {
     // For now, returns a placeholder.
     res.json({ success: true, data: [] });
   } catch (err) {
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── PATCH /api/profile/auto-ai-insight ───────────────────────────────────────
+// Toggle autoAIInsight on user + bulk update all their surveys
+router.patch('/auto-ai-insight', async (req, res) => {
+  try {
+    const email = req.user?.email;
+    if (!email) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const newValue = !user.autoAIInsight;
+
+    // Update user field + bulk update all their surveys
+    await Promise.all([
+      User.findOneAndUpdate(email, { $set: { autoAIInsight: newValue } }),
+      Survey.updateMany(
+        { surveyorId: user._id },
+        { $set: { 'aiInsight.autoGenerate': newValue } }
+      ),
+    ]);
+
+    res.json({ success: true, data: { autoAIInsight: newValue } });
+  } catch (err) {
+    console.error('Auto AI insight toggle error:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

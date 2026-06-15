@@ -300,7 +300,7 @@ export default function UserHome() {
               <p className="type-body-sm text-[--color-text-secondary] mt-2 max-w-xs">
                 Update your preferences to see surveys tailored just for you.
               </p>
-              <Link to="/profile" className="btn btn-secondary btn-md mt-5">
+              <Link to="/dashboard/my-profile" className="btn btn-secondary btn-md mt-5">
                 Update Preferences
               </Link>
             </div>

@@ -4,6 +4,13 @@ const Survey = require('../models/Survey');
 const Response = require('../models/response');
 const Feedback = require('../models/feedback');
 const User = require('../models/User');
+const validate = require('../validations/validate');
+const {
+  createSurveySchema,
+  updateSurveySchema,
+  surveyResponseSchema,
+  surveyFeedbackSchema,
+} = require('../validations/schemas');
 const { verifyToken, verifySurveyor } = require('../middlewares/authMiddleware')();
 
 /**
@@ -132,12 +139,9 @@ router.get('/:id', async (req, res) => {
  * Body: { userId, answers: [{ questionId, label, value }], isDraft: boolean }
  * Upserts a response (draft or final). One response per user per survey.
  */
-router.post('/:id/respond', verifyToken, async (req, res) => {
+router.post('/:id/respond', verifyToken, validate(surveyResponseSchema), async (req, res) => {
   try {
     const { userId, answers, isDraft = false } = req.body;
-    if (!userId || !Array.isArray(answers)) {
-      return res.status(400).json({ success: false, message: 'userId and answers are required' });
-    }
 
     const survey = await Survey.findById(req.params.id);
     if (!survey || !['published', 'expired'].includes(survey.status)) {
@@ -170,19 +174,9 @@ router.post('/:id/respond', verifyToken, async (req, res) => {
  * POST /api/surveys — Create a new survey (draft or published)
  * Body: { title, description, useCase, category, deadline, image, questions, status }
  */
-router.post('/', verifyToken, verifySurveyor, async (req, res) => {
+router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), async (req, res) => {
   try {
     const { title, description, useCase, category, deadline, image, questions, status } = req.body;
-
-    if (!title?.trim()) {
-      return res.status(400).json({ success: false, message: 'Title is required' });
-    }
-    if (!deadline?.trim()) {
-      return res.status(400).json({ success: false, message: 'Deadline is required' });
-    }
-    if (!Array.isArray(questions) || questions.length === 0) {
-      return res.status(400).json({ success: false, message: 'At least one question is required' });
-    }
 
     // Look up surveyor by email
     const user = await User.findOne({ email: req.decoded.email }).lean();
@@ -216,7 +210,7 @@ router.post('/', verifyToken, verifySurveyor, async (req, res) => {
 /**
  * PUT /api/surveys/:id — Update a survey (owner only)
  */
-router.put('/:id', verifyToken, verifySurveyor, async (req, res) => {
+router.put('/:id', verifyToken, verifySurveyor, validate(updateSurveySchema), async (req, res) => {
   try {
     const survey = await Survey.findById(req.params.id);
     if (!survey) {
@@ -300,17 +294,13 @@ router.get('/:id/my-response', verifyToken, async (req, res) => {
  * POST /api/surveys/:id/feedback
  * Submit feedback for a specific survey. Requires authentication.
  */
-router.post('/:id/feedback', verifyToken, async (req, res) => {
+router.post('/:id/feedback', verifyToken, validate(surveyFeedbackSchema), async (req, res) => {
   try {
     const { rating, comment, suggestions } = req.body;
     const userEmail = req.user?.email;
 
     if (!userEmail) {
       return res.status(401).json({ success: false, message: 'Unauthorized' });
-    }
-
-    if (!comment?.trim()) {
-      return res.status(400).json({ success: false, message: 'Comment is required' });
     }
 
     const survey = await Survey.findById(req.params.id);

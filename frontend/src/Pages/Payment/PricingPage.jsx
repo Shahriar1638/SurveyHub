@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
@@ -7,99 +7,37 @@ import { PageTransition } from "../../Components/UI/PageTransition";
 import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
-
-const PACKAGES = [
-  {
-    id: "starter",
-    credits: 20,
-    price: 19,
-    label: "Starter Pack",
-    description: "Perfect for dipping your toes in — create a few surveys and get a feel for the platform.",
-    perCredit: "0.95",
-    color: "var(--color-visitor)",
-    colorLight: "var(--color-visitor-light)",
-    colorDark: "var(--color-visitor-dark)",
-    highlight: false,
-    features: [
-      "20 survey credits",
-      "Create up to 4 surveys",
-      "AI analysis on responses",
-      "Credits never expire",
-      "Instant surveyor access",
-    ],
-  },
-  {
-    id: "growth",
-    credits: 50,
-    price: 39,
-    label: "Growth Pack",
-    description: "For active researchers who need a steady stream of surveys running concurrently.",
-    perCredit: "0.78",
-    color: "var(--color-surveyor-dark)",
-    colorLight: "var(--color-surveyor-light)",
-    colorDark: "var(--color-surveyor-dark)",
-    highlight: false,
-    features: [
-      "50 survey credits",
-      "Create up to 10 surveys",
-      "AI analysis on responses",
-      "Credits never expire",
-      "Priority email support",
-    ],
-  },
-  {
-    id: "pro",
-    credits: 110,
-    price: 79,
-    label: "Pro Pack",
-    description: "Best value for professionals running multiple campaigns and deeper analytics needs.",
-    perCredit: "0.72",
-    color: "var(--color-user)",
-    colorLight: "var(--color-user-light)",
-    colorDark: "var(--color-user-dark)",
-    highlight: true,
-    badge: "BEST VALUE",
-    features: [
-      "110 survey credits",
-      "Create up to 22 surveys",
-      "AI analysis on responses",
-      "Credits never expire",
-      "Priority support + blog tools",
-    ],
-  },
-  {
-    id: "enterprise",
-    credits: 250,
-    price: 159,
-    label: "Enterprise Pack",
-    description: "For power users, agencies, and teams running high-volume research campaigns.",
-    perCredit: "0.64",
-    color: "var(--color-admin)",
-    colorLight: "var(--color-admin-light)",
-    colorDark: "var(--color-admin-dark)",
-    highlight: false,
-    features: [
-      "250 survey credits",
-      "Create up to 50 surveys",
-      "Unlimited AI analysis",
-      "Credits never expire",
-      "Dedicated support channel",
-    ],
-  },
-];
+// Frontend color themes per package id (not stored in DB)
+const PACKAGE_THEMES = {
+  starter:    { color: "var(--color-visitor)",      colorLight: "var(--color-visitor-light)",  colorDark: "var(--color-visitor-dark)" },
+  growth:     { color: "var(--color-surveyor-dark)", colorLight: "var(--color-surveyor-light)", colorDark: "var(--color-surveyor-dark)" },
+  pro:        { color: "var(--color-user)",          colorLight: "var(--color-user-light)",     colorDark: "var(--color-user-dark)" },
+  enterprise: { color: "var(--color-admin)",         colorLight: "var(--color-admin-light)",    colorDark: "var(--color-admin-dark)" },
+};
 
 export default function PricingPage() {
   const { user } = useContext(AuthContext);
-  const { data: profile, isPending } = useProfile();
+  const { data: profile, isPending: profileLoading } = useProfile();
   const navigate = useNavigate();
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
+  const [packages, setPackages] = useState([]);
+  const [packagesLoading, setPackagesLoading] = useState(true);
 
   const userId = profile?._id;
-
   const axiosSecure = useAxiosSecure();
 
-  if (isPending) return <LoadingSpinner />;
+  useEffect(() => {
+    axiosSecure
+      .get("/api/packages")
+      .then(({ data }) => {
+        if (data.success) setPackages(data.data);
+      })
+      .catch(() => setError("Failed to load pricing packages."))
+      .finally(() => setPackagesLoading(false));
+  }, [axiosSecure]);
+
+  if (profileLoading || packagesLoading) return <LoadingSpinner />;
 
   const handlePurchase = async (packageId) => {
     if (!user) {
@@ -221,137 +159,140 @@ export default function PricingPage() {
           animate="show"
           className="max-w-6xl mx-auto px-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"
         >
-          {PACKAGES.map((pkg) => (
-            <motion.div
-              key={pkg.id}
-              variants={cardVariants}
-              className="relative bg-white border rounded-2xl flex flex-col overflow-hidden transition-shadow duration-250 hover:shadow-[--shadow-lg]"
-              style={{
-                borderColor: pkg.highlight ? pkg.color : "var(--color-border)",
-                boxShadow: pkg.highlight
-                  ? `0 0 0 2px ${pkg.color}, var(--shadow-md)`
-                  : undefined,
-              }}
-            >
-              {/* Best value badge */}
-              {pkg.badge && (
-                <div
-                  className="absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white rounded-bl-xl rounded-tr-xl"
-                  style={{ backgroundColor: pkg.color }}
-                >
-                  {pkg.badge}
-                </div>
-              )}
-
-              {/* Top color accent bar */}
-              <div className="h-1.5 w-full" style={{ backgroundColor: pkg.color }} />
-
-              {/* Card body */}
-              <div className="p-6 flex flex-col flex-1">
-                {/* Label */}
-                <span
-                  className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 w-fit"
-                  style={{
-                    backgroundColor: pkg.colorLight,
-                    color: pkg.colorDark,
-                  }}
-                >
-                  {pkg.label}
-                </span>
-
-                {/* Price */}
-                <div className="mb-1 flex items-end gap-1">
-                  <span className="font-[--font-mono] text-4xl font-bold text-[--color-text-primary]">
-                    ${pkg.price}
-                  </span>
-                  <span className="type-meta text-[--color-text-tertiary] mb-1.5">one-time</span>
-                </div>
-
-                {/* Credits */}
-                <div
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-4 w-fit"
-                  style={{ backgroundColor: pkg.colorLight }}
-                >
-                  <span
-                    className="font-[--font-mono] text-xl font-bold"
-                    style={{ color: pkg.color }}
+          {packages.map((pkg) => {
+            const theme = PACKAGE_THEMES[pkg.id] || PACKAGE_THEMES.starter;
+            return (
+              <motion.div
+                key={pkg.id}
+                variants={cardVariants}
+                className="relative bg-white border rounded-2xl flex flex-col overflow-hidden transition-shadow duration-250 hover:shadow-[--shadow-lg]"
+                style={{
+                  borderColor: pkg.highlight ? theme.color : "var(--color-border)",
+                  boxShadow: pkg.highlight
+                    ? `0 0 0 2px ${theme.color}, var(--shadow-md)`
+                    : undefined,
+                }}
+              >
+                {/* Best value badge */}
+                {pkg.badge && (
+                  <div
+                    className="absolute top-0 right-0 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-white rounded-bl-xl rounded-tr-xl"
+                    style={{ backgroundColor: theme.color }}
                   >
-                    {pkg.credits}
-                  </span>
-                  <span className="type-body-sm font-medium" style={{ color: pkg.colorDark }}>
-                    credits
-                  </span>
-                  <span className="type-meta text-[--color-text-tertiary]">
-                    (${pkg.perCredit}/ea)
-                  </span>
-                </div>
+                    {pkg.badge}
+                  </div>
+                )}
 
-                {/* Description */}
-                <p className="type-body-sm text-[--color-text-secondary] mb-5 flex-1">
-                  {pkg.description}
-                </p>
+                {/* Top color accent bar */}
+                <div className="h-1.5 w-full" style={{ backgroundColor: theme.color }} />
 
-                {/* Features */}
-                <ul className="space-y-2 mb-6">
-                  {pkg.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2">
-                      <svg
-                        className="w-4 h-4 shrink-0 mt-0.5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        style={{ color: pkg.color }}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2.5}
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span className="type-body-sm text-[--color-text-secondary]">{f}</span>
-                    </li>
-                  ))}
-                </ul>
+                {/* Card body */}
+                <div className="p-6 flex flex-col flex-1">
+                  {/* Label */}
+                  <span
+                    className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wider mb-4 w-fit"
+                    style={{
+                      backgroundColor: theme.colorLight,
+                      color: theme.colorDark,
+                    }}
+                  >
+                    {pkg.name}
+                  </span>
 
-                {/* CTA */}
-                <button
-                  id={`buy-${pkg.id}`}
-                  onClick={() => handlePurchase(pkg.id)}
-                  disabled={loadingId !== null}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold font-[--font-ui] text-white transition-all duration-150 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  style={{
-                    backgroundColor: loadingId === pkg.id ? pkg.colorDark : pkg.color,
-                  }}
-                >
-                  {loadingId === pkg.id ? (
-                    <>
-                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
+                  {/* Price */}
+                  <div className="mb-1 flex items-end gap-1">
+                    <span className="font-[--font-mono] text-4xl font-bold text-[--color-text-primary]">
+                      ${pkg.price}
+                    </span>
+                    <span className="type-meta text-[--color-text-tertiary] mb-1.5">one-time</span>
+                  </div>
+
+                  {/* Credits */}
+                  <div
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mb-4 w-fit"
+                    style={{ backgroundColor: theme.colorLight }}
+                  >
+                    <span
+                      className="font-[--font-mono] text-xl font-bold"
+                      style={{ color: theme.color }}
+                    >
+                      {pkg.credits}
+                    </span>
+                    <span className="type-body-sm font-medium" style={{ color: theme.colorDark }}>
+                      credits
+                    </span>
+                    <span className="type-meta text-[--color-text-tertiary]">
+                      (${pkg.perCredit}/ea)
+                    </span>
+                  </div>
+
+                  {/* Description */}
+                  <p className="type-body-sm text-[--color-text-secondary] mb-5 flex-1">
+                    {pkg.description}
+                  </p>
+
+                  {/* Features */}
+                  <ul className="space-y-2 mb-6">
+                    {pkg.features.map((f) => (
+                      <li key={f} className="flex items-start gap-2">
+                        <svg
+                          className="w-4 h-4 shrink-0 mt-0.5"
+                          fill="none"
+                          viewBox="0 0 24 24"
                           stroke="currentColor"
-                          strokeWidth="4"
-                        />
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                        />
-                      </svg>
-                      Redirecting…
-                    </>
-                  ) : (
-                    <>
-                      {!user ? "Sign in to Buy" : `Get ${pkg.credits} Credits`}
-                    </>
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                          style={{ color: theme.color }}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2.5}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </svg>
+                        <span className="type-body-sm text-[--color-text-secondary]">{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA */}
+                  <button
+                    id={`buy-${pkg.id}`}
+                    onClick={() => handlePurchase(pkg.id)}
+                    disabled={loadingId !== null}
+                    className="w-full py-2.5 rounded-xl text-sm font-semibold font-[--font-ui] text-white transition-all duration-150 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    style={{
+                      backgroundColor: loadingId === pkg.id ? theme.colorDark : theme.color,
+                    }}
+                  >
+                    {loadingId === pkg.id ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                          />
+                        </svg>
+                        Redirecting…
+                      </>
+                    ) : (
+                      <>
+                        {!user ? "Sign in to Buy" : `Get ${pkg.credits} Credits`}
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            );
+          })}
         </motion.div>
 
         {/* ── Trust footer ── */}

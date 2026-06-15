@@ -1,3 +1,4 @@
+"use no memo";
 /* eslint-disable no-unused-vars */
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";

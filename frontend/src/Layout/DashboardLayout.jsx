@@ -18,6 +18,8 @@ import {
   InboxIcon,
   Bars3Icon,
   DocumentMagnifyingGlassIcon,
+  UserCircleIcon,
+  Cog6ToothIcon,
 } from "@heroicons/react/24/outline";
 
 // ── Sidebar nav definitions ──────────────────────────────────────────────────
@@ -31,6 +33,10 @@ const ADMIN_NAV = [
     { name: "Broadcasts", icon: MegaphoneIcon, id: "broadcasts" },
     { name: "Feedback", icon: ChatBubbleLeftEllipsisIcon, id: "feedback" },
   ]},
+  { group: "PROFILE", items: [
+    { name: "My Profile", icon: UserCircleIcon, id: "my-profile" },
+    { name: "Profile Settings", icon: Cog6ToothIcon, id: "profile-settings" },
+  ]},
 ];
 
 const SURVEYOR_NAV = [
@@ -43,6 +49,10 @@ const SURVEYOR_NAV = [
     { name: "Blog Studio", icon: PencilSquareIcon, id: "blog-studio" },
     { name: "Feedback Inbox", icon: InboxIcon, id: "feedback-inbox" },
   ]},
+  { group: "PROFILE", items: [
+    { name: "My Profile", icon: UserCircleIcon, id: "my-profile" },
+    { name: "Profile Settings", icon: Cog6ToothIcon, id: "profile-settings" },
+  ]},
 ];
 
 const USER_NAV = [
@@ -53,6 +63,10 @@ const USER_NAV = [
     { name: "Participation Ledger", icon: ClipboardDocumentListIcon, id: "participation" },
     { name: "Report Status", icon: ShieldCheckIcon, id: "reports" },
     { name: "Support Tickets", icon: ChatBubbleLeftEllipsisIcon, id: "support" },
+  ]},
+  { group: "PROFILE", items: [
+    { name: "My Profile", icon: UserCircleIcon, id: "my-profile" },
+    { name: "Profile Settings", icon: Cog6ToothIcon, id: "profile-settings" },
   ]},
 ];
 

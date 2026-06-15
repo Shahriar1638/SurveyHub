@@ -194,7 +194,7 @@ export function Navbar() {
             <div className="flex items-center gap-3">
               {/* Avatar + role icon + name → profile link */}
               <Link
-                to="/profile"
+                to="/dashboard/my-profile"
                 className="flex items-center gap-2 hover:opacity-80 transition-all rounded-lg p-1.5 hover:bg-[--color-bg-subtle]"
               >
                 {/* Role indicator (icon) */}
@@ -324,7 +324,7 @@ export function Navbar() {
                 {user ? (
                   <>
                     <Link
-                      to="/profile"
+                      to="/dashboard/my-profile"
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-2 px-3 py-1 hover:bg-[--color-bg-subtle] rounded-lg transition-colors"
                     >

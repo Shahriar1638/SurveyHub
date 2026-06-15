@@ -1,3 +1,4 @@
+"use no memo";
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";

@@ -37,3 +37,20 @@ export const useUpdateProfile = () => {
     },
   });
 };
+
+// ── Toggle auto AI insight ────────────────────────────────────────────────────
+export const useToggleAutoAIInsight = () => {
+  const { user } = useContext(AuthContext);
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const res = await axiosSecure.patch("/api/profile/auto-ai-insight");
+      return res.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.email] });
+    },
+  });
+};

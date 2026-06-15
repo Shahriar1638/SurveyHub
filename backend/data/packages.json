@@ -1,0 +1,82 @@
+[
+  {
+    "id": "starter",
+    "name": "Starter Pack",
+    "credits": 20,
+    "price": 19,
+    "priceCurrency": "usd",
+    "perCredit": 0.95,
+    "maxSurveys": 4,
+    "description": "Perfect for dipping your toes in — create a few surveys and get a feel for the platform.",
+    "features": [
+      "20 survey credits",
+      "Create up to 4 surveys",
+      "AI analysis on responses",
+      "Credits never expire",
+      "Instant surveyor access"
+    ],
+    "highlight": false,
+    "badge": null,
+    "active": true
+  },
+  {
+    "id": "growth",
+    "name": "Growth Pack",
+    "credits": 50,
+    "price": 39,
+    "priceCurrency": "usd",
+    "perCredit": 0.78,
+    "maxSurveys": 10,
+    "description": "For active researchers who need a steady stream of surveys running concurrently.",
+    "features": [
+      "50 survey credits",
+      "Create up to 10 surveys",
+      "AI analysis on responses",
+      "Credits never expire",
+      "Priority email support"
+    ],
+    "highlight": false,
+    "badge": null,
+    "active": true
+  },
+  {
+    "id": "pro",
+    "name": "Pro Pack",
+    "credits": 110,
+    "price": 79,
+    "priceCurrency": "usd",
+    "perCredit": 0.72,
+    "maxSurveys": 22,
+    "description": "Best value for professionals running multiple campaigns and deeper analytics needs.",
+    "features": [
+      "110 survey credits",
+      "Create up to 22 surveys",
+      "AI analysis on responses",
+      "Credits never expire",
+      "Priority support + blog tools"
+    ],
+    "highlight": true,
+    "badge": "BEST VALUE",
+    "active": true
+  },
+  {
+    "id": "enterprise",
+    "name": "Enterprise Pack",
+    "credits": 250,
+    "price": 159,
+    "priceCurrency": "usd",
+    "perCredit": 0.64,
+    "maxSurveys": 50,
+    "description": "For power users, agencies, and teams running high-volume research campaigns.",
+    "features": [
+      "250 survey credits",
+      "Create up to 50 surveys",
+      "Unlimited AI analysis",
+      "Credits never expire",
+      "Dedicated support channel"
+    ],
+    "highlight": false,
+    "badge": null,
+    "active": true
+  }
+]

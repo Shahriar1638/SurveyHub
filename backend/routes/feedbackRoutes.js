@@ -1,13 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const SiteFeedback = require('../models/siteFeedback');
+const validate = require('../validations/validate');
+const {
+  submitFeedbackSchema,
+  updateFeedbackSchema,
+  feedbackImageUploadSchema,
+} = require('../validations/schemas');
 const { verifyToken, verifyAdmin } = require('../middlewares/authMiddleware')();
 
 // POST /api/feedback/upload — Proxy image uploads to ImgBB using server-side API key
-router.post('/upload', async (req, res) => {
+router.post('/upload', validate(feedbackImageUploadSchema), async (req, res) => {
   try {
-    const { image } = req.body; // expect base64 string (without data:<mime>;base64, but imgbb accepts either)
-    if (!image) return res.status(400).json({ success: false, message: 'No image provided' });
+    const { image } = req.body;
 
     const apiKey = process.env.IMGBB_API_KEY || process.env.VITE_IMGBB_API_KEY;
     if (!apiKey) return res.status(500).json({ success: false, message: 'ImgBB API key not configured on server' });
@@ -36,17 +41,9 @@ router.post('/upload', async (req, res) => {
 });
 
 // POST /api/feedback — Submit site feedback (public route, no auth required)
-router.post('/', async (req, res) => {
+router.post('/', validate(submitFeedbackSchema), async (req, res) => {
   try {
     const { userEmail, feedbackType, affectedPage, comment, attachments } = req.body;
-
-    // Validate required fields
-    if (!feedbackType || !comment?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: 'feedbackType and comment are required',
-      });
-    }
 
     const feedback = new SiteFeedback({
       userEmail: userEmail?.trim() || undefined,
@@ -95,7 +92,7 @@ router.get('/', verifyToken, verifyAdmin, async (req, res) => {
 });
 
 // PATCH /api/feedback/:id — Admin: update feedback status or add a response
-router.patch('/:id', verifyToken, verifyAdmin, async (req, res) => {
+router.patch('/:id', verifyToken, verifyAdmin, validate(updateFeedbackSchema), async (req, res) => {
   try {
     const { status, adminResponse } = req.body;
     const updates = {};

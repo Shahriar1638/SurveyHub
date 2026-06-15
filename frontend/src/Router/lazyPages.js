@@ -4,7 +4,6 @@ export const Login = lazy(() => import("../Pages/Auth/Login"));
 export const SignUp = lazy(() => import("../Pages/Auth/SignUp"));
 export const Home = lazy(() => import("../Pages/Home/Home"));
 export const SurveysPage = lazy(() => import("../Pages/Surveys/SurveysPage"));
-export const ProfilePage = lazy(() => import("../Pages/Profile/ProfilePage"));
 export const FeedbackPage = lazy(() => import("../Pages/Feedback/FeedbackPage"));
 export const BlogsPage = lazy(() => import("../Pages/Blogs/BlogsPage"));
 export const BlogDetailPage = lazy(() => import("../Pages/Blogs/BlogDetailPage"));

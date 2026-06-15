@@ -3,15 +3,13 @@ const router = express.Router();
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const User = require('../models/User');
 const Subscription = require('../models/Subscription');
+const PricingPackage = require('../models/PricingPackage');
 const { verifyToken } = require('../middlewares/authMiddleware')();
 
-// Credit packages configuration
-const CREDIT_PACKAGES = {
-  starter:    { credits: 20,  amount: 1900, label: 'Starter Pack' },
-  growth:     { credits: 50,  amount: 3900, label: 'Growth Pack' },
-  pro:        { credits: 110, amount: 7900, label: 'Pro Pack' },
-  enterprise: { credits: 250, amount: 15900, label: 'Enterprise Pack' },
-};
+// Helper: fetch package from DB by id
+async function getPackage(packageId) {
+  return PricingPackage.findOne({ id: packageId, active: true }).lean();
+}
 
 /**
  * POST /api/payments/create-checkout-session
@@ -23,7 +21,7 @@ router.post('/create-checkout-session', verifyToken, async (req, res) => {
     const { packageId, userId } = req.body;
     if (!userId) return res.status(400).json({ success: false, message: 'userId required' });
 
-    const pkg = CREDIT_PACKAGES[packageId];
+    const pkg = await getPackage(packageId);
     if (!pkg) return res.status(400).json({ success: false, message: 'Invalid package' });
 
     const user = await User.findById(userId).lean();
@@ -49,10 +47,10 @@ router.post('/create-checkout-session', verifyToken, async (req, res) => {
         {
           quantity: 1,
           price_data: {
-            currency: 'usd',
-            unit_amount: pkg.amount,
+            currency: pkg.priceCurrency || 'usd',
+            unit_amount: Math.round(pkg.price * 100),
             product_data: {
-              name: `SurveyHub ${pkg.label}`,
+              name: `SurveyHub ${pkg.name}`,
               description: `${pkg.credits} survey credits — never expire`,
               images: [],
             },
@@ -94,6 +92,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const { userId, packageId, credits } = session.metadata;
     const creditCount = parseInt(credits, 10);
 
+    // Fetch package name from DB for ledger description
+    const pkg = await getPackage(packageId);
+    const pkgLabel = pkg?.name || packageId;
+
     try {
       // Upsert the wallet — add credits atomically
       await Subscription.findOneAndUpdate(
@@ -105,7 +107,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
             creditLedger: {
               type: 'purchase',
               credits: creditCount,
-              description: `Purchased ${CREDIT_PACKAGES[packageId]?.label || packageId} (${creditCount} credits)`,
+              description: `Purchased ${pkgLabel} (${creditCount} credits)`,
               occurredAt: new Date(),
             },
             billingHistory: {
@@ -121,8 +123,19 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         { upsert: true, new: true }
       );
 
-      // Promote user to surveyor (one-way, never reverted)
-      await User.findByIdAndUpdate(userId, { role: 'surveyor' });
+      // Promote user to surveyor (one-way, never reverted) + sync subscription
+      await User.findByIdAndUpdate(userId, {
+        role: 'surveyor',
+        subscription: {
+          plan: packageId,
+          status: 'active',
+          autoRenew: false,
+          provider: 'stripe',
+          providerCustomerId: session.customer || '',
+          providerSubscriptionId: session.subscription || '',
+          currentPeriodEnd: null,
+        },
+      });
     } catch (dbErr) {
       console.error('Webhook DB error:', dbErr);
       return res.status(500).json({ error: 'Fulfillment failed' });
@@ -164,6 +177,10 @@ router.get('/verify-session/:sessionId', verifyToken, async (req, res) => {
       });
 
       if (!alreadyCredited) {
+        // Fetch package name from DB for ledger description
+        const pkg = await getPackage(packageId);
+        const pkgLabel = pkg?.name || packageId;
+
         // Run fulfillment
         await Subscription.findOneAndUpdate(
           { userId },
@@ -174,7 +191,7 @@ router.get('/verify-session/:sessionId', verifyToken, async (req, res) => {
               creditLedger: {
                 type: 'purchase',
                 credits: creditCount,
-                description: `Purchased ${CREDIT_PACKAGES[packageId]?.label || packageId} (${creditCount} credits)`,
+                description: `Purchased ${pkgLabel} (${creditCount} credits)`,
                 occurredAt: new Date(),
               },
               billingHistory: {
@@ -190,8 +207,19 @@ router.get('/verify-session/:sessionId', verifyToken, async (req, res) => {
           { upsert: true, new: true }
         );
 
-        // Promote user to surveyor (one-way, never reverted)
-        await User.findByIdAndUpdate(userId, { role: 'surveyor' });
+        // Promote user to surveyor (one-way, never reverted) + sync subscription
+        await User.findByIdAndUpdate(userId, {
+          role: 'surveyor',
+          subscription: {
+            plan: packageId,
+            status: 'active',
+            autoRenew: false,
+            provider: 'stripe',
+            providerCustomerId: session.customer || '',
+            providerSubscriptionId: session.subscription || '',
+            currentPeriodEnd: null,
+          },
+        });
       }
 
       res.json({

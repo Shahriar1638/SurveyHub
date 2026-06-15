@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/incompatible-library */
+/* eslint-disable react-hooks/rules-of-hooks */
+"use no memo";
+/* eslint-disable no-unused-vars */
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { DocumentMagnifyingGlassIcon } from "@heroicons/react/24/outline";

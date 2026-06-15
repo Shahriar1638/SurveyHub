@@ -1,3 +1,4 @@
+"use no memo";
 import { useMemo, useState } from "react";
 import { motion } from "motion/react";
 import { ChatBubbleLeftEllipsisIcon } from "@heroicons/react/24/outline";

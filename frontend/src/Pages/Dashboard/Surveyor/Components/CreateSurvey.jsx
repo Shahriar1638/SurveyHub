@@ -9,9 +9,9 @@ import {
   ArrowUpIcon,
   ArrowDownIcon,
 } from "@heroicons/react/24/outline";
-import { AuthContext } from "../../../Firebase_AuthProvider/AuthProvider";
-import { useCreateSurvey } from "../../../Hooks/useSurveysMutation";
-import { PageTransition } from "../../../Components/UI/PageTransition";
+import { AuthContext } from "../../../../Firebase_AuthProvider/AuthProvider";
+import { useCreateSurvey } from "../../../../Hooks/useSurveysMutation";
+import { PageTransition } from "../../../../Components/UI/PageTransition";
 import Swal from "sweetalert2";
 
 const QUESTION_TYPES = [

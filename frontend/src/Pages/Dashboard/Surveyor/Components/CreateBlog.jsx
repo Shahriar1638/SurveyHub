@@ -2,10 +2,10 @@ import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { AuthContext } from "../../../Firebase_AuthProvider/AuthProvider";
-import { useCreateBlog } from "../../../Hooks/useBlogsMutation";
-import useDashboardSurveyor from "../../../Hooks/useDashboardSurveyor";
-import { PageTransition } from "../../../Components/UI/PageTransition";
+import { AuthContext } from "../../../../Firebase_AuthProvider/AuthProvider";
+import { useCreateBlog } from "../../../../Hooks/useBlogsMutation";
+import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
+import { PageTransition } from "../../../../Components/UI/PageTransition";
 import Swal from "sweetalert2";
 
 export default function CreateBlog() {

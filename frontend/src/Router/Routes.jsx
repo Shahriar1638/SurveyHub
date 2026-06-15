@@ -3,12 +3,12 @@ import MainLayout from "../Layout/MainLayout";
 import DashboardLayout from "../Layout/DashboardLayout";
 import PrivateRoute from "./PrivateRoute";
 import DashboardSection from "../Pages/Dashboard/DashboardSection";
+import BlankPage from "../Pages/BlankPage";
 import {
   Login,
   SignUp,
   Home,
   SurveysPage,
-  ProfilePage,
   FeedbackPage,
   BlogsPage,
   BlogDetailPage,
@@ -36,14 +36,6 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <SurveyDetailPage />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/profile",
-        element: (
-          <PrivateRoute>
-            <ProfilePage />
           </PrivateRoute>
         ),
       },
@@ -80,6 +72,10 @@ const router = createBrowserRouter([
   {
     path: "/sign-up",
     element: <SignUp />,
+  },
+  {
+    path: "/blank",
+    element: <BlankPage />,
   },
   {
     path: "/dashboard",
