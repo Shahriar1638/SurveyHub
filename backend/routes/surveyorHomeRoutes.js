@@ -23,22 +23,56 @@ router.get('/', async (req, res) => {
     const activeSurveys = surveys.filter(s => s.status === 'published').length;
     const totalResponses = surveys.reduce((sum, s) => sum + (s.participantCount || 0), 0);
     
-    // 2. Your Active Surveys (including AI status)
+    // 2. Your Active Surveys — top 3 by engagement
     const publishedSurveys = await Survey.find({ surveyorId, status: 'published' })
-      .sort({ createdAt: -1 })
-      .select('title status participantCount aiInsight');
+      .sort({ participantCount: -1, createdAt: -1 })
+      .limit(3)
+      .select('title description image participantCount category');
       
     // 3. Drafts
     const draftSurveys = await Survey.find({ surveyorId, status: 'draft' })
       .sort({ createdAt: -1 })
-      .select('title status createdAt');
+      .select('title status createdAt questions');
 
-    // 4. Recent Blog Activity
+    // 3b. Rejected / Pending Review
+    const rejectedSurveys = await Survey.find({
+      surveyorId,
+      status: { $in: ['rejected', 'pending_review'] },
+    })
+      .sort({ updatedAt: -1 })
+      .select('title status moderation createdAt updatedAt');
+
+    // 3c. Rejected / Pending Review Blogs
+    const rejectedBlogs = await Blog.find({
+      surveyorEmail,
+      status: { $in: ['rejected', 'pending_review'] },
+    })
+      .sort({ updatedAt: -1 })
+      .select('title status moderation createdAt updatedAt');
+
+    // 4. Recent Blog Activity — flatten comments from all surveyor's blogs
     let recentBlogActivity = [];
     if (surveyorEmail) {
         const myBlogs = await Blog.find({ surveyorEmail })
-          .select('title comments reactions');
-        recentBlogActivity = myBlogs;
+          .select('title comments createdAt');
+        
+        // Flatten all comments across blogs into activity items
+        const activity = [];
+        for (const blog of myBlogs) {
+          for (const comment of blog.comments || []) {
+            activity.push({
+              _id: comment._id,
+              blogTitle: blog.title,
+              comment: comment.text,
+              userEmail: comment.userEmail,
+              createdAt: comment.createdAt,
+            });
+          }
+        }
+        // Sort by newest first, take latest 5
+        recentBlogActivity = activity
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+          .slice(0, 5);
     }
 
     res.json({
@@ -52,6 +86,8 @@ router.get('/', async (req, res) => {
         },
         publishedSurveys,
         draftSurveys,
+        rejectedSurveys,
+        rejectedBlogs,
         recentBlogActivity
       }
     });

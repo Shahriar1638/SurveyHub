@@ -55,3 +55,40 @@ export function useDeleteSurvey() {
     },
   });
 }
+
+/**
+ * useAppealSurvey — submits an appeal for a rejected survey.
+ */
+export function useAppealSurvey() {
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, message }) => {
+      const res = await axiosSecure.post(`/api/surveys/${id}/appeal`, { message });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
+    },
+  });
+}
+
+/**
+ * useAdminModerateSurvey — admin approves/rejects a survey.
+ */
+export function useAdminModerateSurvey() {
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, decision, reason }) => {
+      const res = await axiosSecure.patch(`/api/surveys/${id}/moderate`, { decision, reason });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin"] });
+      queryClient.invalidateQueries({ queryKey: ["moderationQueue"] });
+    },
+  });
+}

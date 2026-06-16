@@ -23,8 +23,8 @@ export default function CheckboxQuestion({ question, value, onChange, disabled }
             key={opt}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg border transition-all duration-150 cursor-pointer select-none ${
               isSelected
-                ? "bg-[--color-visitor-light] border-[--color-visitor]"
-                : "border-[--color-border] hover:border-[--color-border-strong] hover:bg-[--color-bg-subtle]"
+                ? "bg-visitor-light border-visitor"
+                : "border-border hover:border-border-strong hover:bg-bg-subtle"
             } ${disabled ? "opacity-60 pointer-events-none" : ""}`}
           >
             <input
@@ -37,7 +37,7 @@ export default function CheckboxQuestion({ question, value, onChange, disabled }
 
             <span
               className={`w-4 h-4 rounded border-2 shrink-0 flex items-center justify-center transition-all duration-150 ${
-                isSelected ? "bg-[--color-visitor] border-[--color-visitor]" : "border-[--color-text-tertiary] bg-transparent"
+                isSelected ? "bg-visitor border-visitor" : "border-text-tertiary bg-transparent"
               }`}
             >
               {isSelected && (
@@ -52,7 +52,7 @@ export default function CheckboxQuestion({ question, value, onChange, disabled }
               )}
             </span>
 
-            <span className="type-body-sm text-[--color-text-primary]">{opt}</span>
+            <span className="type-body-sm text-text-primary">{opt}</span>
           </label>
         );
       })}

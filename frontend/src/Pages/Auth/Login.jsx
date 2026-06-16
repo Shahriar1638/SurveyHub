@@ -281,12 +281,8 @@ const Login = () => {
         </aside>
 
         {/* Right Content Column — Interactive Card Form */}
-        <main className="order-1 relative flex h-screen min-h-0 items-center justify-center overflow-y-auto bg-gradient-to-br from-bg-surface via-bg-base to-visitor-light/10 px-6 py-8 sm:px-10 sm:py-12 md:order-2 md:col-start-2 lg:order-2">
+        <main className="order-1 relative flex h-screen min-h-0 items-center justify-center overflow-y-auto bg-bg-base px-6 py-8 sm:px-10 sm:py-12 md:order-2 md:col-start-2 lg:order-2">
           
-          {/* Ambient Blurred Mesh in Form Panel */}
-          <div className="absolute right-0 bottom-0 w-[450px] h-[450px] rounded-full bg-visitor opacity-[0.04] blur-[110px] pointer-events-none z-0" />
-          <div className="absolute left-[10%] top-[10%] w-[300px] h-[300px] rounded-full bg-user opacity-[0.03] blur-[90px] pointer-events-none z-0" />
-
           {/* Elegant Back Navigation */}
           <Link
             to="/"
@@ -308,15 +304,13 @@ const Login = () => {
             Go to Home
           </Link>
 
-          {/* Glassmorphic/Elevated Form Container */}
+          {/* Form Container */}
           <motion.div 
             variants={formContainerVariants}
             initial="hidden"
             animate="visible"
-            className="relative z-10 w-full max-w-md py-8 px-6 sm:px-8 bg-bg-surface border border-border rounded-2xl shadow-xl overflow-hidden"
+            className="relative z-10 w-full max-w-md py-8 px-6 sm:px-8 overflow-hidden"
           >
-            {/* Multi-role gradient accent gate bar at top of card */}
-            <div className="absolute top-0 inset-x-0 h-[4px] bg-gradient-to-r from-visitor via-user to-admin" />
 
             <div className="mb-6">
               <p className="type-label-sm uppercase tracking-[0.24em] text-text-tertiary">

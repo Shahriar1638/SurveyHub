@@ -1,4 +1,4 @@
-import { useContext, useRef } from "react";
+import { useContext, useRef, useState, useEffect, useCallback } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { gsap } from "gsap";
@@ -6,9 +6,9 @@ import { useGSAP } from "@gsap/react";
 import { useQuery } from "@tanstack/react-query";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
-import { SurveyCard } from "../../Components/UI/SurveyCard";
 import { StatCard } from "../../Components/UI/StatCard";
 import { PageTransition } from "../../Components/UI/PageTransition";
+import { useAppealSurvey } from "../../Hooks/useSurveysMutation";
 
 const listVariants = {
   hidden: { opacity: 0 },
@@ -25,6 +25,119 @@ const itemVariants = {
     transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
   },
 };
+
+// ── Moderation Banner for rejected/pending surveys ─────────────────────────
+function ModerationBanner({ rejectedSurveys }) {
+  const [appealId, setAppealId] = useState(null);
+  const [appealMsg, setAppealMsg] = useState("");
+  const appealMutation = useAppealSurvey();
+
+  if (!rejectedSurveys || rejectedSurveys.length === 0) return null;
+
+  const handleAppeal = (id) => {
+    if (!appealMsg.trim()) return;
+    appealMutation.mutate(
+      { id, message: appealMsg },
+      {
+        onSuccess: () => {
+          setAppealId(null);
+          setAppealMsg("");
+        },
+      }
+    );
+  };
+
+  return (
+    <section className="py-10 bg-[--color-bg-surface]">
+      <div className="container-app mx-auto">
+        <div className="mb-6">
+          <p className="type-meta-sm text-[--color-error] tracking-widest uppercase mb-2">
+            Attention Required
+          </p>
+          <h2 className="type-heading-md text-[--color-text-primary]">
+            Content Review
+          </h2>
+          <p className="type-body-sm text-[--color-text-secondary] mt-1">
+            Some of your content needs attention before it can be published.
+          </p>
+        </div>
+        <div className="flex flex-col gap-4">
+          {rejectedSurveys.map((s) => (
+            <div
+              key={s._id}
+              className={`card p-5 border-l-4 ${
+                s.status === "rejected"
+                  ? "border-l-[--color-error]"
+                  : "border-l-[--color-warning]"
+              }`}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="type-label-sm text-[--color-text-primary]">
+                    {s.title}
+                  </p>
+                  <p className="type-meta text-[--color-text-tertiary] mt-0.5 font-[--font-mono]">
+                    {s.status === "rejected"
+                      ? "Rejected"
+                      : "Pending Review"}{" "}
+                    ·{" "}
+                    {new Date(s.updatedAt || s.createdAt).toLocaleDateString()}
+                  </p>
+                  {s.moderation?.reason && (
+                    <p className="type-body-sm text-[--color-error] mt-2">
+                      Reason: {s.moderation.reason}
+                    </p>
+                  )}
+                  {s.moderation?.appeal && (
+                    <p className="type-body-sm text-[--color-text-tertiary] mt-1 italic">
+                      Appeal submitted: &ldquo;{s.moderation.appeal.message}&rdquo;
+                    </p>
+                  )}
+                </div>
+                {s.status === "rejected" && !s.moderation?.appeal && (
+                  <div className="shrink-0">
+                    {appealId === s._id ? (
+                      <div className="flex flex-col gap-2 min-w-[240px]">
+                        <textarea
+                          value={appealMsg}
+                          onChange={(e) => setAppealMsg(e.target.value)}
+                          placeholder="Explain why this should be approved..."
+                          className="input-field text-sm min-h-[80px]"
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleAppeal(s._id)}
+                            disabled={appealMutation.isPending}
+                            className="btn btn-sm btn-surveyor"
+                          >
+                            {appealMutation.isPending ? "Submitting..." : "Submit Appeal"}
+                          </button>
+                          <button
+                            onClick={() => { setAppealId(null); setAppealMsg(""); }}
+                            className="btn btn-sm btn-ghost"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setAppealId(s._id)}
+                        className="btn btn-sm btn-outline text-[--color-error] border-[--color-error] hover:bg-[--color-error]/10"
+                      >
+                        Appeal
+                      </button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function getGreeting() {
   const h = new Date().getHours();
@@ -53,6 +166,156 @@ function Skeleton() {
         </div>
       </div>
     </PageTransition>
+  );
+}
+
+// ── Active Surveys Banner Slider ─────────────────────────────────────────────
+function ActiveSurveysBanner({ surveys }) {
+  const [current, setCurrent] = useState(0);
+  const [paused, setPaused] = useState(false);
+
+  const next = useCallback(() => {
+    setCurrent((i) => (i + 1) % surveys.length);
+  }, [surveys.length]);
+
+  const prev = useCallback(() => {
+    setCurrent((i) => (i - 1 + surveys.length) % surveys.length);
+  }, [surveys.length]);
+
+  // Auto-advance every 5s
+  useEffect(() => {
+    if (paused || surveys.length <= 1) return;
+    const id = setInterval(next, 5000);
+    return () => clearInterval(id);
+  }, [paused, next, surveys.length]);
+
+  if (surveys.length === 0) {
+    return (
+      <section className="py-20 bg-[--color-bg-subtle]">
+        <div className="container-app mx-auto text-center">
+          <div className="empty-state py-16">
+            <div className="empty-state-icon mx-auto">
+              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
+            </div>
+            <h3 className="type-heading-sm mt-4">No active surveys yet</h3>
+            <p className="type-body-sm text-[--color-text-secondary] mt-2 max-w-xs mx-auto">
+              Ready to hear what people think? Create your first survey and start collecting real responses.
+            </p>
+            <Link to="/dashboard/create-survey" className="btn btn-surveyor btn-md mt-5">
+              Create Your First Survey
+            </Link>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  const survey = surveys[current];
+
+  return (
+    <section
+      className="relative bg-[--color-bg-subtle] overflow-hidden"
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+    >
+      {/* Banner */}
+      <div className="relative h-[320px] sm:h-[360px] lg:h-[400px]">
+        {/* Background image */}
+        <div className="absolute inset-0">
+          {survey.image ? (
+            <img
+              src={survey.image}
+              alt={survey.title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-[--color-navy]" />
+          )}
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        </div>
+
+        {/* Content */}
+        <div className="relative h-full container-app mx-auto px-6 flex flex-col justify-end pb-12 sm:pb-14">
+          <motion.div
+            key={survey._id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-xl"
+          >
+            {survey.category && (
+              <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] bg-[--color-surveyor]/90 text-white mb-4">
+                {survey.category}
+              </span>
+            )}
+            <h3 className="type-heading-xl text-white font-extrabold mb-2 leading-tight">
+              {survey.title}
+            </h3>
+            {survey.description && (
+              <p className="type-body-base text-white/75 line-clamp-2 mb-5 max-w-lg">
+                {survey.description}
+              </p>
+            )}
+            <div className="flex items-center gap-4">
+              <Link
+                to="/dashboard/my-surveys"
+                className="btn btn-surveyor btn-md gap-2"
+              >
+                View Details
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+              </Link>
+              <span className="type-meta text-white/60 font-[--font-mono]">
+                {survey.participantCount ?? 0} responses
+              </span>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* Navigation arrows — only if more than 1 */}
+        {surveys.length > 1 && (
+          <>
+            <button
+              onClick={prev}
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 transition-colors z-10"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            <button
+              onClick={next}
+              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 transition-colors z-10"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </>
+        )}
+      </div>
+
+      {/* Dots */}
+      {surveys.length > 1 && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+          {surveys.map((s, i) => (
+            <button
+              key={s._id}
+              onClick={() => setCurrent(i)}
+              className={`transition-all duration-300 rounded-full ${
+                i === current
+                  ? "w-6 h-2 bg-[--color-surveyor]"
+                  : "w-2 h-2 bg-white/50 hover:bg-white/75"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
@@ -105,12 +368,11 @@ export default function SurveyorHome() {
 
   const payload = data?.data || {};
   const kpis = payload.kpis || {};
-  const activeSurveys = payload.activeSurveys || [];
-  const aiReady = payload.aiReadyToAnalyze || [];
-  const drafts = payload.drafts || [];
+  const activeSurveys = payload.publishedSurveys || [];
+  const drafts = payload.draftSurveys || [];
+  const rejectedSurveys = payload.rejectedSurveys || [];
   const blogActivity = payload.recentBlogActivity || [];
-  const subscription = payload.subscription || null;
-  const name = user?.displayName || payload.surveyor?.name || "";
+  const name = user?.displayName || "";
 
   return (
     <PageTransition>
@@ -142,7 +404,7 @@ export default function SurveyorHome() {
               {getGreeting()}{name ? `, ${name}` : ""}! 🔵
             </h1>
             <p className="sh-subtitle type-body-lg text-white/70 max-w-lg mb-6">
-              Your surveys are live, your data is growing — let's turn those
+              Your surveys are live, your data is growing — let&apos;s turn those
               responses into stories that matter.
             </p>
             <div className="flex flex-wrap gap-3">
@@ -166,7 +428,7 @@ export default function SurveyorHome() {
             </div>
           </div>
 
-          {/* Right — subscription status card */}
+          {/* Right — Quick stats */}
           <div className="sh-cta shrink-0">
             <div
               className="rounded-xl p-5 min-w-[220px]"
@@ -176,38 +438,27 @@ export default function SurveyorHome() {
               }}
             >
               <p className="type-meta-sm text-white/50 tracking-widest uppercase mb-2">
-                Subscription
+                Quick Stats
               </p>
-              {subscription ? (
-                <>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2 h-2 rounded-full bg-[--color-surveyor]" />
-                    <span className="type-label-sm text-[--color-surveyor]">
-                      Active
-                    </span>
-                  </div>
-                  <p className="type-meta text-white/60">
-                    Renews{" "}
-                    {new Date(subscription.renewalDate).toLocaleDateString()}
-                  </p>
-                </>
-              ) : (
-                <>
-                  <p className="type-label-sm text-white/50 mb-3">
-                    No active plan
-                  </p>
-                  <Link
-                    to="/pricing"
-                    className="btn btn-surveyor btn-sm w-full justify-center"
-                  >
-                    Upgrade Plan
-                  </Link>
-                </>
-              )}
+              <p className="type-label-sm text-white/80 mb-1">
+                {activeSurveys.length} Active Survey{activeSurveys.length !== 1 ? "s" : ""}
+              </p>
+              <p className="type-label-sm text-white/80 mb-3">
+                {drafts.length} Draft{drafts.length !== 1 ? "s" : ""} in progress
+              </p>
+              <Link
+                to="/dashboard/my-surveys"
+                className="btn btn-surveyor btn-sm w-full justify-center"
+              >
+                View All
+              </Link>
             </div>
           </div>
         </div>
       </section>
+
+      {/* Moderation alerts — rejected or pending surveys */}
+      <ModerationBanner rejectedSurveys={rejectedSurveys} />
 
       {/* ══════════════════════════════════════════════════
           SECTION 2 — KPI Row
@@ -355,139 +606,12 @@ export default function SurveyorHome() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 4 — AI Ready Banner (conditional)
+          SECTION 4 — Active Surveys Banner Slider
       ══════════════════════════════════════════════════ */}
-      {aiReady.length > 0 && (
-        <section className="py-8 bg-[--color-surveyor-light]">
-          <div className="container-app mx-auto">
-            <div className="card p-6 border-l-4 border-[--color-surveyor] bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
-              <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-xl bg-[--color-surveyor-light] flex items-center justify-center shrink-0">
-                  <svg
-                    className="w-5 h-5 text-[--color-surveyor-dark]"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                    />
-                  </svg>
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="badge badge-surveyor">AI Ready</span>
-                    <span className="type-body-sm font-semibold text-[--color-surveyor-dark]">
-                      {aiReady.length} survey{aiReady.length > 1 ? "s" : ""}{" "}
-                      ready for analysis
-                    </span>
-                  </div>
-                  <p className="type-body-sm text-[--color-text-secondary]">
-                    &ldquo;{aiReady[0]?.title}&rdquo; has{" "}
-                    <strong className="font-[--font-mono]">
-                      {aiReady[0]?.responseCount}
-                    </strong>{" "}
-                    responses — Gemini is ready to surface insights.
-                  </p>
-                </div>
-              </div>
-              <Link to="/analytics" className="btn btn-surveyor btn-md shrink-0">
-                Open AI Lab →
-              </Link>
-            </div>
-          </div>
-        </section>
-      )}
+      <ActiveSurveysBanner surveys={activeSurveys} />
 
       {/* ══════════════════════════════════════════════════
-          SECTION 5 — Active Surveys
-      ══════════════════════════════════════════════════ */}
-      <section className="py-20 bg-[--color-bg-subtle]">
-        <div className="container-app mx-auto">
-          <div className="flex items-end justify-between mb-10">
-            <div>
-              <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
-                Live Now
-              </p>
-              <h2 className="type-heading-lg text-[--color-text-primary]">
-                Your Active Surveys
-              </h2>
-              <p className="type-body-sm text-[--color-text-secondary] mt-1 max-w-md">
-                These are out in the world collecting responses right now. Keep
-                the momentum going!
-              </p>
-            </div>
-            <Link to="/surveys" className="btn btn-secondary btn-md">
-              View All →
-            </Link>
-          </div>
-          {activeSurveys.length > 0 ? (
-            <motion.div
-              variants={listVariants}
-              initial="hidden"
-              animate="show"
-              className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3"
-            >
-              {activeSurveys.slice(0, 6).map((s) => (
-                <motion.div key={s._id} variants={itemVariants}>
-                  <SurveyCard
-                    title={s.title}
-                    category={s.category}
-                    participantCount={s.responseCount}
-                    status={s.status}
-                    actionButton={
-                      s.status === "expired" ? (
-                        <span className="type-body-sm text-[--color-text-tertiary] italic">
-                          Check dashboard for results
-                        </span>
-                      ) : (
-                        <Link
-                          to={`/surveys/${s._id}/edit`}
-                          className="btn btn-sm btn-secondary"
-                        >
-                          Edit
-                        </Link>
-                      )
-                    }
-                  />
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
-            <div className="empty-state py-20">
-              <div className="empty-state-icon">
-                <svg
-                  className="w-8 h-8"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              </div>
-              <h3 className="type-heading-sm mt-4">No active surveys yet</h3>
-              <p className="type-body-sm text-[--color-text-secondary] mt-2 max-w-xs">
-                Ready to hear what people think? Create your first survey and
-                start collecting real responses.
-              </p>
-              <Link to="/create-survey" className="btn btn-surveyor btn-md mt-5">
-                Create Your First Survey
-              </Link>
-            </div>
-          )}
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          SECTION 6 — Drafts + Recent Blog Activity (2-col)
+          SECTION 5 — Drafts + Recent Blog Activity (2-col)
       ══════════════════════════════════════════════════ */}
       <section className="py-20 bg-[--color-bg-surface]">
         <div className="container-app mx-auto grid gap-12 lg:grid-cols-2">
@@ -519,8 +643,8 @@ export default function SurveyorHome() {
                         {d.title}
                       </p>
                       <p className="type-meta text-[--color-text-tertiary] mt-0.5 font-[--font-mono]">
-                        {d.questionCount ?? 0} questions ·{" "}
-                        {new Date(d.updatedAt).toLocaleDateString()}
+                        {d.questions?.length ?? 0} questions ·{" "}
+                        {new Date(d.updatedAt || d.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                     <Link
@@ -559,15 +683,15 @@ export default function SurveyorHome() {
                 {blogActivity.slice(0, 4).map((a) => (
                   <div key={a._id} className="card p-5 flex items-start gap-4">
                     <div className="w-9 h-9 rounded-full bg-[--color-surveyor-light] flex items-center justify-center shrink-0 text-sm font-bold text-[--color-surveyor-dark]">
-                      {(a.commenterName || "U")[0].toUpperCase()}
+                      {(a.userEmail || "U")[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
                       <p className="type-body-sm text-[--color-text-primary] line-clamp-2">
                         {a.comment}
                       </p>
                       <p className="type-meta text-[--color-text-tertiary] mt-1 font-[--font-mono]">
-                        {a.commenterName} · &ldquo;{a.blogTitle}&rdquo; ·{" "}
-                        {new Date(a.createdAt).toLocaleDateString()}
+                        {a.userEmail?.split("@")[0]} · &ldquo;{a.blogTitle}&rdquo; ·{" "}
+                        {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
                       </p>
                     </div>
                   </div>
@@ -586,7 +710,7 @@ export default function SurveyorHome() {
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 7 — Motivational CTA Banner
+          SECTION 6 — Motivational CTA Banner
       ══════════════════════════════════════════════════ */}
       <section className="py-20 bg-[--color-navy] text-center">
         <div className="container-app mx-auto">

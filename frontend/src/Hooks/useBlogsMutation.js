@@ -58,3 +58,41 @@ export function useDeleteBlog() {
     },
   });
 }
+
+/**
+ * useAppealBlog — submits an appeal for a rejected blog.
+ */
+export function useAppealBlog() {
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, message }) => {
+      const res = await axiosSecure.post(`/api/blogs/${id}/appeal`, { message });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
+      queryClient.invalidateQueries({ predicate: (q) => q.queryKey?.[0] === "blogs" });
+    },
+  });
+}
+
+/**
+ * useAdminModerateBlog — admin approves/rejects a blog.
+ */
+export function useAdminModerateBlog() {
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, decision, reason }) => {
+      const res = await axiosSecure.patch(`/api/blogs/${id}/moderate`, { decision, reason });
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin"] });
+      queryClient.invalidateQueries({ queryKey: ["moderationQueue"] });
+    },
+  });
+}

@@ -25,11 +25,23 @@ const blogSchema = new mongoose.Schema({
   surveyorEmail: { type: String, required: true },
   status: {
     type: String,
-    enum: ['draft', 'active', 'banned'],
+    enum: ['draft', 'active', 'banned', 'pending_review', 'rejected'],
     default: 'draft',
   },
   title: { type: String, required: true },
   content: { type: String, required: true }, // Markdown or HTML content
+
+  moderation: {
+    decision: { type: String, enum: ['approved', 'rejected', 'pending'], default: undefined },
+    reason: String,
+    flaggedCategories: [String],
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    reviewedAt: Date,
+    appeal: {
+      message: String,
+      submittedAt: Date,
+    },
+  },
   
   // Exactly 5 reaction types. We store the userEmail of the people who reacted.
   // This makes it easy to check if a user has already reacted.

@@ -35,8 +35,20 @@ const surveySchema = new mongoose.Schema({
     }
   ],
   
-  status: { type: String, enum: ['draft', 'published', 'expired', 'banned', 'pending'], default: 'draft' },
+  status: { type: String, enum: ['draft', 'published', 'expired', 'banned', 'pending', 'pending_review', 'rejected'], default: 'draft' },
   publishedAt: Date,
+
+  moderation: {
+    decision: { type: String, enum: ['approved', 'rejected', 'pending'], default: undefined },
+    reason: String,
+    flaggedCategories: [String],
+    reviewedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    reviewedAt: Date,
+    appeal: {
+      message: String,
+      submittedAt: Date,
+    },
+  },
   category: String,
   participantCount: {
     type: Number,

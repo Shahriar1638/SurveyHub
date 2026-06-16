@@ -4,6 +4,7 @@ const Survey = require('../models/Survey');
 const Response = require('../models/response');
 const Feedback = require('../models/feedback');
 const User = require('../models/User');
+const { moderateContent } = require('../services/moderation');
 const validate = require('../validations/validate');
 const {
   createSurveySchema,
@@ -185,7 +186,34 @@ router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), asyn
     }
 
     const validStatuses = ['draft', 'published'];
-    const surveyStatus = validStatuses.includes(status) ? status : 'draft';
+    let surveyStatus = validStatuses.includes(status) ? status : 'draft';
+    let moderationResult = null;
+
+    // If creating directly as published, run moderation
+    if (surveyStatus === 'published') {
+      moderationResult = await moderateContent({
+        contentType: 'survey',
+        title: title.trim(),
+        description: description?.trim(),
+        questions,
+      });
+
+      if (moderationResult.decision === 'rejected') {
+        return res.status(422).json({
+          success: false,
+          message: 'Content rejected by moderation',
+          moderation: {
+            decision: moderationResult.decision,
+            reason: moderationResult.reason,
+            flaggedCategories: moderationResult.flaggedCategories,
+          },
+        });
+      }
+
+      if (moderationResult.decision === 'pending') {
+        surveyStatus = 'pending_review';
+      }
+    }
 
     const survey = await Survey.create({
       surveyorId: user._id,
@@ -198,9 +226,27 @@ router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), asyn
       questions,
       status: surveyStatus,
       publishedAt: surveyStatus === 'published' ? new Date() : undefined,
+      moderation: moderationResult ? {
+        decision: moderationResult.decision,
+        reason: moderationResult.reason,
+        flaggedCategories: moderationResult.flaggedCategories,
+        reviewedAt: new Date(),
+      } : undefined,
     });
 
-    res.status(201).json({ success: true, data: survey });
+    const response = {
+      success: true,
+      data: survey,
+    };
+
+    if (moderationResult?.decision === 'pending') {
+      response.moderation = {
+        decision: 'pending',
+        message: 'Your survey has been submitted for admin review before publishing.',
+      };
+    }
+
+    res.status(201).json(response);
   } catch (err) {
     console.error('Error creating survey:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -233,10 +279,56 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateSurveySchema), as
     if (image !== undefined) survey.image = image?.trim() || undefined;
     if (questions !== undefined) survey.questions = questions;
     if (status !== undefined && ['draft', 'published'].includes(status)) {
+      // If publishing, run content moderation first
+      if (status === 'published' && survey.status !== 'published') {
+        const modResult = await moderateContent({
+          contentType: 'survey',
+          title: survey.title,
+          description: survey.description,
+          questions: survey.questions,
+        });
+
+        if (modResult.decision === 'rejected') {
+          return res.status(422).json({
+            success: false,
+            message: 'Content rejected by moderation',
+            moderation: {
+              decision: modResult.decision,
+              reason: modResult.reason,
+              flaggedCategories: modResult.flaggedCategories,
+            },
+          });
+        }
+
+        if (modResult.decision === 'pending') {
+          survey.status = 'pending_review';
+          survey.moderation = {
+            decision: 'pending',
+            reason: modResult.reason,
+            flaggedCategories: modResult.flaggedCategories,
+            reviewedAt: new Date(),
+          };
+          await survey.save();
+          return res.json({
+            success: true,
+            data: survey,
+            moderation: {
+              decision: 'pending',
+              message: 'Your survey has been submitted for admin review before publishing.',
+            },
+          });
+        }
+      }
+
       survey.status = status;
       if (status === 'published' && !survey.publishedAt) {
         survey.publishedAt = new Date();
       }
+      survey.moderation = {
+        decision: 'approved',
+        reason: 'Passed automated moderation',
+        reviewedAt: new Date(),
+      };
     }
 
     await survey.save();
@@ -325,6 +417,116 @@ router.post('/:id/feedback', verifyToken, validate(surveyFeedbackSchema), async 
     });
   } catch (err) {
     console.error('Error submitting survey feedback:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/surveys/:id/appeal — Appeal a rejected survey
+ * Body: { message }
+ */
+router.post('/:id/appeal', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || survey.surveyorId.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    if (survey.moderation?.decision !== 'rejected') {
+      return res.status(400).json({ success: false, message: 'Only rejected content can be appealed' });
+    }
+
+    if (survey.moderation?.appeal) {
+      return res.status(400).json({ success: false, message: 'An appeal has already been submitted' });
+    }
+
+    const { message } = req.body;
+    if (!message?.trim()) {
+      return res.status(400).json({ success: false, message: 'Appeal message is required' });
+    }
+
+    survey.moderation.appeal = {
+      message: message.trim(),
+      submittedAt: new Date(),
+    };
+    survey.status = 'pending_review';
+    await survey.save();
+
+    res.json({ success: true, message: 'Appeal submitted. An admin will review your content.' });
+  } catch (err) {
+    console.error('Error submitting appeal:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/surveys/moderation/queue — Get pending moderation items (admin only)
+ */
+router.get('/moderation/queue', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const pending = await Survey.find({ status: 'pending_review' })
+      .select('title description category questions status moderation surveyorId createdAt')
+      .populate('surveyorId', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, data: pending });
+  } catch (err) {
+    console.error('Error fetching moderation queue:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * PATCH /api/surveys/:id/moderate — Admin approve/reject a survey
+ * Body: { decision: 'approved' | 'rejected', reason }
+ */
+router.patch('/:id/moderate', verifyToken, async (req, res) => {
+  try {
+    const admin = await User.findOne({ email: req.decoded.email }).lean();
+    if (!admin || admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    const { decision, reason } = req.body;
+    if (!['approved', 'rejected'].includes(decision)) {
+      return res.status(400).json({ success: false, message: 'Decision must be approved or rejected' });
+    }
+
+    survey.moderation = {
+      ...survey.moderation,
+      decision,
+      reason: reason || (decision === 'approved' ? 'Approved by admin' : 'Rejected by admin'),
+      reviewedBy: admin._id,
+      reviewedAt: new Date(),
+    };
+
+    if (decision === 'approved') {
+      survey.status = 'published';
+      if (!survey.publishedAt) survey.publishedAt = new Date();
+    } else {
+      survey.status = 'rejected';
+    }
+
+    await survey.save();
+    res.json({ success: true, data: survey });
+  } catch (err) {
+    console.error('Error moderating survey:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

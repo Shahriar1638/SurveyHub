@@ -1,0 +1,112 @@
+[
+  {
+    "contentType": "survey",
+    "rules": [
+      {
+        "id": "no_offensive_language",
+        "label": "Offensive Language",
+        "description": "Contains profanity, slurs, hate speech, or discriminatory language targeting any race, gender, religion, sexual orientation, or disability.",
+        "severity": "high"
+      },
+      {
+        "id": "no_pii_requests",
+        "label": "PII Data Collection",
+        "description": "Asks for credit card numbers, Social Security numbers, passwords, banking details, or other sensitive personal identification information.",
+        "severity": "high"
+      },
+      {
+        "id": "no_phishing",
+        "label": "Phishing / Scam",
+        "description": "Attempts to trick users into clicking malicious links, entering credentials on fake pages, or revealing confidential information.",
+        "severity": "high"
+      },
+      {
+        "id": "no_harassment",
+        "label": "Harassment / Bullying",
+        "description": "Targets specific individuals or groups with hostile, threatening, or degrading content.",
+        "severity": "high"
+      },
+      {
+        "id": "no_dangerous_content",
+        "label": "Dangerous Content",
+        "description": "Promotes self-harm, violence, illegal activities, or provides dangerous medical/health misinformation.",
+        "severity": "high"
+      },
+      {
+        "id": "no_misinformation",
+        "label": "Misinformation",
+        "description": "Contains demonstrably false claims about well-established facts, conspiracy theories, or misleading health advice.",
+        "severity": "low"
+      },
+      {
+        "id": "spam_detection",
+        "label": "Spam / Low Quality",
+        "description": "Nonsensical text, repetitive content, purely promotional material, or surveys with no clear purpose.",
+        "severity": "low"
+      },
+      {
+        "id": "excessive_personal_questions",
+        "label": "Excessive Personal Questions",
+        "description": "Requests detailed personal information (address, phone, full name) without clear justification or consent explanation.",
+        "severity": "low"
+      }
+    ],
+    "customInstructions": "SurveyHub is a professional survey and analytics platform. Surveys should be respectful, clear, and transparent about data usage. Surveyors must have a legitimate purpose for collecting any personal data. Questions should be relevant to the stated survey topic. Always consider participant privacy and dignity.",
+    "enabled": true
+  },
+  {
+    "contentType": "blog",
+    "rules": [
+      {
+        "id": "no_offensive_language",
+        "label": "Offensive Language",
+        "description": "Contains profanity, slurs, hate speech, or discriminatory language targeting any race, gender, religion, sexual orientation, or disability.",
+        "severity": "high"
+      },
+      {
+        "id": "no_harassment",
+        "label": "Harassment / Bullying",
+        "description": "Targets specific individuals or groups with hostile, threatening, or degrading content.",
+        "severity": "high"
+      },
+      {
+        "id": "no_dangerous_content",
+        "label": "Dangerous Content",
+        "description": "Promotes self-harm, violence, illegal activities, or provides dangerous medical/health misinformation.",
+        "severity": "high"
+      },
+      {
+        "id": "no_phishing",
+        "label": "Phishing / Scam Links",
+        "description": "Contains suspicious links, attempts to redirect users to malicious sites, or promotes scams.",
+        "severity": "high"
+      },
+      {
+        "id": "no_plagiarism",
+        "label": "Plagiarism / Copyright",
+        "description": "Contains large blocks of text that appear to be copied from other sources without attribution.",
+        "severity": "low"
+      },
+      {
+        "id": "no_misinformation",
+        "label": "Misinformation",
+        "description": "Contains demonstrably false claims about well-established facts, conspiracy theories, or misleading advice presented as fact.",
+        "severity": "low"
+      },
+      {
+        "id": "spam_detection",
+        "label": "Spam / Low Quality",
+        "description": "Nonsensical text, repetitive content, purely promotional material, or content with no meaningful insight.",
+        "severity": "low"
+      },
+      {
+        "id": "no_clickbait",
+        "label": "Misleading Title",
+        "description": "Title is deliberately misleading, sensationalized, or completely unrelated to the blog content.",
+        "severity": "low"
+      }
+    ],
+    "customInstructions": "SurveyHub blogs are insight posts where surveyors share analysis and findings from their surveys. Content should be professional, evidence-based, and respectful. Blog posts should provide genuine value to the SurveyHub community. Opinions should be clearly distinguished from facts. Always cite data sources when referencing survey results.",
+    "enabled": true
+  }
+]

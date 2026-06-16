@@ -16,8 +16,8 @@ export default function LinearScale({ question, value, onChange, disabled, label
             onClick={() => onChange(question.id, n)}
             className={`w-10 h-10 rounded-lg text-sm font-semibold border-2 transition-all duration-150 ${
               value === n
-                ? "bg-[--color-visitor] border-[--color-visitor] text-white"
-                : "border-[--color-border] text-[--color-text-secondary] hover:border-[--color-visitor] hover:bg-[--color-visitor-light]"
+                ? "bg-visitor border-visitor text-white"
+                : "border-border text-text-secondary hover:border-visitor hover:bg-visitor-light"
             } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
           >
             {n}

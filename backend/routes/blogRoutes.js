@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blog');
 const User = require('../models/User');
+const { moderateContent } = require('../services/moderation');
 const validate = require('../validations/validate');
 const {
   createBlogSchema,
@@ -83,17 +84,57 @@ router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
 // ── POST /api/blogs — Create a new blog post ────────────────────────────────
 router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async (req, res) => {
   try {
-    const { title, content, surveyId } = req.body;
+    const { title, content, surveyId, status } = req.body;
+
+    const blogStatus = status === 'active' ? 'draft' : 'draft'; // Always start as draft
+    let moderationResult = null;
+
+    // If creating directly as active, run moderation
+    if (status === 'active') {
+      moderationResult = await moderateContent({
+        contentType: 'blog',
+        title: title.trim(),
+        content: content.trim(),
+      });
+
+      if (moderationResult.decision === 'rejected') {
+        return res.status(422).json({
+          success: false,
+          message: 'Content rejected by moderation',
+          moderation: {
+            decision: moderationResult.decision,
+            reason: moderationResult.reason,
+            flaggedCategories: moderationResult.flaggedCategories,
+          },
+        });
+      }
+    }
+
+    const finalStatus = moderationResult?.decision === 'pending' ? 'pending_review' : 'draft';
 
     const blog = await Blog.create({
       surveyorEmail: req.decoded.email,
       title: title.trim(),
       content: content.trim(),
       surveyId: surveyId || undefined,
-      status: 'draft',
+      status: finalStatus,
+      moderation: moderationResult ? {
+        decision: moderationResult.decision,
+        reason: moderationResult.reason,
+        flaggedCategories: moderationResult.flaggedCategories,
+        reviewedAt: new Date(),
+      } : undefined,
     });
 
-    res.status(201).json({ success: true, data: blog });
+    const response = { success: true, data: blog };
+    if (moderationResult?.decision === 'pending') {
+      response.moderation = {
+        decision: 'pending',
+        message: 'Your blog has been submitted for admin review before publishing.',
+      };
+    }
+
+    res.status(201).json(response);
   } catch (err) {
     console.error('Error creating blog:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -117,7 +158,52 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateBlogSchema), asyn
     if (content !== undefined) blog.content = content.trim();
     if (surveyId !== undefined) blog.surveyId = surveyId || undefined;
     if (status !== undefined && ['draft', 'active'].includes(status)) {
+      // If publishing (activating), run content moderation first
+      if (status === 'active' && blog.status !== 'active') {
+        const modResult = await moderateContent({
+          contentType: 'blog',
+          title: blog.title,
+          content: blog.content,
+        });
+
+        if (modResult.decision === 'rejected') {
+          return res.status(422).json({
+            success: false,
+            message: 'Content rejected by moderation',
+            moderation: {
+              decision: modResult.decision,
+              reason: modResult.reason,
+              flaggedCategories: modResult.flaggedCategories,
+            },
+          });
+        }
+
+        if (modResult.decision === 'pending') {
+          blog.status = 'pending_review';
+          blog.moderation = {
+            decision: 'pending',
+            reason: modResult.reason,
+            flaggedCategories: modResult.flaggedCategories,
+            reviewedAt: new Date(),
+          };
+          await blog.save();
+          return res.json({
+            success: true,
+            data: blog,
+            moderation: {
+              decision: 'pending',
+              message: 'Your blog has been submitted for admin review before publishing.',
+            },
+          });
+        }
+      }
+
       blog.status = status;
+      blog.moderation = {
+        decision: 'approved',
+        reason: 'Passed automated moderation',
+        reviewedAt: new Date(),
+      };
     }
 
     await blog.save();
@@ -285,6 +371,105 @@ router.post('/:id/comments/:commentId/replies', verifyToken, validate(blogCommen
     });
   } catch (err) {
     console.error('Error adding reply:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── POST /api/blogs/:id/appeal — Appeal a rejected blog ─────────────────────
+router.post('/:id/appeal', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    if (blog.surveyorEmail !== req.decoded.email) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    if (blog.moderation?.decision !== 'rejected') {
+      return res.status(400).json({ success: false, message: 'Only rejected content can be appealed' });
+    }
+
+    if (blog.moderation?.appeal) {
+      return res.status(400).json({ success: false, message: 'An appeal has already been submitted' });
+    }
+
+    const { message } = req.body;
+    if (!message?.trim()) {
+      return res.status(400).json({ success: false, message: 'Appeal message is required' });
+    }
+
+    blog.moderation.appeal = {
+      message: message.trim(),
+      submittedAt: new Date(),
+    };
+    blog.status = 'pending_review';
+    await blog.save();
+
+    res.json({ success: true, message: 'Appeal submitted. An admin will review your content.' });
+  } catch (err) {
+    console.error('Error submitting blog appeal:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── GET /api/blogs/moderation/queue — Get pending moderation items (admin) ──
+router.get('/moderation/queue', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const pending = await Blog.find({ status: 'pending_review' })
+      .select('title content status moderation surveyorEmail createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, data: pending });
+  } catch (err) {
+    console.error('Error fetching blog moderation queue:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── PATCH /api/blogs/:id/moderate — Admin approve/reject a blog ─────────────
+router.patch('/:id/moderate', verifyToken, async (req, res) => {
+  try {
+    const admin = await User.findOne({ email: req.decoded.email }).lean();
+    if (!admin || admin.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    const { decision, reason } = req.body;
+    if (!['approved', 'rejected'].includes(decision)) {
+      return res.status(400).json({ success: false, message: 'Decision must be approved or rejected' });
+    }
+
+    blog.moderation = {
+      ...blog.moderation,
+      decision,
+      reason: reason || (decision === 'approved' ? 'Approved by admin' : 'Rejected by admin'),
+      reviewedBy: admin._id,
+      reviewedAt: new Date(),
+    };
+
+    if (decision === 'approved') {
+      blog.status = 'active';
+    } else {
+      blog.status = 'rejected';
+    }
+
+    await blog.save();
+    res.json({ success: true, data: blog });
+  } catch (err) {
+    console.error('Error moderating blog:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

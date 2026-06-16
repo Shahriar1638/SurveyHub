@@ -5,10 +5,12 @@ import {
   ShieldCheckIcon,
   ExclamationTriangleIcon,
   EyeIcon,
+  CpuChipIcon,
 } from "@heroicons/react/24/outline";
 import { useAdminReports } from "../../../../Hooks/useDashboardAdmin";
 import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import ReportSidePanel from "../ReportSidePanel";
+import ContentModerationQueue from "./ContentModerationQueue";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -41,9 +43,15 @@ export default function AdminModeration() {
   const reports = reportData?.data || [];
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+    <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
+      {/* AI Content Moderation Queue */}
       <motion.div variants={item}>
-        <h2 className="type-heading-lg text-[--color-text-primary]">Moderation Engine</h2>
+        <ContentModerationQueue />
+      </motion.div>
+
+      {/* User Reports */}
+      <motion.div variants={item}>
+        <h2 className="type-heading-lg text-[--color-text-primary]">User Reports</h2>
         <p className="type-body-sm text-[--color-text-secondary] mt-1">
           Prioritized feed of reported surveys and content.
         </p>

@@ -67,7 +67,7 @@ const updateSurveySchema = z.object({
   deadline: z.string().optional(),
   image: z.string().url().optional().or(z.literal('')),
   questions: z.array(questionSchema).optional(),
-  status: z.enum(['draft', 'published']).optional(),
+  status: z.enum(['draft', 'published', 'pending_review', 'rejected']).optional(),
 });
 
 const surveyResponseSchema = z.object({
@@ -91,13 +91,14 @@ const createBlogSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200),
   content: z.string().min(1, 'Content is required').max(50000),
   surveyId: z.string().optional().or(z.literal('')),
+  status: z.enum(['draft', 'active']).optional(),
 });
 
 const updateBlogSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).max(50000).optional(),
   surveyId: z.string().optional().or(z.literal('')),
-  status: z.enum(['draft', 'active']).optional(),
+  status: z.enum(['draft', 'active', 'pending_review', 'rejected']).optional(),
 });
 
 const blogReactionSchema = z.object({
