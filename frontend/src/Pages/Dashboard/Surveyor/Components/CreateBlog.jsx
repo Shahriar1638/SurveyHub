@@ -1,24 +1,38 @@
-import { useState, useContext } from "react";
-import { useNavigate } from "react-router";
+import { useState, useEffect, useContext } from "react";
+import { useNavigate, useSearchParams } from "react-router";
 import { motion } from "motion/react";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
 import { AuthContext } from "../../../../Firebase_AuthProvider/AuthProvider";
-import { useCreateBlog } from "../../../../Hooks/useBlogsMutation";
+import { useCreateBlog, useUpdateBlog, useBlogForEdit } from "../../../../Hooks/useBlogsMutation";
 import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
 import { PageTransition } from "../../../../Components/UI/PageTransition";
+import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import Swal from "sweetalert2";
 
 export default function CreateBlog() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
   const { user } = useContext(AuthContext);
   const { data } = useDashboardSurveyor();
   const createMutation = useCreateBlog();
+  const updateMutation = useUpdateBlog();
+  const { data: editBlog, isLoading: isLoadingEdit } = useBlogForEdit(editId);
 
   const publishedSurveys = data?.publishedSurveys || [];
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [surveyId, setSurveyId] = useState("");
+
+  // Load existing blog data when editing
+  useEffect(() => {
+    if (editBlog) {
+      setTitle(editBlog.title || "");
+      setContent(editBlog.content || "");
+      setSurveyId(editBlog.surveyId || "");
+    }
+  }, [editBlog]);
 
   const canPublish = title.trim() && content.trim();
 
@@ -28,7 +42,12 @@ export default function CreateBlog() {
       return;
     }
     try {
-      await createMutation.mutateAsync({ title, content, surveyId: surveyId || undefined });
+      const payload = { title, content, surveyId: surveyId || undefined };
+      if (editId) {
+        await updateMutation.mutateAsync({ id: editId, ...payload });
+      } else {
+        await createMutation.mutateAsync(payload);
+      }
       Swal.fire({ icon: "success", title: "Draft Saved", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
       navigate("/dashboard/blog-studio");
     } catch (err) {
@@ -50,13 +69,34 @@ export default function CreateBlog() {
     if (!result.isConfirmed) return;
 
     try {
-      await createMutation.mutateAsync({ title, content, surveyId: surveyId || undefined, status: "active" });
-      Swal.fire({ icon: "success", title: "Blog Published!", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
+      const payload = { title, content, surveyId: surveyId || undefined, status: "active" };
+      let result;
+      if (editId) {
+        result = await updateMutation.mutateAsync({ id: editId, ...payload });
+      } else {
+        result = await createMutation.mutateAsync(payload);
+      }
+      // Quota exceeded — saved as draft with friendly message
+      if (result?.message) {
+        Swal.fire({ icon: "info", title: "Saved as Draft", text: result.message, confirmButtonColor: "var(--color-surveyor)" });
+      } else {
+        Swal.fire({ icon: "success", title: "Blog Published!", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
+      }
       navigate("/dashboard/blog-studio");
     } catch (err) {
       Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish blog.", confirmButtonColor: "var(--color-admin)" });
     }
   };
+
+  if (isLoadingEdit) {
+    return (
+      <PageTransition>
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <LoadingSpinner />
+        </div>
+      </PageTransition>
+    );
+  }
 
   return (
     <PageTransition>
@@ -67,7 +107,7 @@ export default function CreateBlog() {
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="type-heading-xl text-[--color-text-primary]">Create Blog Post</h1>
+            <h1 className="type-heading-xl text-[--color-text-primary]">{editId ? "Edit Blog Post" : "Create Blog Post"}</h1>
             <p className="type-body-sm text-[--color-text-secondary] mt-1">Share insights from your surveys with the community.</p>
           </div>
         </div>
@@ -121,10 +161,10 @@ export default function CreateBlog() {
           <div className="flex items-center gap-3">
             <button
               onClick={handleSaveDraft}
-              disabled={createMutation.isPending}
+              disabled={createMutation.isPending || updateMutation.isPending}
               className="btn btn-secondary btn-md flex items-center gap-2 disabled:opacity-50"
             >
-              {createMutation.isPending ? (
+              {(createMutation.isPending || updateMutation.isPending) ? (
                 <>
                   <motion.span animate={{ rotate: 360 }} transition={{ duration: 0.7, repeat: Infinity, ease: "linear" }} className="w-4 h-4 border-2 border-[--color-text-tertiary]/30 border-t-[--color-text-primary] rounded-full block" />
                   Saving…
@@ -135,7 +175,7 @@ export default function CreateBlog() {
             </button>
             <button
               onClick={handlePublish}
-              disabled={!canPublish || createMutation.isPending}
+              disabled={!canPublish || createMutation.isPending || updateMutation.isPending}
               className="btn btn-surveyor btn-md text-white flex items-center gap-2 disabled:opacity-50"
             >
               Publish

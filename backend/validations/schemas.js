@@ -42,8 +42,9 @@ const updateProfileSchema = z.object({
 
 // ── Survey ───────────────────────────────────────────────────────────────────
 const questionSchema = z.object({
-  questionText: z.string().min(1, 'Question text is required'),
-  questionType: z.enum(['text', 'multipleChoice', 'checkbox', 'rating', 'dropdown', 'date']),
+  id: z.string().min(1, 'Question ID is required'),
+  label: z.string().min(1, 'Question text is required').max(1000),
+  type: z.enum(['short_answer', 'paragraph', 'multiple_choice', 'checkbox', 'linear_scale']),
   options: z.array(z.string()).optional(),
   required: z.boolean().optional(),
 });

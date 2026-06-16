@@ -60,4 +60,4 @@ const pricingPackageSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.models.PricingPackage || mongoose.model('PricingPackage', pricingPackageSchema);
+module.exports = mongoose.models.PricingPackage || mongoose.model('PricingPackage', pricingPackageSchema, 'pricing_packages');

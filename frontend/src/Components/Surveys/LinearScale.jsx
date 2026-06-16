@@ -1,6 +1,71 @@
-export default function LinearScale({ question, value, onChange, disabled, labelMin = "Not at all", labelMax = "Extremely" }) {
+export default function LinearScale({ question, value, onChange, disabled }) {
   const min = parseInt(question.options?.[0]) || 1;
   const max = parseInt(question.options?.[1]) || 5;
+  const labelMin = question.options?.[2] || "Not at all";
+  const labelMax = question.options?.[3] || "Extremely";
+  const items = question.options?.slice(4) || [];
+
+  const isMatrix = items.length > 0;
+  const ratings = Array.from({ length: max - min + 1 }, (_, i) => i + min);
+
+  // Matrix mode — value is an object { itemIndex: rating }
+  if (isMatrix) {
+    const matrixValue = value || {};
+
+    const handleItemClick = (itemIdx, rating) => {
+      const next = { ...matrixValue, [itemIdx]: rating };
+      onChange(question.id, next);
+    };
+
+    return (
+      <div className="space-y-3 overflow-x-auto">
+        {/* Header row — ratings */}
+        <div className="flex items-end gap-0 min-w-max">
+          <div className="w-40 shrink-0" />
+          {ratings.map((n) => (
+            <div key={n} className="w-14 text-center type-meta text-[--color-text-tertiary] font-[--font-mono]">
+              {n}
+            </div>
+          ))}
+        </div>
+
+        {/* Labels row */}
+        <div className="flex items-center gap-0 min-w-max">
+          <div className="w-40 shrink-0" />
+          <div className="flex-1 flex justify-between px-1">
+            <span className="type-meta text-[--color-text-tertiary]">{labelMin}</span>
+            <span className="type-meta text-[--color-text-tertiary]">{labelMax}</span>
+          </div>
+        </div>
+
+        {/* Item rows */}
+        {items.map((item, idx) => (
+          <div key={idx} className="flex items-center gap-0 min-w-max">
+            <div className="w-40 shrink-0 type-body-sm text-[--color-text-primary] pr-3 truncate" title={item}>
+              {item}
+            </div>
+            {ratings.map((n) => (
+              <button
+                key={n}
+                type="button"
+                disabled={disabled}
+                onClick={() => handleItemClick(idx, n)}
+                className={`w-14 h-10 rounded-lg text-sm font-semibold border-2 transition-all duration-150 mx-0.5 ${
+                  matrixValue[idx] === n
+                    ? "bg-visitor border-visitor text-white"
+                    : "border-border text-text-secondary hover:border-visitor hover:bg-visitor-light"
+                } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Simple mode — single value
   return (
     <div className="space-y-3">
       <div className="flex justify-between type-meta text-[--color-text-tertiary]">
@@ -8,7 +73,7 @@ export default function LinearScale({ question, value, onChange, disabled, label
         <span>{labelMax}</span>
       </div>
       <div className="flex gap-2 flex-wrap">
-        {Array.from({ length: max - min + 1 }, (_, i) => i + min).map((n) => (
+        {ratings.map((n) => (
           <button
             key={n}
             type="button"

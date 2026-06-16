@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "./useAxiosSecure";
 
 /**
@@ -14,6 +14,7 @@ export function useCreateSurvey() {
       return res.data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mySurveys"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
     },
   });
@@ -32,6 +33,7 @@ export function useUpdateSurvey() {
       return res.data;
     },
     onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["mySurveys"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
       queryClient.invalidateQueries({ queryKey: ["survey", variables.id] });
     },
@@ -39,7 +41,7 @@ export function useUpdateSurvey() {
 }
 
 /**
- * useDeleteSurvey — deletes a survey by ID.
+ * useDeleteSurvey — soft-deletes a survey by ID with optimistic update.
  */
 export function useDeleteSurvey() {
   const axiosSecure = useAxiosSecure();
@@ -50,7 +52,28 @@ export function useDeleteSurvey() {
       const res = await axiosSecure.delete(`/api/surveys/${id}`);
       return res.data;
     },
-    onSuccess: () => {
+    onMutate: async (id) => {
+      // Optimistically remove from UI
+      await queryClient.cancelQueries({ queryKey: ["mySurveys"] });
+      const previous = queryClient.getQueriesData({ queryKey: ["mySurveys"] });
+
+      queryClient.setQueriesData({ queryKey: ["mySurveys"] }, (old) => {
+        if (!old) return old;
+        return old.filter((s) => s._id !== id);
+      });
+
+      return { previous };
+    },
+    onError: (_err, _id, context) => {
+      // Rollback on error
+      if (context?.previous) {
+        for (const [key, data] of context.previous) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["mySurveys"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
     },
   });
@@ -69,6 +92,7 @@ export function useAppealSurvey() {
       return res.data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mySurveys"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
     },
   });
@@ -87,8 +111,25 @@ export function useAdminModerateSurvey() {
       return res.data;
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mySurveys"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "admin"] });
       queryClient.invalidateQueries({ queryKey: ["moderationQueue"] });
     },
+  });
+}
+
+/**
+ * useSurveyForEdit — fetches a single survey for editing (owner only).
+ */
+export function useSurveyForEdit(id) {
+  const axiosSecure = useAxiosSecure();
+
+  return useQuery({
+    queryKey: ["survey", "edit", id],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/api/surveys/${id}/edit-data`);
+      return res.data?.data;
+    },
+    enabled: !!id,
   });
 }

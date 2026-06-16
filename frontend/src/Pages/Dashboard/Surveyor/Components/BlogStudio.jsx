@@ -1,31 +1,56 @@
-import { useState } from "react";
+/* eslint-disable no-unused-vars */
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   PlusIcon,
   PencilSquareIcon,
-  ChatBubbleLeftIcon,
-  HeartIcon,
+  MagnifyingGlassIcon,
+  FunnelIcon,
+  ArrowsUpDownIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
-import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
+import { useMyBlogs, useDeleteBlog, useAppealBlog } from "../../../../Hooks/useBlogsMutation";
+import { BlogCard, BlogCardSkeleton } from "../../../../Components/UI/BlogCard";
 import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
-import { useAppealBlog } from "../../../../Hooks/useBlogsMutation";
+import Swal from "sweetalert2";
 
-const container = {
-  hidden: { opacity: 0 },
-  show: { opacity: 1, transition: { staggerChildren: 0.06, delayChildren: 0.1 } },
-};
-const item = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest First" },
+  { value: "oldest", label: "Oldest First" },
+  { value: "title_asc", label: "Title A–Z" },
+  { value: "title_desc", label: "Title Z–A" },
+  { value: "updated", label: "Recently Updated" },
+];
+
+const STATUS_FILTERS = [
+  { value: "all", label: "All" },
+  { value: "active", label: "Published" },
+  { value: "draft", label: "Draft" },
+  { value: "pending_review", label: "Pending" },
+  { value: "rejected", label: "Rejected" },
+  { value: "banned", label: "Banned" },
+];
+
+const STATUS_BADGE = {
+  active: "badge badge-published",
+  draft: "badge badge-draft",
+  pending_review: "badge badge-pending",
+  rejected: "badge badge-rejected",
+  banned: "badge badge-banned",
 };
 
-function BlogModerationBanner({ rejectedBlogs }) {
+function BlogModerationBanner({ blogs }) {
   const [appealId, setAppealId] = useState(null);
   const [appealMsg, setAppealMsg] = useState("");
   const appealMutation = useAppealBlog();
 
-  if (!rejectedBlogs || rejectedBlogs.length === 0) return null;
+  const issues = useMemo(
+    () => blogs.filter((b) => ["rejected", "pending_review"].includes(b.status)),
+    [blogs]
+  );
+
+  if (issues.length === 0) return null;
 
   const handleAppeal = (id) => {
     if (!appealMsg.trim()) return;
@@ -40,7 +65,7 @@ function BlogModerationBanner({ rejectedBlogs }) {
       <p className="type-meta-sm text-[--color-error] tracking-widest uppercase mb-2">
         Content Review
       </p>
-      {rejectedBlogs.map((b) => (
+      {issues.map((b) => (
         <div
           key={b._id}
           className={`card p-4 border-l-4 mb-3 ${
@@ -109,27 +134,144 @@ function BlogModerationBanner({ rejectedBlogs }) {
 
 export default function BlogStudio() {
   const navigate = useNavigate();
-  const { data, isLoading, isError } = useDashboardSurveyor();
-  const blogs = data?.recentBlogActivity || [];
-  const rejectedBlogs = data?.rejectedBlogs || [];
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("newest");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [showFilters, setShowFilters] = useState(false);
 
-  if (isLoading) return <LoadingSpinner />;
-  if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load blog data.</p></div>;
+  const { data: blogs = [], isLoading, isError } = useMyBlogs({ sort, search, status: statusFilter });
+  const deleteMutation = useDeleteBlog();
+
+  const handleDelete = (blog) => {
+    Swal.fire({
+      title: "Delete Blog?",
+      html: `<p>Are you sure you want to delete "<strong>${blog.title}</strong>"?</p>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "var(--color-admin)",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate(blog._id, {
+          onSuccess: () => Swal.fire({ icon: "success", title: "Deleted", timer: 1500, showConfirmButton: false }),
+        });
+      }
+    });
+  };
 
   return (
-    <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <motion.div variants={item} className="flex items-center justify-between">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-6"
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between">
         <h2 className="type-heading-lg text-[--color-text-primary]">Blog Studio</h2>
         <button onClick={() => navigate("/dashboard/create-blog")} className="btn btn-surveyor btn-sm flex items-center gap-2">
           <PlusIcon className="w-4 h-4" />
           New Blog Post
         </button>
-      </motion.div>
+      </div>
 
-      <BlogModerationBanner rejectedBlogs={rejectedBlogs} />
+      {/* Moderation banner — show rejected/pending from full list */}
+      <BlogModerationBanner blogs={blogs} />
 
-      {blogs.length === 0 && rejectedBlogs.length === 0 ? (
-        <motion.div variants={item} className="empty-state">
+      {/* Search + Filter bar */}
+      <div className="flex items-center gap-3 flex-wrap">
+        {/* Search */}
+        <div className="relative flex-1 min-w-50 max-w-md">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[--color-text-tertiary]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="    Search blogs..."
+            className="form-input pl-9 pr-3 py-2 w-full text-sm"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2">
+              <XMarkIcon className="w-4 h-4 text-[--color-text-tertiary] hover:text-[--color-text-primary]" />
+            </button>
+          )}
+        </div>
+
+        {/* Sort */}
+        <div className="relative">
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            className="form-input pl-9 pr-3 py-2 text-sm appearance-none cursor-pointer"
+          >
+            {SORT_OPTIONS.map((o) => (
+              <option key={o.value} value={o.value}>{o.label}</option>
+            ))}
+          </select>
+          <ArrowsUpDownIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[--color-text-tertiary] pointer-events-none" />
+        </div>
+
+        {/* Filter toggle */}
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+            showFilters || statusFilter !== "all"
+              ? "bg-[--color-surveyor] text-white"
+              : "bg-[--color-bg-subtle] text-[--color-text-secondary] hover:bg-[--color-bg-inset]"
+          }`}
+        >
+          <FunnelIcon className="w-4 h-4" />
+          Filter
+          {statusFilter !== "all" && (
+            <span className="ml-1 w-5 h-5 rounded-full bg-white/20 text-xs flex items-center justify-center">1</span>
+          )}
+        </button>
+      </div>
+
+      {/* Status filter chips */}
+      <AnimatePresence>
+        {showFilters && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="flex items-center gap-2 flex-wrap pb-2">
+              {STATUS_FILTERS.map((f) => (
+                <button
+                  key={f.value}
+                  onClick={() => setStatusFilter(f.value)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 ${
+                    statusFilter === f.value
+                      ? "bg-[--color-surveyor] text-white shadow-sm"
+                      : "bg-[--color-bg-subtle] text-[--color-text-secondary] hover:bg-[--color-bg-inset]"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Blog feed */}
+      {isLoading ? (
+        <div className="space-y-4">
+          {[1, 2, 3].map((i) => <BlogCardSkeleton key={i} />)}
+        </div>
+      ) : isError ? (
+        <div className="text-center py-12">
+          <p className="type-body-sm text-[--color-error]">Failed to load blogs.</p>
+        </div>
+      ) : blogs.length === 0 ? (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="empty-state"
+        >
           <div className="empty-state-icon">
             <PencilSquareIcon className="w-7 h-7" />
           </div>
@@ -139,35 +281,17 @@ export default function BlogStudio() {
           </p>
         </motion.div>
       ) : (
-        <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {blogs.map((blog) => {
-            const totalComments = blog.comments?.length || 0;
-            const totalReactions = Object.values(blog.reactions || {}).reduce(
-              (sum, arr) => sum + (Array.isArray(arr) ? arr.length : 0),
-              0
-            );
-            return (
-              <div
-                key={blog._id}
-                className="card card-hover p-5 flex flex-col gap-3"
-              >
-                <h4 className="type-label-sm text-[--color-text-primary] line-clamp-2">
-                  {blog.title}
-                </h4>
-                <div className="flex items-center gap-4 mt-auto">
-                  <span className="type-meta text-[--color-text-tertiary] flex items-center gap-1">
-                    <ChatBubbleLeftIcon className="w-3.5 h-3.5" />
-                    {totalComments}
-                  </span>
-                  <span className="type-meta text-[--color-text-tertiary] flex items-center gap-1">
-                    <HeartIcon className="w-3.5 h-3.5" />
-                    {totalReactions}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </motion.div>
+        <div className="space-y-4">
+          {blogs.map((blog, idx) => (
+            <BlogCard
+              key={blog._id}
+              blog={blog}
+              index={idx}
+              onEdit={(b) => navigate(`/dashboard/create-blog?id=${b._id}`)}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
       )}
     </motion.div>
   );

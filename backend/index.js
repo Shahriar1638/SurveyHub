@@ -106,6 +106,7 @@ async function run() {
     app.use('/api/payments', paymentLimiter, require('./routes/paymentRoutes'));
     app.use('/api/packages', require('./routes/packageRoutes'));
     app.use('/api/dashboard', verifyToken, require('./routes/dashboardRoutes'));
+    app.use('/api/usage', require('./routes/usageRoutes'));
     // Send a ping to confirm a successful connection
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

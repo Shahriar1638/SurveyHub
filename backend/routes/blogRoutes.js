@@ -70,11 +70,43 @@ router.get('/', async (req, res) => {
 // ── GET /api/blogs/mine — surveyor's own blogs (active + draft) ──────────────
 router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
   try {
-    const blogs = await Blog.find({ surveyorEmail: req.decoded.email })
-      .sort({ createdAt: -1 })
-      .lean();
+    const { sort, search, status } = req.query;
+    const query = { surveyorEmail: req.decoded.email };
 
-    res.json({ success: true, data: blogs });
+    // Status filter
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    // Title search
+    if (search && search.trim()) {
+      query.title = { $regex: search.trim(), $options: 'i' };
+    }
+
+    // Sorting
+    let sortOption = { createdAt: -1 };
+    if (sort === 'oldest') sortOption = { createdAt: 1 };
+    if (sort === 'title_asc') sortOption = { title: 1 };
+    if (sort === 'title_desc') sortOption = { title: -1 };
+    if (sort === 'updated') sortOption = { updatedAt: -1 };
+
+    const blogs = await Blog.find(query).sort(sortOption).lean();
+
+    // Enrich with surveyor info
+    const roleMap = await enrichWithRoles([req.decoded.email]);
+    const enriched = blogs.map(b => ({
+      ...b,
+      surveyor: roleMap[b.surveyorEmail] || { email: b.surveyorEmail },
+      reactionCounts: {
+        like: b.reactions?.like?.length || 0,
+        insightful: b.reactions?.insightful?.length || 0,
+        disagree: b.reactions?.disagree?.length || 0,
+        interesting: b.reactions?.interesting?.length || 0,
+        funny: b.reactions?.funny?.length || 0,
+      },
+    }));
+
+    res.json({ success: true, data: enriched });
   } catch (err) {
     console.error('Error fetching own blogs:', err);
     res.status(500).json({ success: false, message: 'Server error' });
@@ -110,7 +142,11 @@ router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async 
       }
     }
 
-    const finalStatus = moderationResult?.decision === 'pending' ? 'pending_review' : 'draft';
+    // Quota exceeded — save as draft; otherwise pending_review
+    let finalStatus = 'draft';
+    if (moderationResult?.decision === 'pending') {
+      finalStatus = moderationResult.quotaExceeded ? 'draft' : 'pending_review';
+    }
 
     const blog = await Blog.create({
       surveyorEmail: req.decoded.email,
@@ -127,7 +163,10 @@ router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async 
     });
 
     const response = { success: true, data: blog };
-    if (moderationResult?.decision === 'pending') {
+    if (moderationResult?.quotaExceeded) {
+      response.message = moderationResult.reason;
+    }
+    if (moderationResult?.decision === 'pending' && !moderationResult?.quotaExceeded) {
       response.moderation = {
         decision: 'pending',
         message: 'Your blog has been submitted for admin review before publishing.',
@@ -154,6 +193,12 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateBlogSchema), asyn
 
     const { title, content, surveyId, status } = req.body;
 
+    // Track content edits
+    if (content !== undefined && content.trim() !== blog.content) {
+      blog.editHistory.push({ content: blog.content, editedAt: new Date() });
+      blog.edited = true;
+    }
+
     if (title !== undefined) blog.title = title.trim();
     if (content !== undefined) blog.content = content.trim();
     if (surveyId !== undefined) blog.surveyId = surveyId || undefined;
@@ -179,22 +224,39 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateBlogSchema), asyn
         }
 
         if (modResult.decision === 'pending') {
-          blog.status = 'pending_review';
-          blog.moderation = {
-            decision: 'pending',
-            reason: modResult.reason,
-            flaggedCategories: modResult.flaggedCategories,
-            reviewedAt: new Date(),
-          };
-          await blog.save();
-          return res.json({
-            success: true,
-            data: blog,
-            moderation: {
+          // Quota exceeded — save as draft instead of pending_review
+          if (modResult.quotaExceeded) {
+            blog.status = 'draft';
+            blog.moderation = {
               decision: 'pending',
-              message: 'Your blog has been submitted for admin review before publishing.',
-            },
-          });
+              reason: modResult.reason,
+              flaggedCategories: modResult.flaggedCategories,
+              reviewedAt: new Date(),
+            };
+            await blog.save();
+            return res.json({
+              success: true,
+              data: blog,
+              message: modResult.reason,
+            });
+          } else {
+            blog.status = 'pending_review';
+            blog.moderation = {
+              decision: 'pending',
+              reason: modResult.reason,
+              flaggedCategories: modResult.flaggedCategories,
+              reviewedAt: new Date(),
+            };
+            await blog.save();
+            return res.json({
+              success: true,
+              data: blog,
+              moderation: {
+                decision: 'pending',
+                message: 'Your blog has been submitted for admin review before publishing.',
+              },
+            });
+          }
         }
       }
 
@@ -229,6 +291,45 @@ router.delete('/:id', verifyToken, verifySurveyor, async (req, res) => {
     res.json({ success: true, message: 'Blog deleted' });
   } catch (err) {
     console.error('Error deleting blog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── GET /api/blogs/moderation/queue — Get pending moderation items (admin) ──
+router.get('/moderation/queue', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const pending = await Blog.find({ status: 'pending_review' })
+      .select('title content status moderation surveyorEmail createdAt')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, data: pending });
+  } catch (err) {
+    console.error('Error fetching blog moderation queue:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── GET /api/blogs/:id/edit-data — owner-only for editing ──────────────────
+router.get('/:id/edit-data', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blog = await Blog.findOne({
+      _id: req.params.id,
+      surveyorEmail: req.decoded.email,
+      status: { $nin: ['banned'] },
+    }).lean();
+
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+    res.json({ success: true, data: blog });
+  } catch (err) {
+    console.error('Error fetching blog for edit:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -410,26 +511,6 @@ router.post('/:id/appeal', verifyToken, verifySurveyor, async (req, res) => {
     res.json({ success: true, message: 'Appeal submitted. An admin will review your content.' });
   } catch (err) {
     console.error('Error submitting blog appeal:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-// ── GET /api/blogs/moderation/queue — Get pending moderation items (admin) ──
-router.get('/moderation/queue', verifyToken, async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.decoded.email }).lean();
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin access required' });
-    }
-
-    const pending = await Blog.find({ status: 'pending_review' })
-      .select('title content status moderation surveyorEmail createdAt')
-      .sort({ createdAt: -1 })
-      .lean();
-
-    res.json({ success: true, data: pending });
-  } catch (err) {
-    console.error('Error fetching blog moderation queue:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

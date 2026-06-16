@@ -31,6 +31,13 @@ const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true }, // Markdown or HTML content
 
+  // Edit tracking
+  edited: { type: Boolean, default: false },
+  editHistory: [{
+    content: { type: String, required: true },
+    editedAt: { type: Date, default: Date.now },
+  }],
+
   moderation: {
     decision: { type: String, enum: ['approved', 'rejected', 'pending'], default: undefined },
     reason: String,

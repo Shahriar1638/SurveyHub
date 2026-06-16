@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router";
 import { useMemo } from "react";
 import { motion } from "motion/react";
+import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 // ── Role badge ──────────────────────────────────────────────────────────────
 export function RoleBadge({ role }) {
@@ -112,7 +113,7 @@ export function ReactionBar({ counts, userReaction, onReact, readonly = false })
 }
 
 // ── Blog card (feed item) ───────────────────────────────────────────────────
-export function BlogCard({ blog, index }) {
+export function BlogCard({ blog, index, onEdit, onDelete }) {
   const navigate = useNavigate();
   const totalReactions = useMemo(
     () => Object.values(blog.reactionCounts || {}).reduce((s, v) => s + v, 0),
@@ -151,6 +152,12 @@ export function BlogCard({ blog, index }) {
                 month: "short", day: "numeric", year: "numeric",
               })}
             </span>
+            {blog.edited && (
+              <>
+                <span className="text-[--color-border-strong]">·</span>
+                <span className="type-meta text-[--color-text-tertiary] italic">(edited)</span>
+              </>
+            )}
             <span className="text-[--color-border-strong]">·</span>
             <span className="type-meta text-[--color-text-tertiary]">{readTime} min read</span>
           </div>
@@ -182,6 +189,24 @@ export function BlogCard({ blog, index }) {
             </svg>
             {blog.commentCount ?? 0}
           </span>
+          {onEdit && (
+            <button
+              onClick={() => onEdit(blog)}
+              title="Edit"
+              className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-text-primary] transition-colors"
+            >
+              <PencilSquareIcon className="w-4 h-4" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={() => onDelete(blog)}
+              title="Delete"
+              className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-secondary] hover:text-[--color-admin] transition-colors"
+            >
+              <TrashIcon className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </motion.article>

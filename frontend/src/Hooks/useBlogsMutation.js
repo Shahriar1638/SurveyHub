@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "./useAxiosSecure";
 
 /**
@@ -15,6 +15,7 @@ export function useCreateBlog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
+      queryClient.invalidateQueries({ queryKey: ["myBlogs"] });
       queryClient.invalidateQueries({ predicate: (q) => q.queryKey?.[0] === "blogs" });
     },
   });
@@ -35,6 +36,7 @@ export function useUpdateBlog() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
       queryClient.invalidateQueries({ queryKey: ["blog", variables.id] });
+      queryClient.invalidateQueries({ queryKey: ["myBlogs"] });
       queryClient.invalidateQueries({ predicate: (q) => q.queryKey?.[0] === "blogs" });
     },
   });
@@ -54,6 +56,7 @@ export function useDeleteBlog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
+      queryClient.invalidateQueries({ queryKey: ["myBlogs"] });
       queryClient.invalidateQueries({ predicate: (q) => q.queryKey?.[0] === "blogs" });
     },
   });
@@ -73,6 +76,7 @@ export function useAppealBlog() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["dashboard", "surveyor"] });
+      queryClient.invalidateQueries({ queryKey: ["myBlogs"] });
       queryClient.invalidateQueries({ predicate: (q) => q.queryKey?.[0] === "blogs" });
     },
   });
@@ -94,5 +98,40 @@ export function useAdminModerateBlog() {
       queryClient.invalidateQueries({ queryKey: ["dashboard", "admin"] });
       queryClient.invalidateQueries({ queryKey: ["moderationQueue"] });
     },
+  });
+}
+
+/**
+ * useMyBlogs — fetches all blogs for the logged-in surveyor with sorting, search, filter.
+ */
+export function useMyBlogs({ sort, search, status } = {}) {
+  const axiosSecure = useAxiosSecure();
+
+  return useQuery({
+    queryKey: ["myBlogs", { sort, search, status }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (sort) params.set("sort", sort);
+      if (search) params.set("search", search);
+      if (status) params.set("status", status);
+      const res = await axiosSecure.get(`/api/blogs/mine?${params.toString()}`);
+      return res.data?.data || [];
+    },
+  });
+}
+
+/**
+ * useBlogForEdit — fetches a single blog for editing (owner only).
+ */
+export function useBlogForEdit(id) {
+  const axiosSecure = useAxiosSecure();
+
+  return useQuery({
+    queryKey: ["blog", "edit", id],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/api/blogs/${id}/edit-data`);
+      return res.data?.data;
+    },
+    enabled: !!id,
   });
 }

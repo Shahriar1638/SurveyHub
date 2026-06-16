@@ -62,6 +62,10 @@ const surveySchema = new mongoose.Schema({
     },
   image: String,
 
+  // Soft delete
+  deleted: { type: Boolean, default: false },
+  deletedAt: Date,
+
   // AI INSIGHT: Generated when deadline expires + auto-gen enabled
   aiInsight: {
     enabled: { type: Boolean, default: false },
@@ -100,10 +104,13 @@ const surveySchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Indexes for faster queries
-surveySchema.index({ surveyorId: 1 });
-surveySchema.index({ status: 1 });
-surveySchema.index({ category: 1 });
-surveySchema.index({ status: 1, createdAt: -1 });
-surveySchema.index({ status: 1, participantCount: -1, createdAt: -1 });
+surveySchema.index({ surveyorId: 1, deleted: 1, createdAt: -1 });  // My Surveys list
+surveySchema.index({ surveyorId: 1, deleted: 1, status: 1 });      // My Surveys filtered by status
+surveySchema.index({ surveyorId: 1, deleted: 1, participantCount: -1 }); // My Surveys sorted by responses
+surveySchema.index({ surveyorId: 1, deleted: 1, deadline: -1 });   // My Surveys sorted by deadline
+surveySchema.index({ surveyorId: 1, deleted: 1 });                 // Recycle bin query
+surveySchema.index({ status: 1, createdAt: -1 });                  // Admin: pending review queue
+surveySchema.index({ status: 1, category: 1 });                    // Browse surveys by category
+surveySchema.index({ status: 1, participantCount: -1, createdAt: -1 }); // Homepage top surveys
 
 module.exports = mongoose.model('Survey', surveySchema);

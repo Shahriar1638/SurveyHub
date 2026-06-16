@@ -3,6 +3,7 @@ import { Link, useNavigate, Outlet, NavLink, useLocation } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../Hooks/useProfile";
+import { useGeminiUsage } from "../Hooks/useGeminiUsage";
 import logo from "../assets/logo.svg";
 
 import {
@@ -20,6 +21,7 @@ import {
   DocumentMagnifyingGlassIcon,
   UserCircleIcon,
   Cog6ToothIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 
 // ── Sidebar nav definitions ──────────────────────────────────────────────────
@@ -48,6 +50,7 @@ const SURVEYOR_NAV = [
     { name: "AI Analytics", icon: BeakerIcon, id: "analytics" },
     { name: "Blog Studio", icon: PencilSquareIcon, id: "blog-studio" },
     { name: "Feedback Inbox", icon: InboxIcon, id: "feedback-inbox" },
+    { name: "Recycle Bin", icon: TrashIcon, id: "recycle-bin" },
   ]},
   { group: "PROFILE", items: [
     { name: "My Profile", icon: UserCircleIcon, id: "my-profile" },
@@ -116,6 +119,29 @@ function NavItem({ item, accentColor, accentLight, onNav }) {
         </>
       )}
     </NavLink>
+  );
+}
+
+// ── Gemini usage bar ─────────────────────────────────────────────────────────
+function GeminiUsageBar() {
+  const { data: usage, isLoading } = useGeminiUsage();
+
+  if (isLoading || !usage) return null;
+
+  return (
+    <div className="mx-3 mb-2 p-3 rounded-xl bg-[--color-bg-subtle]/60 border border-[--color-border]">
+      <div className="flex items-center justify-between mb-1">
+        <span className="text-[10px] font-semibold font-[--font-ui] text-[--color-text-tertiary] uppercase tracking-[0.1em]">
+          AI Moderation
+        </span>
+        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-[--color-success-light] text-[--color-success]">
+          FREE
+        </span>
+      </div>
+      <p className="type-meta text-[--color-text-tertiary]">
+        {usage.requests} API call{usage.requests !== 1 ? "s" : ""} today
+      </p>
+    </div>
   );
 }
 
@@ -215,6 +241,9 @@ export default function DashboardLayout() {
           </div>
         ))}
       </nav>
+
+      {/* AI Usage indicator */}
+      <GeminiUsageBar />
 
       {/* Bottom section */}
       <div className="mx-5 h-px bg-[--color-border]" />

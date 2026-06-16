@@ -20,6 +20,7 @@ import AiAnalytics from "./Surveyor/Components/AiAnalytics";
 import BlogStudio from "./Surveyor/Components/BlogStudio";
 import CreateBlog from "./Surveyor/Components/CreateBlog";
 import FeedbackInbox from "./Surveyor/Components/FeedbackInbox";
+import RecycleBin from "./Surveyor/Components/RecycleBin";
 
 import AdminOverview from "./Admin/Components/AdminOverview";
 import AdminModeration from "./Admin/Components/AdminModeration";
@@ -47,6 +48,7 @@ const SURVEYOR_SECTIONS = {
   "blog-studio": BlogStudio,
   "create-blog": CreateBlog,
   "feedback-inbox": FeedbackInbox,
+  "recycle-bin": RecycleBin,
   "my-profile": MyProfile,
   "profile-settings": ProfileSettings,
 };

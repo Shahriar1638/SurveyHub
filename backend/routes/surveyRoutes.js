@@ -119,6 +119,122 @@ router.get('/', async (req, res) => {
 
 
 /**
+ * GET /api/surveys/mine — Get all surveys for the logged-in surveyor
+ * Query params: status, search, sort, order
+ */
+router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const { status, search, sort = 'createdAt', order = 'desc' } = req.query;
+
+    const filter = { surveyorId: user._id, deleted: { $ne: true } };
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+
+    // Text search on title and description
+    if (search?.trim()) {
+      const regex = { $regex: search.trim(), $options: 'i' };
+      filter.$or = [
+        { title: regex },
+        { description: regex },
+      ];
+    }
+
+    // Allowed sort fields
+    const sortFields = {
+      createdAt: 'createdAt',
+      deadline: 'deadline',
+      responses: 'participantCount',
+      title: 'title',
+    };
+    const sortField = sortFields[sort] || 'createdAt';
+    const sortOrder = order === 'asc' ? 1 : -1;
+
+    const surveys = await Survey.find(filter)
+      .sort({ [sortField]: sortOrder, createdAt: -1 })
+      .select('title description category status participantCount deadline aiInsight createdAt updatedAt')
+      .lean();
+
+    res.json({ success: true, data: surveys });
+  } catch (err) {
+    console.error('Error fetching my surveys:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/surveys/moderation/queue — Get pending moderation items (admin only)
+ */
+router.get('/moderation/queue', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const pending = await Survey.find({ status: 'pending_review' })
+      .select('title description category questions status moderation surveyorId createdAt')
+      .populate('surveyorId', 'name email')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    res.json({ success: true, data: pending });
+  } catch (err) {
+    console.error('Error fetching moderation queue:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/surveys/recycle-bin — Get all soft-deleted surveys for the logged-in surveyor
+ */
+router.get('/recycle-bin', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const surveys = await Survey.find({ surveyorId: user._id, deleted: true })
+      .sort({ deletedAt: -1 })
+      .select('title description category status participantCount deadline deletedAt createdAt')
+      .lean();
+
+    res.json({ success: true, data: surveys });
+  } catch (err) {
+    console.error('Error fetching recycle bin:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * GET /api/surveys/:id/edit-data
+ * Returns a single survey for editing (owner only, any status except expired/deleted).
+ */
+router.get('/:id/edit-data', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const survey = await Survey.findOne({
+      _id: req.params.id,
+      surveyorId: user._id,
+      deleted: { $ne: true },
+      status: { $nin: ['expired'] },
+    }).lean();
+
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+    res.json({ success: true, data: survey });
+  } catch (err) {
+    console.error('Error fetching survey for edit:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
  * GET /api/surveys/:id
  * Returns a single survey by ID (published or expired only).
  */
@@ -172,6 +288,37 @@ router.post('/:id/respond', verifyToken, validate(surveyResponseSchema), async (
 });
 
 /**
+ * PATCH /api/surveys/:id/ai-insight — Toggle AI insight enabled for a survey
+ * Body: { enabled: boolean }
+ */
+router.patch('/:id/ai-insight', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) return res.status(404).json({ success: false, message: 'Survey not found' });
+
+    if (survey.surveyorId.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    const { enabled } = req.body;
+    if (typeof enabled !== 'boolean') {
+      return res.status(400).json({ success: false, message: 'enabled must be a boolean' });
+    }
+
+    survey.aiInsight.enabled = enabled;
+    await survey.save();
+
+    res.json({ success: true, data: { aiInsight: survey.aiInsight } });
+  } catch (err) {
+    console.error('Error toggling AI insight:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
  * POST /api/surveys — Create a new survey (draft or published)
  * Body: { title, description, useCase, category, deadline, image, questions, status }
  */
@@ -211,7 +358,12 @@ router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), asyn
       }
 
       if (moderationResult.decision === 'pending') {
-        surveyStatus = 'pending_review';
+        // Quota exceeded — save as draft instead of pending_review
+        if (moderationResult.quotaExceeded) {
+          surveyStatus = 'draft';
+        } else {
+          surveyStatus = 'pending_review';
+        }
       }
     }
 
@@ -238,6 +390,11 @@ router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), asyn
       success: true,
       data: survey,
     };
+
+    // Quota exceeded — include friendly message
+    if (moderationResult?.quotaExceeded) {
+      response.message = moderationResult.reason;
+    }
 
     if (moderationResult?.decision === 'pending') {
       response.moderation = {
@@ -301,22 +458,39 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateSurveySchema), as
         }
 
         if (modResult.decision === 'pending') {
-          survey.status = 'pending_review';
-          survey.moderation = {
-            decision: 'pending',
-            reason: modResult.reason,
-            flaggedCategories: modResult.flaggedCategories,
-            reviewedAt: new Date(),
-          };
-          await survey.save();
-          return res.json({
-            success: true,
-            data: survey,
-            moderation: {
+          // Quota exceeded — save as draft instead of pending_review
+          if (modResult.quotaExceeded) {
+            survey.status = 'draft';
+            survey.moderation = {
               decision: 'pending',
-              message: 'Your survey has been submitted for admin review before publishing.',
-            },
-          });
+              reason: modResult.reason,
+              flaggedCategories: modResult.flaggedCategories,
+              reviewedAt: new Date(),
+            };
+            await survey.save();
+            return res.json({
+              success: true,
+              data: survey,
+              message: modResult.reason,
+            });
+          } else {
+            survey.status = 'pending_review';
+            survey.moderation = {
+              decision: 'pending',
+              reason: modResult.reason,
+              flaggedCategories: modResult.flaggedCategories,
+              reviewedAt: new Date(),
+            };
+            await survey.save();
+            return res.json({
+              success: true,
+              data: survey,
+              moderation: {
+                decision: 'pending',
+                message: 'Your survey has been submitted for admin review before publishing.',
+              },
+            });
+          }
         }
       }
 
@@ -355,13 +529,67 @@ router.delete('/:id', verifyToken, verifySurveyor, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    await Survey.findByIdAndDelete(req.params.id);
-    // Also delete associated responses
-    await Response.deleteMany({ surveyId: req.params.id });
+    // If already soft-deleted, permanently delete
+    if (survey.deleted) {
+      // Block permanent delete for expired surveys
+      if (survey.status === 'expired') {
+        return res.status(400).json({
+          success: false,
+          message: 'Expired surveys cannot be permanently deleted.',
+        });
+      }
 
-    res.json({ success: true, message: 'Survey deleted' });
+      // Block permanent delete for published surveys with 5+ responses
+      if (survey.status === 'published' && (survey.participantCount || 0) >= 5) {
+        return res.status(400).json({
+          success: false,
+          message: `This survey has ${survey.participantCount} responses and cannot be permanently deleted.`,
+        });
+      }
+
+      await Survey.findByIdAndDelete(req.params.id);
+      await Response.deleteMany({ surveyId: req.params.id });
+      return res.json({ success: true, message: 'Survey permanently deleted' });
+    }
+
+    // Otherwise, soft delete
+    survey.deleted = true;
+    survey.deletedAt = new Date();
+    await survey.save();
+
+    res.json({ success: true, message: 'Survey moved to recycle bin' });
   } catch (err) {
     console.error('Error deleting survey:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/surveys/:id/restore — Restore a soft-deleted survey
+ */
+router.post('/:id/restore', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const survey = await Survey.findById(req.params.id);
+    if (!survey) {
+      return res.status(404).json({ success: false, message: 'Survey not found' });
+    }
+
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || survey.surveyorId.toString() !== user._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Not authorized' });
+    }
+
+    if (!survey.deleted) {
+      return res.status(400).json({ success: false, message: 'Survey is not in recycle bin' });
+    }
+
+    survey.deleted = false;
+    survey.deletedAt = undefined;
+    await survey.save();
+
+    res.json({ success: true, data: survey, message: 'Survey restored' });
+  } catch (err) {
+    console.error('Error restoring survey:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -460,29 +688,6 @@ router.post('/:id/appeal', verifyToken, verifySurveyor, async (req, res) => {
     res.json({ success: true, message: 'Appeal submitted. An admin will review your content.' });
   } catch (err) {
     console.error('Error submitting appeal:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
-});
-
-/**
- * GET /api/surveys/moderation/queue — Get pending moderation items (admin only)
- */
-router.get('/moderation/queue', verifyToken, async (req, res) => {
-  try {
-    const user = await User.findOne({ email: req.decoded.email }).lean();
-    if (!user || user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Admin access required' });
-    }
-
-    const pending = await Survey.find({ status: 'pending_review' })
-      .select('title description category questions status moderation surveyorId createdAt')
-      .populate('surveyorId', 'name email')
-      .sort({ createdAt: -1 })
-      .lean();
-
-    res.json({ success: true, data: pending });
-  } catch (err) {
-    console.error('Error fetching moderation queue:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

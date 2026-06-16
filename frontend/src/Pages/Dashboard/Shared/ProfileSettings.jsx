@@ -1,6 +1,7 @@
 import { useForm } from "react-hook-form";
 import useProfile from "../../../Hooks/useProfile";
 import { useUpdateProfile, useToggleAutoAIInsight } from "../../../Hooks/useProfileData";
+import { useGeminiUsage } from "../../../Hooks/useGeminiUsage";
 import { LoadingSpinner } from "../../../Components/UI/LoadingSpinner";
 import { motion } from "motion/react";
 import Swal from "sweetalert2";
@@ -22,6 +23,7 @@ export default function ProfileSettings() {
   const { data: profile, isPending } = useProfile();
   const { mutate: updateProfile, isPending: isSaving } = useUpdateProfile();
   const { mutate: toggleAutoAI, isPending: isToggling } = useToggleAutoAIInsight();
+  const { data: geminiUsage } = useGeminiUsage();
 
   const { register, handleSubmit, watch, reset } = useForm({
     defaultValues: {
@@ -222,6 +224,40 @@ export default function ProfileSettings() {
           </button>
         </div>
       </div>
+
+      {/* ── Gemini Free Tier Info (surveyor only) ── */}
+      {profile?.role === "surveyor" && (
+        <div className="card p-6 sm:p-8 mt-6">
+          <h3 className="type-heading-sm text-[--color-text-primary] mb-4">AI Content Moderation</h3>
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-[--color-success-light] text-[--color-success]">
+                Gemini Free Tier
+              </span>
+            </div>
+            <div className="type-body-sm text-[--color-text-secondary] space-y-2">
+              <p>Your surveys and blogs are moderated using Google Gemini 2.0 Flash (free tier).</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-3">
+                <div className="p-3 rounded-lg bg-[--color-bg-subtle]">
+                  <p className="type-meta text-[--color-text-tertiary] uppercase tracking-wider">Requests / Day</p>
+                  <p className="type-heading-sm text-[--color-text-primary] mt-1">1,500</p>
+                </div>
+                <div className="p-3 rounded-lg bg-[--color-bg-subtle]">
+                  <p className="type-meta text-[--color-text-tertiary] uppercase tracking-wider">Tokens / Minute</p>
+                  <p className="type-heading-sm text-[--color-text-primary] mt-1">1,000,000</p>
+                </div>
+                <div className="p-3 rounded-lg bg-[--color-bg-subtle]">
+                  <p className="type-meta text-[--color-text-tertiary] uppercase tracking-wider">Requests Today</p>
+                  <p className="type-heading-sm text-[--color-text-primary] mt-1">{geminiUsage?.requests || 0}</p>
+                </div>
+              </div>
+              <p className="type-meta text-[--color-text-tertiary] mt-2">
+                Free tier does not expire and requires no credit card. If the AI is at capacity, your content will be saved as a draft for later review.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 }

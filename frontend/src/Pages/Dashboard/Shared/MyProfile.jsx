@@ -52,7 +52,9 @@ function SocialLinkRow({ href, icon, label }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function MyProfile() {
   const navigate = useNavigate();
-  const { profile, role } = useProfile();
+  const { data: profile, isPending } = useProfile();
+
+  const role = profile?.role;
 
   const rc = ROLE_CLASS[role] || ROLE_CLASS.user;
 

@@ -1,5 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const ModerationPolicy = require('../models/ModerationPolicy');
+const GeminiUsage = require('../models/GeminiUsage');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const MODEL = 'gemini-2.0-flash';
@@ -78,6 +79,20 @@ DECISION LOGIC:
     const response = result.response;
     const text = response.text().trim();
 
+    // Track usage (non-blocking)
+    const today = new Date().toISOString().split('T')[0];
+    const usageMetadata = response.usageMetadata;
+    GeminiUsage.findOneAndUpdate(
+      { date: today },
+      {
+        $inc: {
+          requests: 1,
+          tokens: usageMetadata?.totalTokenCount || 0,
+        },
+      },
+      { upsert: true, new: true }
+    ).catch(() => {}); // fire-and-forget
+
     // 6. Parse JSON from response
     // Strip markdown code fences if present
     const cleaned = text.replace(/```json?\s*/gi, '').replace(/```\s*/g, '').trim();
@@ -91,11 +106,28 @@ DECISION LOGIC:
     };
   } catch (err) {
     console.error('Gemini moderation error:', err.message);
-    // On API failure, default to pending (human review) so content isn't lost
+
+    // Detect quota/rate limit errors (429)
+    const isQuotaError = err.message?.includes('429') ||
+      err.message?.includes('RESOURCE_EXHAUSTED') ||
+      err.message?.includes('quota') ||
+      err.message?.includes('rate limit');
+
+    if (isQuotaError) {
+      return {
+        safe: false,
+        decision: 'pending',
+        reason: 'Our automated AI moderation is temporarily at capacity. Your content has been saved as a draft and will be reviewed shortly.',
+        flaggedCategories: [],
+        quotaExceeded: true,
+      };
+    }
+
+    // Other API failures — default to pending so content isn't lost
     return {
       safe: false,
       decision: 'pending',
-      reason: `AI moderation unavailable: ${err.message}`,
+      reason: 'AI moderation is temporarily unavailable. Your content has been saved as a draft.',
       flaggedCategories: [],
     };
   }

@@ -476,6 +476,7 @@
   .badge-pending   { background: var(--color-warning-light); color: var(--color-warning); }
   .badge-rejected  { background: var(--color-error-light);   color: var(--color-error); }
   .badge-draft     { background: var(--color-bg-inset);      color: var(--color-text-secondary); }
+  .badge-banned    { background: var(--color-error-light);   color: var(--color-error); opacity: 0.7; }
 
   /* ============================================================
      §6 — Card Anatomy Utilities
