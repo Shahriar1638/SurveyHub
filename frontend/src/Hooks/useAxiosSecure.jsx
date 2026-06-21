@@ -9,49 +9,45 @@ const axiosSecure = axios.create({
 
 let requestInterceptorId = null;
 let responseInterceptorId = null;
-let currentToken = localStorage.getItem(TOKEN_KEY);
-let currentLogOut = null;
-let currentNavigate = null;
 
 const useAxiosSecure = () => {
   const navigate = useNavigate();
   const { logOut, user } = useContext(AuthContext);
+
+  // Refs so interceptors always read the latest logOut/navigate
+  const logOutRef = useRef(logOut);
+  const navigateRef = useRef(navigate);
   const tokenRef = useRef(localStorage.getItem(TOKEN_KEY));
 
   useEffect(() => {
-    currentLogOut = logOut;
-    currentNavigate = navigate;
-    const token = localStorage.getItem(TOKEN_KEY);
-    tokenRef.current = token;
-    currentToken = token;
+    logOutRef.current = logOut;
+    navigateRef.current = navigate;
+    tokenRef.current = localStorage.getItem(TOKEN_KEY);
 
     if (requestInterceptorId === null) {
       requestInterceptorId = axiosSecure.interceptors.request.use(
-        function (config) {
-          if (currentToken) {
-            config.headers.authorization = `Bearer ${currentToken}`;
+        (config) => {
+          const token = localStorage.getItem(TOKEN_KEY);
+          if (token) {
+            config.headers.authorization = `Bearer ${token}`;
           }
           return config;
         },
-        (error) => {
-          return Promise.reject(error);
-        }
+        (error) => Promise.reject(error)
       );
     }
 
     if (responseInterceptorId === null) {
       responseInterceptorId = axiosSecure.interceptors.response.use(
-        function (response) {
-          return response;
-        },
-        async function (error) {
+        (response) => response,
+        async (error) => {
           const status = error?.response?.status;
           if (status === 401 || status === 403) {
-            if (typeof currentLogOut === "function") {
-              await currentLogOut();
+            if (typeof logOutRef.current === "function") {
+              await logOutRef.current();
             }
-            if (typeof currentNavigate === "function") {
-              currentNavigate("/login");
+            if (typeof navigateRef.current === "function") {
+              navigateRef.current("/login");
             }
           }
           return Promise.reject(error);

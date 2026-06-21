@@ -22,14 +22,17 @@ export const useAdminOverview = () => {
 /** Paginated reports */
 export const useAdminReports = (filters = {}) => {
   const axiosSecure = useAxiosSecure();
-  const { status, page = 1, limit = 20 } = filters;
+  const { status, type, search, sort, page = 1, limit = 20 } = filters;
 
   return useQuery({
-    queryKey: ["dashboard", "admin", "reports", status, page, limit],
+    queryKey: ["dashboard", "admin", "reports", status, type, search, sort, page, limit],
     staleTime: 1000 * 60 * 1,
     queryFn: async () => {
       const params = new URLSearchParams();
       if (status) params.set("status", status);
+      if (type) params.set("type", type);
+      if (search) params.set("search", search);
+      if (sort) params.set("sort", sort);
       params.set("page", page);
       params.set("limit", limit);
       const res = await axiosSecure.get(`/api/dashboard/admin/reports?${params.toString()}`);
@@ -90,6 +93,23 @@ export const useAdminFeedback = (filters = {}) => {
       params.set("limit", limit);
       const res = await axiosSecure.get(`/api/feedback?${params.toString()}`);
       return res.data;
+    },
+  });
+};
+
+/** Update a feedback ticket (status + admin response) */
+export const useUpdateFeedback = () => {
+  const axiosSecure = useAxiosSecure();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ feedbackId, ...body }) => {
+      const res = await axiosSecure.patch(`/api/feedback/${feedbackId}`, body);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "feedback"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "user", "support"] });
     },
   });
 };

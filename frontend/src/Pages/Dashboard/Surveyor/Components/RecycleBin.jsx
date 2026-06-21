@@ -69,6 +69,8 @@ export default function RecycleBin() {
     return true;
   };
 
+  const canRestore = (survey) => survey.status !== "published";
+
   if (isLoading) return <LoadingSpinner />;
   if (isError) return <div className="text-center py-12"><p className="type-body-sm text-[--color-error]">Failed to load recycle bin.</p></div>;
 
@@ -120,14 +122,24 @@ export default function RecycleBin() {
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => handleRestore(survey)}
-                  disabled={restoreSurvey.isPending}
-                  className="btn btn-sm bg-[--color-success-light] text-[--color-success] hover:bg-[--color-success]/20 border-none flex items-center gap-1.5"
-                >
-                  <ArrowPathIcon className="w-4 h-4" />
-                  Restore
-                </button>
+                {canRestore(survey) ? (
+                  <button
+                    onClick={() => handleRestore(survey)}
+                    disabled={restoreSurvey.isPending}
+                    className="btn btn-sm bg-[--color-success-light] text-[--color-success] hover:bg-[--color-success]/20 border-none flex items-center gap-1.5"
+                  >
+                    <ArrowPathIcon className="w-4 h-4" />
+                    Restore
+                  </button>
+                ) : (
+                  <span
+                    className="btn btn-sm bg-[--color-bg-inset] text-[--color-text-tertiary] border-none cursor-not-allowed flex items-center gap-1.5 opacity-60"
+                    title="Published surveys cannot be restored from recycle bin"
+                  >
+                    <ArrowPathIcon className="w-4 h-4" />
+                    Restore
+                  </span>
+                )}
                 {canDelete(survey) ? (
                   <button
                     onClick={() => handlePermanentDelete(survey)}

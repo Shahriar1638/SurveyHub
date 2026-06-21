@@ -25,6 +25,22 @@ export function useMySurveys({ status, search, sort, order } = {}) {
 }
 
 /**
+ * useSurveyFeedback — fetches all feedback for a specific survey.
+ */
+export function useSurveyFeedback(surveyId) {
+  const axiosSecure = useAxiosSecure();
+
+  return useQuery({
+    queryKey: ["surveyFeedback", surveyId],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/api/surveys/${surveyId}/feedback`);
+      return res.data?.data || { feedbacks: [], total: 0, avgRating: null };
+    },
+    enabled: !!surveyId,
+  });
+}
+
+/**
  * useToggleAIInsight — toggles aiInsight.enabled for a single survey.
  */
 export function useToggleAIInsight() {

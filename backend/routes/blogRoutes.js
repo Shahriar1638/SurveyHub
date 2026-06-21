@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Blog = require('../models/Blog');
+const Report = require('../models/report');
 const User = require('../models/User');
 const { moderateContent } = require('../services/moderation');
 const validate = require('../validations/validate');
@@ -9,8 +10,15 @@ const {
   updateBlogSchema,
   blogReactionSchema,
   blogCommentSchema,
+  surveyReportSchema,
 } = require('../validations/schemas');
 const { verifyToken, verifySurveyor } = require('../middlewares/authMiddleware')();
+const { CREDIT_COSTS, deductCredits } = require('../lib/creditConfig');
+
+// Escape regex special characters to prevent ReDoS
+function escapeRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
 // ── helper: attach role badge info to a list of emails ─────────────────────
 async function enrichWithRoles(emails) {
@@ -28,12 +36,12 @@ router.get('/', async (req, res) => {
     const skip  = (page - 1) * limit;
 
     const [blogs, total] = await Promise.all([
-      Blog.find({ status: 'active' })
+      Blog.find({ status: 'active', deletedAt: null })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      Blog.countDocuments({ status: 'active' }),
+      Blog.countDocuments({ status: 'active', deletedAt: null }),
     ]);
 
     // enrich surveyor info
@@ -71,7 +79,7 @@ router.get('/', async (req, res) => {
 router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
   try {
     const { sort, search, status } = req.query;
-    const query = { surveyorEmail: req.decoded.email };
+    const query = { surveyorEmail: req.decoded.email, deletedAt: null };
 
     // Status filter
     if (status && status !== 'all') {
@@ -80,7 +88,7 @@ router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
 
     // Title search
     if (search && search.trim()) {
-      query.title = { $regex: search.trim(), $options: 'i' };
+      query.title = { $regex: escapeRegex(search.trim()), $options: 'i' };
     }
 
     // Sorting
@@ -113,28 +121,105 @@ router.get('/mine', verifyToken, verifySurveyor, async (req, res) => {
   }
 });
 
+// ── GET /api/blogs/recycle-bin — surveyor's soft-deleted blogs ────────────────
+router.get('/recycle-bin', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blogs = await Blog.find({ surveyorEmail: req.decoded.email, deletedAt: { $ne: null } })
+      .sort({ deletedAt: -1 })
+      .select('title content status deletedAt createdAt')
+      .lean();
+
+    res.json({ success: true, data: blogs });
+  } catch (err) {
+    console.error('Error fetching blog recycle bin:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── POST /api/blogs/:id/restore — restore a soft-deleted blog ────────────────
+router.post('/:id/restore', verifyToken, verifySurveyor, async (req, res) => {
+  try {
+    const blog = await Blog.findOne({ _id: req.params.id, surveyorEmail: req.decoded.email, deletedAt: { $ne: null } });
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found in recycle bin' });
+    }
+
+    blog.deletedAt = null;
+    await blog.save();
+    res.json({ success: true, message: 'Blog restored' });
+  } catch (err) {
+    console.error('Error restoring blog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
 // ── POST /api/blogs — Create a new blog post ────────────────────────────────
 router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async (req, res) => {
   try {
     const { title, content, surveyId, status } = req.body;
 
-    const blogStatus = status === 'active' ? 'draft' : 'draft'; // Always start as draft
     let moderationResult = null;
 
-    // If creating directly as active, run moderation
+    // If creating directly as active, check credits + run moderation
     if (status === 'active') {
+      // Fail fast: check balance before doing expensive AI moderation
+      const blogUser = await User.findOne({ email: req.decoded.email }).lean();
+      if (!blogUser) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      const Subscription = require('../models/Subscription');
+      const sub = await Subscription.findOne({ userId: blogUser._id }).lean();
+      if (!sub || sub.balance < CREDIT_COSTS.BLOG_CREATION) {
+        return res.status(402).json({
+          success: false,
+          message: `Insufficient credits. Blog creation costs ${CREDIT_COSTS.BLOG_CREATION} credits. Your balance: ${sub?.balance || 0}.`,
+          balance: sub?.balance || 0,
+          required: CREDIT_COSTS.BLOG_CREATION,
+        });
+      }
+
       moderationResult = await moderateContent({
         contentType: 'blog',
         title: title.trim(),
         content: content.trim(),
       });
 
-      if (moderationResult.decision === 'rejected') {
-        return res.status(422).json({
+      // All providers exhausted — save as draft, return 429
+      if (moderationResult.allExhausted) {
+        const blog = await Blog.create({
+          surveyorEmail: req.decoded.email,
+          title: title.trim(),
+          content: content.trim(),
+          surveyId: surveyId || undefined,
+          status: 'draft',
+        });
+        return res.status(429).json({
           success: false,
-          message: 'Content rejected by moderation',
+          message: 'AI review limit reached. Blog saved as draft. Try again later.',
+          data: blog,
+        });
+      }
+
+      if (moderationResult.decision === 'rejected') {
+        const blog = await Blog.create({
+          surveyorEmail: req.decoded.email,
+          title: title.trim(),
+          content: content.trim(),
+          surveyId: surveyId || undefined,
+          status: 'rejected',
           moderation: {
-            decision: moderationResult.decision,
+            decision: 'rejected',
+            reason: moderationResult.reason,
+            flaggedCategories: moderationResult.flaggedCategories,
+            reviewedAt: new Date(),
+          },
+        });
+        return res.status(200).json({
+          success: true,
+          data: blog,
+          moderation: {
+            decision: 'rejected',
+            message: 'Your blog was flagged by AI moderation and saved as rejected. You can edit and try publishing again.',
             reason: moderationResult.reason,
             flaggedCategories: moderationResult.flaggedCategories,
           },
@@ -142,10 +227,15 @@ router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async 
       }
     }
 
-    // Quota exceeded — save as draft; otherwise pending_review
+    // Determine final status
+    // Blog: if confused/pending → just set active (community self-polices)
     let finalStatus = 'draft';
-    if (moderationResult?.decision === 'pending') {
-      finalStatus = moderationResult.quotaExceeded ? 'draft' : 'pending_review';
+    if (moderationResult?.decision === 'approved') {
+      finalStatus = 'active';
+    } else if (moderationResult?.decision === 'pending') {
+      finalStatus = 'active'; // blogs auto-activate on confusion
+    } else if (!moderationResult) {
+      finalStatus = status === 'active' ? 'draft' : 'draft'; // no moderation = draft
     }
 
     const blog = await Blog.create({
@@ -162,11 +252,30 @@ router.post('/', verifyToken, verifySurveyor, validate(createBlogSchema), async 
       } : undefined,
     });
 
-    const response = { success: true, data: blog };
-    if (moderationResult?.quotaExceeded) {
-      response.message = moderationResult.reason;
+    // Deduct credits if blog was published (active)
+    if (finalStatus === 'active') {
+      const blogUser = await User.findOne({ email: req.decoded.email }).lean();
+      const deductResult = await deductCredits(
+        blogUser._id,
+        CREDIT_COSTS.BLOG_CREATION,
+        'survey_creation', // reuse ledger type for content creation
+        `Created blog "${title.trim()}"`,
+        blog._id
+      );
+      if (!deductResult.success) {
+        // Rollback: delete the blog since payment failed
+        await Blog.findByIdAndDelete(blog._id);
+        return res.status(402).json({
+          success: false,
+          message: deductResult.error,
+          balance: deductResult.balance,
+          required: CREDIT_COSTS.BLOG_CREATION,
+        });
+      }
     }
-    if (moderationResult?.decision === 'pending' && !moderationResult?.quotaExceeded) {
+
+    const response = { success: true, data: blog };
+    if (moderationResult?.decision === 'pending') {
       response.moderation = {
         decision: 'pending',
         message: 'Your blog has been submitted for admin review before publishing.',
@@ -203,60 +312,92 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateBlogSchema), asyn
     if (content !== undefined) blog.content = content.trim();
     if (surveyId !== undefined) blog.surveyId = surveyId || undefined;
     if (status !== undefined && ['draft', 'active'].includes(status)) {
-      // If publishing (activating), run content moderation first
+      // If publishing (activating), check credits + run content moderation first
       if (status === 'active' && blog.status !== 'active') {
+        // Fail fast: check balance before doing expensive AI moderation
+        const blogUser = await User.findOne({ email: req.decoded.email }).lean();
+        if (!blogUser) {
+          return res.status(404).json({ success: false, message: 'User not found' });
+        }
+        const Subscription = require('../models/Subscription');
+        const sub = await Subscription.findOne({ userId: blogUser._id }).lean();
+        if (!sub || sub.balance < CREDIT_COSTS.BLOG_CREATION) {
+          return res.status(402).json({
+            success: false,
+            message: `Insufficient credits. Blog publish costs ${CREDIT_COSTS.BLOG_CREATION} credits. Your balance: ${sub?.balance || 0}.`,
+            balance: sub?.balance || 0,
+            required: CREDIT_COSTS.BLOG_CREATION,
+          });
+        }
+
         const modResult = await moderateContent({
           contentType: 'blog',
           title: blog.title,
           content: blog.content,
         });
 
-        if (modResult.decision === 'rejected') {
-          return res.status(422).json({
+        // All providers exhausted — save as draft, return 429
+        if (modResult.allExhausted) {
+          blog.status = 'draft';
+          await blog.save();
+          return res.status(429).json({
             success: false,
-            message: 'Content rejected by moderation',
+            message: 'AI review limit reached. Blog saved as draft. Try again later.',
+            data: blog,
+          });
+        }
+
+        if (modResult.decision === 'rejected') {
+          blog.status = 'rejected';
+          blog.moderation = {
+            decision: 'rejected',
+            reason: modResult.reason,
+            flaggedCategories: modResult.flaggedCategories,
+            reviewedAt: new Date(),
+          };
+          await blog.save();
+          return res.json({
+            success: true,
+            data: blog,
             moderation: {
-              decision: modResult.decision,
+              decision: 'rejected',
+              message: 'Your blog was flagged by AI moderation and saved as rejected. You can edit and try publishing again.',
               reason: modResult.reason,
               flaggedCategories: modResult.flaggedCategories,
             },
           });
         }
 
+        // Blog: if confused/pending → just set active (community self-polices)
         if (modResult.decision === 'pending') {
-          // Quota exceeded — save as draft instead of pending_review
-          if (modResult.quotaExceeded) {
-            blog.status = 'draft';
-            blog.moderation = {
-              decision: 'pending',
-              reason: modResult.reason,
-              flaggedCategories: modResult.flaggedCategories,
-              reviewedAt: new Date(),
-            };
-            await blog.save();
-            return res.json({
-              success: true,
-              data: blog,
-              message: modResult.reason,
-            });
-          } else {
-            blog.status = 'pending_review';
-            blog.moderation = {
-              decision: 'pending',
-              reason: modResult.reason,
-              flaggedCategories: modResult.flaggedCategories,
-              reviewedAt: new Date(),
-            };
-            await blog.save();
-            return res.json({
-              success: true,
-              data: blog,
-              moderation: {
-                decision: 'pending',
-                message: 'Your blog has been submitted for admin review before publishing.',
-              },
+          blog.status = 'active';
+          blog.moderation = {
+            decision: 'pending',
+            reason: modResult.reason,
+            flaggedCategories: modResult.flaggedCategories,
+            reviewedAt: new Date(),
+          };
+
+          // Deduct credits for pending-activation
+          const pendingUser = await User.findOne({ email: req.decoded.email }).lean();
+          const deductResult = await deductCredits(
+            pendingUser._id,
+            CREDIT_COSTS.BLOG_CREATION,
+            'survey_creation',
+            `Published blog "${blog.title}"`,
+            blog._id
+          );
+          if (!deductResult.success) {
+            return res.status(402).json({
+              success: false,
+              message: deductResult.error,
+              balance: deductResult.balance,
+              required: CREDIT_COSTS.BLOG_CREATION,
             });
           }
+
+          await blog.save();
+          return res.json({ success: true, data: blog });
         }
       }
 
@@ -266,6 +407,24 @@ router.put('/:id', verifyToken, verifySurveyor, validate(updateBlogSchema), asyn
         reason: 'Passed automated moderation',
         reviewedAt: new Date(),
       };
+
+      // Deduct credits on publish
+      const blogOwner = await User.findOne({ email: req.decoded.email }).lean();
+      const deductResult = await deductCredits(
+        blogOwner._id,
+        CREDIT_COSTS.BLOG_CREATION,
+        'survey_creation',
+        `Published blog "${blog.title}"`,
+        blog._id
+      );
+      if (!deductResult.success) {
+        return res.status(402).json({
+          success: false,
+          message: deductResult.error,
+          balance: deductResult.balance,
+          required: CREDIT_COSTS.BLOG_CREATION,
+        });
+      }
     }
 
     await blog.save();
@@ -287,10 +446,168 @@ router.delete('/:id', verifyToken, verifySurveyor, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    await Blog.findByIdAndDelete(req.params.id);
-    res.json({ success: true, message: 'Blog deleted' });
+    // Soft delete
+    blog.deletedAt = new Date();
+    await blog.save();
+    res.json({ success: true, message: 'Blog moved to recycle bin' });
   } catch (err) {
     console.error('Error deleting blog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── POST /api/blogs/:id/report — Report a blog post ────────────────────────
+router.post('/:id/report', verifyToken, validate(surveyReportSchema), async (req, res) => {
+  try {
+    const { reportReason, details } = req.body;
+    const userEmail = req.user?.email;
+
+    if (!userEmail) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const blog = await Blog.findById(req.params.id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    // Prevent self-reporting
+    if (blog.surveyorEmail === userEmail) {
+      return res.status(400).json({ success: false, message: 'You cannot report your own blog' });
+    }
+
+    // Check for duplicate report
+    const existing = await Report.findOne({ blogId: req.params.id, reporterEmail: userEmail, commentId: { $exists: false } });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'You have already reported this blog' });
+    }
+
+    const report = new Report({
+      blogId: req.params.id,
+      reporterEmail: userEmail,
+      reportReason,
+      details: details?.trim() || undefined,
+    });
+
+    await report.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Report submitted successfully. Our team will review it.',
+    });
+  } catch (err) {
+    console.error('Error reporting blog:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── POST /api/blogs/:id/comments/:commentId/report — Report a comment ──────
+router.post('/:id/comments/:commentId/report', verifyToken, validate(surveyReportSchema), async (req, res) => {
+  try {
+    const { reportReason, details } = req.body;
+    const userEmail = req.user?.email;
+    const { id, commentId } = req.params;
+
+    if (!userEmail) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    // Find the comment
+    const comment = blog.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+
+    // Prevent self-reporting
+    if (comment.userEmail === userEmail) {
+      return res.status(400).json({ success: false, message: 'You cannot report your own comment' });
+    }
+
+    // Check for duplicate report
+    const existing = await Report.findOne({ blogId: id, commentId, reporterEmail: userEmail, replyId: { $exists: false } });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'You have already reported this comment' });
+    }
+
+    const report = new Report({
+      blogId: id,
+      commentId,
+      reporterEmail: userEmail,
+      reportReason,
+      details: details?.trim() || undefined,
+    });
+
+    await report.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Report submitted successfully. Our team will review it.',
+    });
+  } catch (err) {
+    console.error('Error reporting comment:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── POST /api/blogs/:id/comments/:commentId/replies/:replyId/report — Report a reply ──
+router.post('/:id/comments/:commentId/replies/:replyId/report', verifyToken, validate(surveyReportSchema), async (req, res) => {
+  try {
+    const { reportReason, details } = req.body;
+    const userEmail = req.user?.email;
+    const { id, commentId, replyId } = req.params;
+
+    if (!userEmail) {
+      return res.status(401).json({ success: false, message: 'Unauthorized' });
+    }
+
+    const blog = await Blog.findById(id);
+    if (!blog) {
+      return res.status(404).json({ success: false, message: 'Blog not found' });
+    }
+
+    const comment = blog.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ success: false, message: 'Comment not found' });
+    }
+
+    const reply = comment.replies.id(replyId);
+    if (!reply) {
+      return res.status(404).json({ success: false, message: 'Reply not found' });
+    }
+
+    // Prevent self-reporting
+    if (reply.userEmail === userEmail) {
+      return res.status(400).json({ success: false, message: 'You cannot report your own reply' });
+    }
+
+    // Check for duplicate report
+    const existing = await Report.findOne({ blogId: id, commentId, replyId, reporterEmail: userEmail });
+    if (existing) {
+      return res.status(400).json({ success: false, message: 'You have already reported this reply' });
+    }
+
+    const report = new Report({
+      blogId: id,
+      commentId,
+      replyId,
+      reporterEmail: userEmail,
+      reportReason,
+      details: details?.trim() || undefined,
+    });
+
+    await report.save();
+
+    res.status(201).json({
+      success: true,
+      message: 'Report submitted successfully. Our team will review it.',
+    });
+  } catch (err) {
+    console.error('Error reporting reply:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -303,7 +620,7 @@ router.get('/moderation/queue', verifyToken, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Admin access required' });
     }
 
-    const pending = await Blog.find({ status: 'pending_review' })
+    const pending = await Blog.find({ status: 'pending_review', deletedAt: null })
       .select('title content status moderation surveyorEmail createdAt')
       .sort({ createdAt: -1 })
       .lean();
@@ -311,6 +628,60 @@ router.get('/moderation/queue', verifyToken, async (req, res) => {
     res.json({ success: true, data: pending });
   } catch (err) {
     console.error('Error fetching blog moderation queue:', err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+});
+
+// ── GET /api/blogs/admin/all — Admin: list all blogs with filter/search/sort ──
+router.get('/admin/all', verifyToken, async (req, res) => {
+  try {
+    const user = await User.findOne({ email: req.decoded.email }).lean();
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: 'Admin access required' });
+    }
+
+    const { status, search, sort = 'newest', page = 1, limit = 20 } = req.query;
+
+    const filter = { deletedAt: null };
+    if (status && status !== 'all') {
+      filter.status = status;
+    }
+    if (search) {
+      filter.$or = [
+        { title: { $regex: escapeRegex(search), $options: 'i' } },
+        { content: { $regex: escapeRegex(search), $options: 'i' } },
+        { surveyorEmail: { $regex: escapeRegex(search), $options: 'i' } },
+      ];
+    }
+
+    let sortObj = { createdAt: -1 };
+    if (sort === 'oldest') sortObj = { createdAt: 1 };
+    else if (sort === 'title') sortObj = { title: 1 };
+
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+
+    const [blogs, total] = await Promise.all([
+      Blog.find(filter)
+        .select('title content status moderation surveyorEmail edited createdAt')
+        .sort(sortObj)
+        .skip(skip)
+        .limit(parseInt(limit))
+        .lean(),
+      Blog.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      data: blogs,
+      pagination: {
+        total,
+        page: parseInt(page),
+        limit: parseInt(limit),
+        pages: Math.ceil(total / parseInt(limit)),
+      },
+    });
+  } catch (err) {
+    console.error('Error fetching admin blogs:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
@@ -338,7 +709,7 @@ router.get('/:id/edit-data', verifyToken, verifySurveyor, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id).lean();
-    if (!blog || blog.status === 'banned') {
+    if (!blog || blog.status === 'banned' || blog.deletedAt) {
       return res.status(404).json({ success: false, message: 'Blog not found' });
     }
 
@@ -383,16 +754,18 @@ router.get('/:id', async (req, res) => {
 // ── POST /api/blogs/:id/react — toggle a reaction (auth required) ───────────
 router.post('/:id/react', verifyToken, validate(blogReactionSchema), async (req, res) => {
   try {
-    const { userEmail, reactionType } = req.body;
+    const { reactionType } = req.body;
+    const userEmail = req.decoded.email;
 
     const blog = await Blog.findById(req.params.id);
     if (!blog) return res.status(404).json({ success: false, message: 'Not found' });
 
+    const reactionTypes = ['like', 'insightful', 'disagree', 'interesting', 'funny'];
     const arr = blog.reactions[reactionType];
     const idx = arr.indexOf(userEmail);
 
     // Remove from all reaction types first (one reaction per user)
-    for (const type of valid) {
+    for (const type of reactionTypes) {
       const i = blog.reactions[type].indexOf(userEmail);
       if (i !== -1) blog.reactions[type].splice(i, 1);
     }
@@ -422,7 +795,8 @@ router.post('/:id/react', verifyToken, validate(blogReactionSchema), async (req,
 // ── POST /api/blogs/:id/comments — add a comment (auth required) ────────────
 router.post('/:id/comments', verifyToken, validate(blogCommentSchema), async (req, res) => {
   try {
-    const { userEmail, text } = req.body;
+    const { text } = req.body;
+    const userEmail = req.decoded.email;
 
     const blog = await Blog.findById(req.params.id);
     if (!blog || blog.status === 'banned') {
@@ -449,7 +823,8 @@ router.post('/:id/comments', verifyToken, validate(blogCommentSchema), async (re
 // ── POST /api/blogs/:id/comments/:commentId/replies — add a reply ───────────
 router.post('/:id/comments/:commentId/replies', verifyToken, validate(blogCommentSchema), async (req, res) => {
   try {
-    const { userEmail, text } = req.body;
+    const { text } = req.body;
+    const userEmail = req.decoded.email;
 
     const blog = await Blog.findById(req.params.id);
     if (!blog || blog.status === 'banned') {
@@ -510,8 +885,8 @@ router.post('/:id/appeal', verifyToken, verifySurveyor, async (req, res) => {
 
     res.json({ success: true, message: 'Appeal submitted. An admin will review your content.' });
   } catch (err) {
-    console.error('Error submitting blog appeal:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Error submitting blog appeal:', err.message, err);
+    res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 });
 
@@ -533,16 +908,33 @@ router.patch('/:id/moderate', verifyToken, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Decision must be approved or rejected' });
     }
 
-    blog.moderation = {
-      ...blog.moderation,
-      decision,
-      reason: reason || (decision === 'approved' ? 'Approved by admin' : 'Rejected by admin'),
-      reviewedBy: admin._id,
-      reviewedAt: new Date(),
-    };
+    if (!reason?.trim()) {
+      return res.status(400).json({ success: false, message: 'Admin note is required' });
+    }
+
+    blog.moderation.decision = decision;
+    blog.moderation.reason = reason.trim();
+    blog.moderation.reviewedBy = admin._id;
+    blog.moderation.reviewedAt = new Date();
+    delete blog.moderation.appeal;
 
     if (decision === 'approved') {
       blog.status = 'active';
+
+      // Deduct credits when admin approves a pending blog
+      const blogOwner = await User.findOne({ email: blog.surveyorEmail }).lean();
+      if (blogOwner) {
+        const deductResult = await deductCredits(
+          blogOwner._id,
+          CREDIT_COSTS.BLOG_CREATION,
+          'survey_creation',
+          `Admin approved blog "${blog.title}"`,
+          blog._id
+        );
+        if (!deductResult.success) {
+          console.warn(`Credit deduction failed for blog ${blog._id}: ${deductResult.error}`);
+        }
+      }
     } else {
       blog.status = 'rejected';
     }
@@ -550,8 +942,8 @@ router.patch('/:id/moderate', verifyToken, async (req, res) => {
     await blog.save();
     res.json({ success: true, data: blog });
   } catch (err) {
-    console.error('Error moderating blog:', err);
-    res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Error moderating blog:', err.message, err);
+    res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 });
 

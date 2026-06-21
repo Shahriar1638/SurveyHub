@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useContext } from "react";
+import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -8,6 +8,7 @@ import {
   XMarkIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { AuthContext } from "../../../../Firebase_AuthProvider/AuthProvider";
 import { useCreateSurvey, useUpdateSurvey, useSurveyForEdit } from "../../../../Hooks/useSurveysMutation";
@@ -35,6 +36,7 @@ function emptyQuestion() {
     label: "",
     type: "short_answer",
     options: [],
+    scaleLabels: {},
     required: false,
   };
 }
@@ -53,8 +55,19 @@ function QuestionEditor({ question, onSave, onCancel }) {
   const [labelMax, setLabelMax] = useState(question.options?.[3] || "Extremely");
   const [scaleItems, setScaleItems] = useState(question.options?.slice(4) || []);
 
+  // Scale labels: { "1": "Poor", "2": "Good", ... }
+  const [scaleLabels, setScaleLabels] = useState(question.scaleLabels || {});
+
+  const clampScaleMin = (val) => Math.min(Math.max(parseInt(val) || 1, 1), scaleMax - 1);
+  const clampScaleMax = (val) => Math.min(Math.max(parseInt(val) || 5, scaleMin + 1), 10);
+
   const needsOptions = type === "multiple_choice" || type === "checkbox";
   const isLinearScale = type === "linear_scale";
+
+  // Compute ratings array for scaleLabels editor
+  const effectiveMin = Math.max(Math.min(scaleMin, 10), 1);
+  const effectiveMax = Math.max(Math.min(scaleMax, 10), effectiveMin + 1);
+  const ratings = Array.from({ length: effectiveMax - effectiveMin + 1 }, (_, i) => i + effectiveMin);
 
   const handleAddOption = () => setOptions([...options, ""]);
   const handleRemoveOption = (idx) => setOptions(options.filter((_, i) => i !== idx));
@@ -66,13 +79,26 @@ function QuestionEditor({ question, onSave, onCancel }) {
 
   const handleSave = () => {
     if (!label.trim()) return;
+    const finalMin = Math.max(Math.min(scaleMin, 10), 1);
+    const finalMax = Math.max(Math.min(scaleMax, 10), finalMin + 1);
+
+    // Clean scaleLabels — only keep entries for valid scale values
+    const cleanScaleLabels = {};
+    if (isLinearScale && Object.keys(scaleLabels).length > 0) {
+      for (let i = finalMin; i <= finalMax; i++) {
+        const lbl = scaleLabels[String(i)];
+        if (lbl && lbl.trim()) cleanScaleLabels[String(i)] = lbl.trim();
+      }
+    }
+
     onSave({
       ...question,
       label: label.trim(),
       type,
       options: isLinearScale
-        ? [String(scaleMin), String(scaleMax), labelMin.trim() || "Not at all", labelMax.trim() || "Extremely", ...scaleItems.filter(i => i.trim())]
+        ? [String(finalMin), String(finalMax), labelMin.trim() || "Not at all", labelMax.trim() || "Extremely", ...scaleItems.filter(i => i.trim())]
         : needsOptions ? options.filter((o) => o.trim()) : [],
+      scaleLabels: isLinearScale && Object.keys(cleanScaleLabels).length > 0 ? cleanScaleLabels : undefined,
       required,
     });
   };
@@ -159,9 +185,9 @@ function QuestionEditor({ question, onSave, onCancel }) {
                   <input
                     type="number"
                     value={scaleMin}
-                    onChange={(e) => setScaleMin(parseInt(e.target.value) || 1)}
+                    onChange={(e) => setScaleMin(clampScaleMin(e.target.value))}
                     className="form-input"
-                    min={0}
+                    min={1}
                     max={scaleMax - 1}
                   />
                 </div>
@@ -170,7 +196,7 @@ function QuestionEditor({ question, onSave, onCancel }) {
                   <input
                     type="number"
                     value={scaleMax}
-                    onChange={(e) => setScaleMax(parseInt(e.target.value) || 5)}
+                    onChange={(e) => setScaleMax(clampScaleMax(e.target.value))}
                     className="form-input"
                     min={scaleMin + 1}
                     max={10}
@@ -243,6 +269,36 @@ function QuestionEditor({ question, onSave, onCancel }) {
                   Add Item
                 </button>
               </div>
+            </div>
+          )}
+
+          {isLinearScale && (
+            <div className="space-y-3 p-4 rounded-xl bg-[--color-bg-subtle] border border-[--color-border]">
+              <p className="type-label-sm text-[--color-text-primary]">Column Labels (optional)</p>
+              <p className="type-meta text-[--color-text-tertiary]">
+                Add custom labels for each scale value (e.g. "1 = Poor", "5 = Excellent"). Leave empty to show numbers only.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {ratings.map((n) => (
+                  <div key={n} className="flex items-center gap-2">
+                    <span className="type-meta text-[--color-text-tertiary] font-[--font-mono] w-6 text-right shrink-0">
+                      {n}
+                    </span>
+                    <input
+                      type="text"
+                      value={scaleLabels[String(n)] || ""}
+                      onChange={(e) => setScaleLabels({ ...scaleLabels, [String(n)]: e.target.value })}
+                      placeholder={`Label for ${n}`}
+                      className="form-input flex-1"
+                    />
+                  </div>
+                ))}
+              </div>
+              {Object.keys(scaleLabels).filter(k => scaleLabels[k]?.trim()).length > 0 && (
+                <p className="type-meta text-[--color-text-tertiary] border-t border-[--color-border] pt-3 mt-3">
+                  Labels set for {Object.keys(scaleLabels).filter(k => scaleLabels[k]?.trim()).length} of {ratings.length} values
+                </p>
+              )}
             </div>
           )}
 
@@ -351,12 +407,15 @@ export default function CreateSurvey() {
   const [description, setDescription] = useState("");
   const [useCase, setUseCase] = useState("");
   const [category, setCategory] = useState("");
+  const [resultAccess, setResultAccess] = useState("only_me");
   const [deadline, setDeadline] = useState("");
   const [image, setImage] = useState("");
   const [questions, setQuestions] = useState([emptyQuestion()]);
   const [editingQuestion, setEditingQuestion] = useState(null);
   const [savedIndicator, setSavedIndicator] = useState(false);
   const [savedSurveyId, setSavedSurveyId] = useState(null);
+  const [moderationInfo, setModerationInfo] = useState(null);
+  const [showModerationModal, setShowModerationModal] = useState(false);
 
   // Load existing survey data when editing
   useEffect(() => {
@@ -367,24 +426,35 @@ export default function CreateSurvey() {
       setCategory(editSurvey.category || "");
       setDeadline(editSurvey.deadline || "");
       setImage(editSurvey.image || "");
+      setResultAccess(editSurvey.resultAccess || "only_me");
       setQuestions(editSurvey.questions?.length > 0 ? editSurvey.questions : [emptyQuestion()]);
       setSavedSurveyId(editSurvey._id);
+      // Load moderation info if rejected
+      if (editSurvey.moderation?.decision === 'rejected') {
+        setModerationInfo(editSurvey.moderation);
+      }
     }
   }, [editSurvey]);
 
   const canPublish = title.trim() && deadline && questions.length > 0 && questions.every((q) => q.label.trim());
+
+  // Ref to hold latest handleSaveDraft so Ctrl+S never uses stale data
+  const handleSaveDraftRef = useRef(handleSaveDraft);
+  useEffect(() => {
+    handleSaveDraftRef.current = handleSaveDraft;
+  });
 
   // Ctrl+S / Cmd+S
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
-        handleSaveDraft();
+        handleSaveDraftRef.current();
       }
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [title, description, useCase, category, deadline, image, questions]);
+  }, []);
 
   const showSavedIndicator = useCallback(() => {
     setSavedIndicator(true);
@@ -396,13 +466,14 @@ export default function CreateSurvey() {
     description: description || undefined,
     useCase: useCase || undefined,
     category: category || undefined,
+    resultAccess,
     deadline,
     image: image || undefined,
     questions: questions.map(({ id, label, type, options, required }) => ({
       id, label, type, options, required,
     })),
     status,
-  }), [title, description, useCase, category, deadline, image, questions]);
+  }), [title, description, useCase, category, resultAccess, deadline, image, questions]);
 
   const handleSaveDraft = useCallback(async () => {
     if (!title.trim()) {
@@ -443,21 +514,28 @@ export default function CreateSurvey() {
 
     try {
       const payload = buildPayload("published");
-      let result;
+      let res;
       if (savedSurveyId) {
-        result = await updateMutation.mutateAsync({ id: savedSurveyId, ...payload });
+        res = await updateMutation.mutateAsync({ id: savedSurveyId, ...payload });
       } else {
-        result = await createMutation.mutateAsync(payload);
+        res = await createMutation.mutateAsync(payload);
       }
-      // Quota exceeded — saved as draft with friendly message
-      if (result?.message) {
-        Swal.fire({ icon: "info", title: "Saved as Draft", text: result.message, confirmButtonColor: "var(--color-surveyor)" });
+      // Rejected by moderation — saved as rejected, show warning
+      if (res?.moderation?.decision === 'rejected') {
+        setModerationInfo(res.moderation);
+        Swal.fire({ icon: "warning", title: "Content Rejected", text: res.moderation.message || "Your survey was flagged by AI moderation. Saved as rejected.", confirmButtonColor: "var(--color-surveyor)" });
       } else {
         Swal.fire({ icon: "success", title: "Survey Published!", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
+        navigate("/dashboard/surveys");
       }
-      navigate("/dashboard/surveys");
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish survey.", confirmButtonColor: "var(--color-admin)" });
+      // 429 — quota exhausted, saved as draft
+      if (err?.response?.status === 429) {
+        Swal.fire({ icon: "warning", title: "AI limit reached", text: "Try again after 24 hours. Survey saved as draft.", timer: 4000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
+        navigate("/dashboard/surveys");
+      } else {
+        Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish survey.", confirmButtonColor: "var(--color-admin)" });
+      }
     }
   }, [canPublish, title, questions, savedSurveyId, buildPayload, createMutation, updateMutation, navigate]);
 
@@ -536,6 +614,19 @@ export default function CreateSurvey() {
                 </select>
               </div>
               <div>
+                <label className="form-label">Result Access</label>
+                <select value={resultAccess} onChange={(e) => setResultAccess(e.target.value)} className="form-input">
+                  <option value="only_me">Only Me</option>
+                  <option value="participants">Participants</option>
+                  <option value="everyone">Everyone</option>
+                </select>
+                <p className="form-helper">
+                  {resultAccess === "only_me" && "Only you can see results after the survey expires."}
+                  {resultAccess === "participants" && "Participants who responded can see results."}
+                  {resultAccess === "everyone" && "Anyone can see results after the survey expires."}
+                </p>
+              </div>
+              <div>
                 <label className="form-label">Deadline <span className="text-[--color-error]">*</span></label>
                 <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="form-input" />
               </div>
@@ -601,19 +692,31 @@ export default function CreateSurvey() {
           <div className="px-8 py-4 border-b border-[--color-border] bg-[--color-bg-surface]">
             <div className="flex items-center justify-between">
               <h2 className="type-heading-sm text-[--color-text-primary]">Live Preview</h2>
-              <AnimatePresence>
-                {savedIndicator && (
-                  <motion.div
-                    initial={{ opacity: 0, x: 10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: 10 }}
-                    className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium text-[--color-success] bg-[--color-success-light]"
+              <div className="flex items-center gap-2">
+                {moderationInfo && (
+                  <button
+                    onClick={() => setShowModerationModal(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[--color-warning] bg-[--color-warning-light] hover:brightness-95 transition-all"
+                    title="View moderation message"
                   >
-                    <CheckCircleIcon className="w-3.5 h-3.5" />
-                    Draft saved
-                  </motion.div>
+                    <ExclamationTriangleIcon className="w-4 h-4" />
+                    AI Flagged
+                  </button>
                 )}
-              </AnimatePresence>
+                <AnimatePresence>
+                  {savedIndicator && (
+                    <motion.div
+                      initial={{ opacity: 0, x: 10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 10 }}
+                      className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium text-[--color-success] bg-[--color-success-light]"
+                    >
+                      <CheckCircleIcon className="w-3.5 h-3.5" />
+                      Draft saved
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
 
@@ -682,6 +785,62 @@ export default function CreateSurvey() {
               onSave={handleSaveQuestion}
               onCancel={() => setEditingQuestion(null)}
             />
+          )}
+        </AnimatePresence>
+
+        {/* Moderation Rejection Modal */}
+        <AnimatePresence>
+          {showModerationModal && moderationInfo && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            >
+              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowModerationModal(false)} />
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 12, scale: 0.97 }}
+                transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                className="relative z-10 rounded-2xl shadow-[--shadow-xl] w-full max-w-md border border-[--color-warning]/30"
+                style={{ backgroundColor: "#FFFFFF" }}
+              >
+                <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[--color-border]">
+                  <div className="flex items-center gap-2">
+                    <ExclamationTriangleIcon className="w-5 h-5 text-[--color-warning]" />
+                    <h3 className="type-heading-sm text-[--color-text-primary]">AI Moderation Flag</h3>
+                  </div>
+                  <button onClick={() => setShowModerationModal(false)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[--color-bg-subtle] transition-colors">
+                    <XMarkIcon className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="px-6 py-5">
+                  <p className="type-body-sm text-[--color-text-secondary] mb-4">
+                    Your survey was flagged by AI content moderation and saved as <strong className="text-[--color-warning]">rejected</strong>. Fix the issues below and try publishing again.
+                  </p>
+                  <div className="p-4 rounded-xl bg-[--color-bg-subtle] border border-[--color-border] mb-4">
+                    <p className="type-label-sm text-[--color-text-primary] mb-1">Reason</p>
+                    <p className="type-body-sm text-[--color-text-secondary]">{moderationInfo.reason}</p>
+                  </div>
+                  {moderationInfo.flaggedCategories?.length > 0 && (
+                    <div>
+                      <p className="type-label-sm text-[--color-text-primary] mb-2">Flagged Categories</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {moderationInfo.flaggedCategories.map((cat, i) => (
+                          <span key={i} className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-[--color-warning-light] text-[--color-warning]">
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center justify-end px-6 py-4 border-t border-[--color-border]">
+                  <button onClick={() => setShowModerationModal(false)} className="btn btn-secondary btn-sm">Got it</button>
+                </div>
+              </motion.div>
+            </motion.div>
           )}
         </AnimatePresence>
       </div>

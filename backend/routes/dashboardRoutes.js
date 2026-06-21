@@ -3,20 +3,33 @@ const router = express.Router();
 const Report = require('../models/report');
 const AuditLog = require('../models/AuditLog');
 const Survey = require('../models/Survey');
+const Blog = require('../models/Blog');
 const User = require('../models/User');
+const { verifyToken, verifyAdmin } = require('../middlewares/authMiddleware')();
 
-// ── GET /api/dashboard/admin/reports — Paginated reports with survey info ────
-router.get('/admin/reports', async (req, res) => {
+// ── GET /api/dashboard/admin/reports — All reports with search/sort/filter ──
+router.get('/admin/reports', verifyToken, verifyAdmin, async (req, res) => {
   try {
-    const { status, page = 1, limit = 20 } = req.query;
+    const { status, type, search, sort = 'newest', page = 1, limit = 50 } = req.query;
     const filter = {};
-    if (status) filter.status = status;
+
+    if (status && status !== 'all') filter.status = status;
+
+    // Filter by content type
+    if (type === 'survey') filter.surveyId = { $exists: true, $ne: null };
+    else if (type === 'blog') filter.blogId = { $exists: true, $ne: null, commentId: { $exists: false } };
+    else if (type === 'comment') filter.commentId = { $exists: true, $ne: null, replyId: { $exists: false } };
+    else if (type === 'reply') filter.replyId = { $exists: true, $ne: null };
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
+    let sortObj = { createdAt: -1 };
+    if (sort === 'oldest') sortObj = { createdAt: 1 };
+    else if (sort === 'reason') sortObj = { reportReason: 1 };
+
     const [reports, total] = await Promise.all([
       Report.find(filter)
-        .sort({ createdAt: -1 })
+        .sort(sortObj)
         .skip(skip)
         .limit(parseInt(limit))
         .lean(),
@@ -25,16 +38,47 @@ router.get('/admin/reports', async (req, res) => {
 
     // Populate survey titles
     const surveyIds = [...new Set(reports.map(r => r.surveyId?.toString()).filter(Boolean))];
-    const surveys = await Survey.find({ _id: { $in: surveyIds } })
+    const surveys = surveyIds.length > 0 ? await Survey.find({ _id: { $in: surveyIds } })
       .select('title surveyorId')
-      .lean();
+      .populate('surveyorId', 'name email')
+      .lean() : [];
     const surveyMap = {};
     surveys.forEach(s => { surveyMap[s._id.toString()] = s; });
 
-    const enrichedReports = reports.map(r => ({
+    // Populate blog titles
+    const blogIds = [...new Set(reports.map(r => r.blogId?.toString()).filter(Boolean))];
+    const blogs = blogIds.length > 0 ? await Blog.find({ _id: { $in: blogIds } })
+      .select('title surveyorEmail')
+      .lean() : [];
+    const blogMap = {};
+    blogs.forEach(b => { blogMap[b._id.toString()] = b; });
+
+    // Populate reporter names
+    const reporterEmails = [...new Set(reports.map(r => r.reporterEmail).filter(Boolean))];
+    const reporters = reporterEmails.length > 0 ? await User.find({ email: { $in: reporterEmails } })
+      .select('email name')
+      .lean() : [];
+    const reporterMap = {};
+    reporters.forEach(u => { reporterMap[u.email] = u.name; });
+
+    // Search filter (applied after populate for text search)
+    let enrichedReports = reports.map(r => ({
       ...r,
-      survey: surveyMap[r.surveyId?.toString()] || null,
+      survey: r.surveyId ? surveyMap[r.surveyId.toString()] || null : null,
+      blog: r.blogId ? blogMap[r.blogId.toString()] || null : null,
+      reporterName: reporterMap[r.reporterEmail] || null,
     }));
+
+    if (search) {
+      const q = search.toLowerCase();
+      enrichedReports = enrichedReports.filter(r =>
+        r.survey?.title?.toLowerCase().includes(q) ||
+        r.blog?.title?.toLowerCase().includes(q) ||
+        r.reporterEmail?.toLowerCase().includes(q) ||
+        r.reporterName?.toLowerCase().includes(q) ||
+        r.reportReason?.toLowerCase().includes(q)
+      );
+    }
 
     res.json({
       success: true,
@@ -48,7 +92,7 @@ router.get('/admin/reports', async (req, res) => {
 });
 
 // ── PATCH /api/dashboard/admin/reports/:id — Update report status ────────────
-router.patch('/admin/reports/:id', async (req, res) => {
+router.patch('/admin/reports/:id', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { status, adminResponse, actionTaken } = req.body;
     const adminEmail = req.user?.email;
@@ -102,7 +146,7 @@ router.patch('/admin/reports/:id', async (req, res) => {
 });
 
 // ── GET /api/dashboard/admin/audit-logs — Paginated audit logs ───────────────
-router.get('/admin/audit-logs', async (req, res) => {
+router.get('/admin/audit-logs', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { page = 1, limit = 30, action } = req.query;
     const filter = {};
@@ -131,7 +175,7 @@ router.get('/admin/audit-logs', async (req, res) => {
 });
 
 // ── POST /api/dashboard/admin/broadcast — Issue a platform announcement ──────
-router.post('/admin/broadcast', async (req, res) => {
+router.post('/admin/broadcast', verifyToken, verifyAdmin, async (req, res) => {
   try {
     const { title, message, severity = 'info' } = req.body;
     const adminEmail = req.user?.email;
@@ -264,18 +308,49 @@ router.get('/user/reports', async (req, res) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    const surveyIds = reports.map(r => r.surveyId);
-    const surveys = await Survey.find({ _id: { $in: surveyIds } })
-      .select('title')
-      .lean();
+    // Collect unique IDs for enrichment
+    const surveyIds = [...new Set(reports.filter(r => r.surveyId).map(r => r.surveyId.toString()))];
+    const blogIds = [...new Set(reports.filter(r => r.blogId).map(r => r.blogId.toString()))];
+
+    const [surveys, blogs] = await Promise.all([
+      surveyIds.length > 0
+        ? Survey.find({ _id: { $in: surveyIds } }).select('title').lean()
+        : [],
+      blogIds.length > 0
+        ? Blog.find({ _id: { $in: blogIds } }).select('title').lean()
+        : [],
+    ]);
 
     const surveyMap = {};
-    surveys.forEach(s => { surveyMap[s._id.toString()] = s; });
+    surveys.forEach(s => { surveyMap[s._id.toString()] = s.title; });
 
-    const enrichedReports = reports.map(r => ({
-      ...r,
-      surveyTitle: surveyMap[r.surveyId?.toString()]?.title || 'Unknown Survey',
-    }));
+    const blogMap = {};
+    blogs.forEach(b => { blogMap[b._id.toString()] = b.title; });
+
+    const enrichedReports = reports.map(r => {
+      let targetType = 'survey';
+      let targetTitle = 'Unknown Survey';
+
+      if (r.surveyId) {
+        targetType = 'survey';
+        targetTitle = surveyMap[r.surveyId.toString()] || 'Unknown Survey';
+      } else if (r.blogId && r.commentId && r.replyId) {
+        targetType = 'reply';
+        targetTitle = blogMap[r.blogId.toString()] || 'Unknown Blog';
+      } else if (r.blogId && r.commentId) {
+        targetType = 'comment';
+        targetTitle = blogMap[r.blogId.toString()] || 'Unknown Blog';
+      } else if (r.blogId) {
+        targetType = 'blog';
+        targetTitle = blogMap[r.blogId.toString()] || 'Unknown Blog';
+      }
+
+      return {
+        ...r,
+        targetType,
+        targetTitle,
+      };
+    });
 
     res.json({
       success: true,

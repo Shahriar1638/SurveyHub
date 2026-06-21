@@ -177,17 +177,11 @@ function SurveyListCard({ survey, user, profile }) {
           (() => {
             const isCreator = profile?._id === survey.surveyorId;
             const hasParticipated = survey.hasParticipated;
-            if (isCreator) {
-              return (
-                <span className="type-body-sm text-[--color-text-tertiary] italic">
-                  Check dashboard for results
-                </span>
-              );
-            }
-            if (hasParticipated) {
+            const canViewResults = isCreator || hasParticipated || survey.resultAccess === "everyone";
+            if (canViewResults) {
               return (
                 <Link
-                  to={`/dashboard/surveys/${survey._id}`}
+                  to={`/surveys/${survey._id}/results`}
                   className="btn btn-sm text-[0.75rem] py-1.5 px-3.5 bg-[--color-success-light] text-[--color-success] font-semibold"
                 >
                   Check Results

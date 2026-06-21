@@ -154,7 +154,7 @@ router.patch('/auto-ai-insight', async (req, res) => {
 
     // Update user field + bulk update all their surveys
     await Promise.all([
-      User.findOneAndUpdate(email, { $set: { autoAIInsight: newValue } }),
+      User.findOneAndUpdate({ email }, { $set: { autoAIInsight: newValue } }),
       Survey.updateMany(
         { surveyorId: user._id },
         { $set: { 'aiInsight.autoGenerate': newValue } }

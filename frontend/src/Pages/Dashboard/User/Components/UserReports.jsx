@@ -13,6 +13,13 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
+const TYPE_CONFIG = {
+  survey: { label: "Survey", color: "var(--color-surveyor)" },
+  blog: { label: "Blog", color: "var(--color-surveyor-dark)" },
+  comment: { label: "Comment", color: "var(--color-user)" },
+  reply: { label: "Reply", color: "var(--color-user-dark)" },
+};
+
 function StatusBadge({ status }) {
   const map = {
     pending: "badge-pending",
@@ -23,6 +30,18 @@ function StatusBadge({ status }) {
   return (
     <span className={`badge ${map[status] || "badge-draft"} text-[10px]`}>
       {status}
+    </span>
+  );
+}
+
+function TypeBadge({ targetType }) {
+  const config = TYPE_CONFIG[targetType] || TYPE_CONFIG.survey;
+  return (
+    <span
+      className="badge text-[9px] capitalize"
+      style={{ backgroundColor: `${config.color}15`, color: config.color }}
+    >
+      {config.label}
     </span>
   );
 }
@@ -42,9 +61,12 @@ function ReportCard({ report }) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between gap-4">
-            <h4 className="type-label-sm text-[--color-text-primary] truncate">
-              {report.surveyTitle}
-            </h4>
+            <div className="flex items-center gap-2 min-w-0">
+              <TypeBadge targetType={report.targetType} />
+              <h4 className="type-label-sm text-[--color-text-primary] truncate">
+                {report.targetTitle}
+              </h4>
+            </div>
             <StatusBadge status={report.status} />
           </div>
 
@@ -96,7 +118,7 @@ function ReportCard({ report }) {
                         <span className="type-label-sm text-[--color-admin] font-bold">Feedback from Admin</span>
                       </div>
                       <p className="type-body-sm text-[--color-text-primary] italic">
-                        "{report.adminResponse.message}"
+                        &ldquo;{report.adminResponse.message}&rdquo;
                       </p>
                       <div className="flex items-center justify-between gap-4 mt-3 pt-2.5 border-t border-[--color-admin-light] text-[10px] text-[--color-text-tertiary] font-medium font-[--font-ui]">
                         <span>Action: <strong className="text-[--color-text-primary]">{report.adminResponse.actionTaken || "None"}</strong></span>
@@ -125,7 +147,7 @@ export default function UserReports() {
       <motion.div variants={item}>
         <h2 className="type-heading-lg text-[--color-text-primary]">Report Status</h2>
         <p className="type-body-sm text-[--color-text-secondary] mt-1">
-          Track the status of surveys or content you have reported and read admin reviews.
+          Track the status of content you have reported and read admin reviews.
         </p>
       </motion.div>
 
@@ -142,7 +164,7 @@ export default function UserReports() {
           </div>
           <p className="type-heading-sm text-[--color-text-primary] mt-2">No reported content</p>
           <p className="type-body-sm text-[--color-text-secondary] mt-1">
-            You haven't filed any reports. Thank you for keeping the community safe!
+            You haven&apos;t filed any reports. Thank you for keeping the community safe!
           </p>
         </motion.div>
       ) : (

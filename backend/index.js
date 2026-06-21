@@ -111,6 +111,26 @@ async function run() {
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
 
+    // ── Start survey expiry worker + re-schedule all published surveys ──────
+    const { startExpiryWorker, reScheduleAll, closeExpiryWorker } = require('./jobs/surveyExpiry');
+    const redis = require('./lib/redis');
+    if (redis.status === 'ready') {
+      startExpiryWorker();
+      await reScheduleAll();
+    } else {
+      console.warn('[Startup] Redis not connected — expiry pipeline disabled');
+    }
+
+    // Graceful shutdown
+    const shutdown = async () => {
+      console.log('\nShutting down...');
+      await closeExpiryWorker();
+      await mongoose.connection.close();
+      process.exit(0);
+    };
+    process.on('SIGINT', shutdown);
+    process.on('SIGTERM', shutdown);
+
     // ── 404 handler (must be after all routes) ───────────────────────────────
     app.use((req, res) => {
       res.status(404).json({ success: false, message: 'Route not found' });

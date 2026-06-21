@@ -28,7 +28,7 @@ export default function AdminDashboard({ children }) {
           </p>
         </div>
         {activeSection === "overview" && overview?.pendingReports > 0 && (
-          <Link to="/dashboard/moderation" className="btn btn-md font-semibold text-white flex items-center gap-2" style={{ backgroundColor: "var(--color-admin)" }}>
+          <Link to="/dashboard/reports" className="btn btn-md font-semibold text-white flex items-center gap-2" style={{ backgroundColor: "var(--color-admin)" }}>
             <ShieldCheckIcon className="w-4 h-4" />
             {overview.pendingReports} Pending Reports
           </Link>

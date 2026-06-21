@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useCallback } from "react";
+import { useState, useContext, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
@@ -11,6 +11,7 @@ import {
 import { PageTransition } from "../../Components/UI/PageTransition";
 import QuestionRenderer from "../../Components/Surveys/QuestionRenderer";
 import SurveyFeedback from "../../Components/Surveys/SurveyFeedback";
+import SurveyReport from "../../Components/Surveys/SurveyReport";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 function deadlineDaysLeft(dateStr) {
@@ -74,7 +75,13 @@ export default function SurveyDetailPage() {
   const handleSubmit = useCallback(async () => {
     const errors = {};
     survey?.questions?.forEach(q => {
-      if (q.required && !answers[q.id]) {
+      const answer = answers[q.id];
+      let isEmpty = !answer;
+      // Matrix mode: answer is an object — check it has at least one rated item
+      if (answer && typeof answer === "object" && !Array.isArray(answer)) {
+        isEmpty = Object.keys(answer).length === 0;
+      }
+      if (q.required && isEmpty) {
         errors[q.id] = true;
       }
     });
@@ -124,12 +131,28 @@ export default function SurveyDetailPage() {
     }
   }, [existingResponse]);
 
-  // Redirect if expired + user participated
+  // No auto-redirect — expired surveys show results link based on resultAccess
+
+  // Auto-save draft when survey expires mid-completion
+  const wasExpiredRef = useRef(false);
   useEffect(() => {
-    if (survey && isExpired && existingResponse?.status === "submitted") {
-      navigate(`/dashboard/surveys/${id}`, { replace: true });
+    if (isExpired && !wasExpiredRef.current && !submitted && user && Object.keys(answers).length > 0) {
+      wasExpiredRef.current = true;
+      // Auto-save the draft
+      handleSaveDraft();
+      Swal.fire({
+        title: 'Survey Expired',
+        text: 'This survey has ended. Your progress has been saved as a draft.',
+        icon: 'info',
+        confirmButtonColor: '#2D9FCF',
+        confirmButtonText: 'View Results',
+      }).then((result) => {
+        if (result.isConfirmed && survey?.resultAccess === 'everyone') {
+          navigate(`/surveys/${id}/results`);
+        }
+      });
     }
-  }, [survey, isExpired, existingResponse, id, navigate]);
+  }, [isExpired, submitted, user, answers, handleSaveDraft, navigate, id, survey?.resultAccess]);
 
   // Ctrl+S / Cmd+S keyboard shortcut to save draft
   useEffect(() => {
@@ -224,7 +247,10 @@ export default function SurveyDetailPage() {
               <p className="type-body-sm text-[--color-text-secondary] mb-4">
                 Have thoughts on this survey? Help the creator improve.
               </p>
-              <SurveyFeedback surveyId={survey._id} />
+              <div className="flex items-center justify-center gap-2">
+                <SurveyFeedback surveyId={survey._id} />
+                {!isCreator && <SurveyReport surveyId={survey._id} />}
+              </div>
             </div>
           )}
         </div>
@@ -309,12 +335,43 @@ export default function SurveyDetailPage() {
             {isExpired && (
               <div className="mt-5 p-4 rounded-lg border bg-[--color-error-light] border-[--color-error]">
                 <p className="type-body-sm font-medium text-[--color-error]">
-                  {isCreator
-                    ? "📊 This survey has ended. Check your dashboard for results."
-                    : user
-                      ? "📋 This survey has closed. Responses are no longer accepted."
-                      : "📋 This survey has closed."}
+                  📋 This survey has ended. Responses are no longer accepted.
                 </p>
+                {/* Show "View Results" based on resultAccess */}
+                {survey.resultAccess === "everyone" && (
+                  <Link
+                    to={`/surveys/${id}/results`}
+                    className="mt-2 inline-block btn btn-sm bg-[--color-primary] text-white hover:opacity-90"
+                  >
+                    View Results
+                  </Link>
+                )}
+                {survey.resultAccess === "participants" && existingResponse?.status === "submitted" && (
+                  <Link
+                    to={`/surveys/${id}/results`}
+                    className="mt-2 inline-block btn btn-sm bg-[--color-primary] text-white hover:opacity-90"
+                  >
+                    View Results
+                  </Link>
+                )}
+                {survey.resultAccess === "participants" && existingResponse?.status !== "submitted" && (
+                  <p className="mt-2 type-meta text-[--color-text-tertiary]">
+                    Only participants who responded can view results.
+                  </p>
+                )}
+                {survey.resultAccess === "only_me" && isCreator && (
+                  <Link
+                    to={`/surveys/${id}/results`}
+                    className="mt-2 inline-block btn btn-sm bg-[--color-primary] text-white hover:opacity-90"
+                  >
+                    View Results
+                  </Link>
+                )}
+                {survey.resultAccess === "only_me" && !isCreator && (
+                  <p className="mt-2 type-meta text-[--color-text-tertiary]">
+                    Results are private. Only the survey creator can view them.
+                  </p>
+                )}
                 {!user && (
                   <Link to="/login" className="mt-2 inline-block type-body-sm text-[--color-error] underline font-medium">
                     Login to participate
@@ -422,7 +479,10 @@ export default function SurveyDetailPage() {
                 <h4 className="type-heading-sm text-[--color-text-primary]">Survey Feedback</h4>
                 <p className="type-body-sm text-[--color-text-secondary]">Share your thoughts with the creator without submitting answers.</p>
               </div>
-              <SurveyFeedback surveyId={survey._id} />
+              <div className="flex items-center gap-2">
+                <SurveyFeedback surveyId={survey._id} />
+                {!isCreator && <SurveyReport surveyId={survey._id} />}
+              </div>
             </div>
           )}
         </div>

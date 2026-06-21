@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import {
@@ -52,7 +53,8 @@ function SocialLinkRow({ href, icon, label }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 export default function MyProfile() {
   const navigate = useNavigate();
-  const { data: profile, isPending } = useProfile();
+  const { data: profile, isPending, isError } = useProfile();
+  const [imgError, setImgError] = useState(false);
 
   const role = profile?.role;
 
@@ -70,6 +72,27 @@ export default function MyProfile() {
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
         className="space-y-6"
       >
+        {/* Loading state */}
+        {isPending && (
+          <div className="space-y-6">
+            <div className="h-40 bg-[--color-bg-inset] rounded-2xl animate-pulse" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 h-32 bg-[--color-bg-inset] rounded-xl animate-pulse" />
+              <div className="h-32 bg-[--color-bg-inset] rounded-xl animate-pulse" />
+            </div>
+          </div>
+        )}
+
+        {/* Error state */}
+        {isError && (
+          <div className="card p-8 text-center">
+            <p className="type-body-sm text-[--color-error]">Failed to load profile. Please try again later.</p>
+          </div>
+        )}
+
+        {/* Profile content */}
+        {!isPending && !isError && profile && (
+          <>
         {/* ── Header Card ── */}
         <div className="card p-0 overflow-hidden">
           {/* Role accent bar */}
@@ -80,10 +103,15 @@ export default function MyProfile() {
               {/* Avatar */}
               <div
                 className={`w-24 h-24 rounded-full border-4 border-[--color-bg-surface] shadow-[--shadow-md] overflow-hidden flex items-center justify-center text-white text-3xl font-bold shrink-0`}
-                style={!profile?.avatar ? { backgroundColor: rc.accent } : undefined}
+                style={!profile?.avatar || imgError ? { backgroundColor: rc.accent } : undefined}
               >
-                {profile?.avatar ? (
-                  <img src={profile.avatar} alt={profile.name} className="w-full h-full object-cover" />
+                {profile?.avatar && !imgError ? (
+                  <img
+                    src={profile.avatar}
+                    alt={profile.name}
+                    className="w-full h-full object-cover"
+                    onError={() => setImgError(true)}
+                  />
                 ) : (
                   (profile?.name || "?")[0].toUpperCase()
                 )}
@@ -225,6 +253,8 @@ export default function MyProfile() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </motion.div>
   );
 }

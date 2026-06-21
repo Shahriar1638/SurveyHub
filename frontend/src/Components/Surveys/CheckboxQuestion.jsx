@@ -1,17 +1,18 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 
 export default function CheckboxQuestion({ question, value, onChange, disabled }) {
   const selectedValues = Array.isArray(value) ? value : [];
+  const selectedRef = useRef(selectedValues);
+  selectedRef.current = selectedValues;
 
   const toggle = useCallback(
     (opt) => {
-      const next = selectedValues.includes(opt)
-        ? selectedValues.filter((v) => v !== opt)
-        : [...selectedValues, opt];
+      const next = selectedRef.current.includes(opt)
+        ? selectedRef.current.filter((v) => v !== opt)
+        : [...selectedRef.current, opt];
       onChange(question.id, next);
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [question.id, onChange, JSON.stringify(selectedValues)]
+    [question.id, onChange]
   );
 
   return (

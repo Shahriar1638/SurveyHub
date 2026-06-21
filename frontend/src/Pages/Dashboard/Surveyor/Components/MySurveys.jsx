@@ -1,22 +1,25 @@
 "use no memo";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   ClipboardDocumentListIcon,
   PlusIcon,
   PencilSquareIcon,
   TrashIcon,
-  SparklesIcon,
   MagnifyingGlassIcon,
-  FunnelIcon,
   ArrowUpIcon,
   ArrowDownIcon,
+  ChatBubbleLeftEllipsisIcon,
+  ExclamationTriangleIcon,
+  XMarkIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { useReactTable, getCoreRowModel, flexRender, createColumnHelper } from "@tanstack/react-table";
 import { useMySurveys, useToggleAIInsight } from "../../../../Hooks/useMySurveys";
 import { useDeleteSurvey } from "../../../../Hooks/useSurveysMutation";
 import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
+import SurveyFeedbackModal from "../../../../Components/Surveys/SurveyFeedbackModal";
 import Swal from "sweetalert2";
 
 const container = {
@@ -73,6 +76,8 @@ export default function MySurveys() {
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [sortConfig, setSortConfig] = useState({ field: "createdAt", order: "desc" });
+  const [feedbackModal, setFeedbackModal] = useState({ open: false, surveyId: null, title: "" });
+  const [moderationModal, setModerationModal] = useState({ open: false, survey: null });
 
   const { data: surveys, isLoading, isError } = useMySurveys({
     status: statusFilter === "all" ? undefined : statusFilter,
@@ -85,11 +90,11 @@ export default function MySurveys() {
   const deleteSurvey = useDeleteSurvey();
 
   // Debounce search
+  const searchTimerRef = useRef(null);
   const handleSearch = (val) => {
     setSearch(val);
-    // Simple debounce via timeout ref would be better, but for now:
-    clearTimeout(window.__searchTimer);
-    window.__searchTimer = setTimeout(() => setDebouncedSearch(val), 350);
+    clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => setDebouncedSearch(val), 350);
   };
 
   const handleSort = (field) => {
@@ -217,9 +222,46 @@ export default function MySurveys() {
       header: () => <span className="text-right block">Actions</span>,
       cell: ({ row }) => {
         const survey = row.original;
+        const hasAdminNote = !!survey.moderation?.reason && !!survey.moderation?.reviewedBy;
+        const hasModeration = !!survey.moderation?.reason;
+
         return (
           <div className="flex items-center justify-end gap-1">
-            {["draft", "banned", "rejected", "pending"].includes(survey.status) && (
+            {/* Published: View Feedback */}
+            {survey.status === "published" && (
+              <button
+                title="View Feedback"
+                onClick={() => setFeedbackModal({ open: true, surveyId: survey._id, title: survey.title })}
+                className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-surveyor] transition-colors"
+              >
+                <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Expired: View Results */}
+            {survey.status === "expired" && (
+              <button
+                title="View Results"
+                onClick={() => navigate(`/surveys/${survey._id}/results`)}
+                className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-primary] transition-colors"
+              >
+                <ChartBarIcon className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Rejected with admin note: View Details button */}
+            {hasAdminNote && (
+              <button
+                title="View Moderation Details"
+                onClick={() => setModerationModal({ open: true, survey })}
+                className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-warning] transition-colors"
+              >
+                <ExclamationTriangleIcon className="w-4 h-4" />
+              </button>
+            )}
+
+            {/* Edit: only if no admin note */}
+            {!hasAdminNote && ["draft", "banned", "rejected", "pending"].includes(survey.status) && (
               <button
                 title="Edit"
                 onClick={() => navigate(`/dashboard/create-survey?id=${survey._id}`)}
@@ -228,6 +270,8 @@ export default function MySurveys() {
                 <PencilSquareIcon className="w-4 h-4" />
               </button>
             )}
+
+            {/* Delete: always visible */}
             <button
               title="Delete"
               onClick={() => handleDelete(survey)}
@@ -349,6 +393,101 @@ export default function MySurveys() {
           </table>
         </motion.div>
       )}
+
+      <SurveyFeedbackModal
+        surveyId={feedbackModal.surveyId}
+        surveyTitle={feedbackModal.title}
+        isOpen={feedbackModal.open}
+        onClose={() => setFeedbackModal({ open: false, surveyId: null, title: "" })}
+      />
+
+      {/* Moderation Details Modal */}
+      <AnimatePresence>
+        {moderationModal.open && moderationModal.survey && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
+            onClick={() => setModerationModal({ open: false, survey: null })}
+          >
+            <motion.div
+              initial={{ opacity: 0, y: 15, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="card w-full max-w-md"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="card-header border-b border-[--color-border] px-6 py-4 flex items-center justify-between">
+                <h3 className="type-heading-sm text-[--color-text-primary]">Moderation Details</h3>
+                <button
+                  onClick={() => setModerationModal({ open: false, survey: null })}
+                  className="p-1 rounded-full text-[--color-text-tertiary] hover:bg-[--color-bg-inset] hover:text-[--color-text-primary] transition-colors"
+                >
+                  <XMarkIcon className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="card-body px-6 py-4 space-y-4">
+                {/* AI Moderation */}
+                {moderationModal.survey.moderation?.reason && (
+                  <div className="p-4 rounded-xl bg-[--color-warning-light] border border-[--color-warning]/20">
+                    <div className="flex items-center gap-2 mb-2">
+                      <ExclamationTriangleIcon className="w-4 h-4 text-[--color-warning]" />
+                      <p className="type-label-sm text-[--color-warning]">AI Moderation</p>
+                    </div>
+                    <p className="type-body-sm text-[--color-text-secondary]">
+                      {moderationModal.survey.moderation.reason}
+                    </p>
+                    {moderationModal.survey.moderation.flaggedCategories?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-2">
+                        {moderationModal.survey.moderation.flaggedCategories.map((cat, i) => (
+                          <span key={i} className="text-[10px] px-1.5 py-0.5 rounded bg-[--color-warning]/10 text-[--color-warning] font-medium">
+                            {cat}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Admin Note */}
+                {moderationModal.survey.moderation?.reviewedBy && (
+                  <div className="p-4 rounded-xl bg-[--color-bg-subtle] border border-[--color-border]">
+                    <p className="type-label-sm text-[--color-text-primary] mb-1">Admin Note</p>
+                    <p className="type-body-sm text-[--color-text-secondary]">
+                      {moderationModal.survey.moderation.reason}
+                    </p>
+                    {moderationModal.survey.moderation.reviewedAt && (
+                      <p className="type-meta text-[--color-text-tertiary] mt-2">
+                        Reviewed {new Date(moderationModal.survey.moderation.reviewedAt).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Appeal */}
+                {moderationModal.survey.moderation?.appeal?.message && (
+                  <div className="p-4 rounded-xl bg-[--color-bg-subtle] border border-[--color-border]">
+                    <p className="type-label-sm text-[--color-text-primary] mb-1">Your Appeal</p>
+                    <p className="type-body-sm text-[--color-text-tertiary] italic">
+                      &ldquo;{moderationModal.survey.moderation.appeal.message}&rdquo;
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="card-footer border-t border-[--color-border] px-6 py-3 flex justify-end">
+                <button
+                  onClick={() => setModerationModal({ open: false, survey: null })}
+                  className="btn btn-secondary btn-sm"
+                >
+                  Close
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { useForm } from "react-hook-form";
-import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
+import { AuthContext, TOKEN_KEY } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
 import { motion } from "motion/react";
 import logo from "../../assets/logo.svg";
@@ -126,18 +126,21 @@ const Login = () => {
         email: values.email,
       });
 
-      if (dbResponse.status === 200) {
-        const userData = dbResponse.data.user;
+      const { user: userData, token } = dbResponse.data || {};
+      if (userData) {
         localStorage.setItem("surveyhub-user", JSON.stringify(userData));
-
-        const from = location.state?.from;
-        if (from) {
-          navigate(from, { replace: true });
-          return;
-        }
-
-        navigate("/", { replace: true });
       }
+      if (token) {
+        localStorage.setItem(TOKEN_KEY, token);
+      }
+
+      const from = location.state?.from;
+      if (from) {
+        navigate(from, { replace: true });
+        return;
+      }
+
+      navigate("/", { replace: true });
     } catch (err) {
       setFieldError("root", {
         message:

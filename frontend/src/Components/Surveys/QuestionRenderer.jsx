@@ -18,10 +18,7 @@ export default function QuestionRenderer({ question, value, onChange, disabled }
     case "linear_scale":
       return <LinearScale {...props} />;
     default:
-      return (
-        <p className="type-meta text-[--color-text-tertiary]">
-          Unknown question type
-        </p>
-      );
+      console.warn(`Unknown question type "${question.type}" — falling back to short answer`);
+      return <ShortAnswer {...props} />;
   }
 }

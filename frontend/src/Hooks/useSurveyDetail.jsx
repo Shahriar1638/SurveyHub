@@ -1,20 +1,20 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import useAxiosPublic from "./useAxiosPublic";
 import useAxiosSecure from "./useAxiosSecure";
 
 /**
  * useSurveyDetail — fetches a single survey by ID.
+ * Uses secure axios so admins can view any survey (not just published).
  */
 export function useSurveyDetail(id) {
-  const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
 
   return useQuery({
     queryKey: ["survey", id],
     queryFn: async () => {
-      const res = await axiosPublic.get(`/api/surveys/${id}`);
+      const res = await axiosSecure.get(`/api/surveys/${id}`);
       return res.data.data;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
     enabled: !!id,
   });
 }

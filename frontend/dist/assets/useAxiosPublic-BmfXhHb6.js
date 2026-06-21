@@ -1,0 +1,1 @@
+import{t as e}from"./axios-Co5g1oBF.js";var t=e.create({baseURL:`http://localhost:3000`}),n=()=>t;export{n as t};

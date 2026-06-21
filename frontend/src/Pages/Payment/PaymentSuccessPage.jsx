@@ -28,7 +28,7 @@ export default function PaymentSuccessPage() {
         }
       })
       .catch(() => setStatus("error"));
-  }, [sessionId]);
+  }, [sessionId, axiosSecure]);
 
   return (
     <PageTransition>
@@ -84,13 +84,13 @@ export default function PaymentSuccessPage() {
                   className="font-[--font-mono] text-4xl font-bold mb-1"
                   style={{ color: "var(--color-surveyor-dark)" }}
                 >
-                  +{details.credits}
+                  +{details.credits ?? 0}
                 </div>
                 <div className="type-body-sm font-medium" style={{ color: "var(--color-surveyor-dark)" }}>
                   credits added to your wallet
                 </div>
                 <div className="type-meta text-[--color-text-tertiary] mt-1">
-                  Charged ${details.amount?.toFixed(2)} USD
+                  Charged ${details.amount?.toFixed(2) ?? "0.00"} USD
                 </div>
               </div>
             )}

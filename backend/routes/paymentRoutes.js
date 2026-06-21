@@ -88,6 +88,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
   }
 
   if (event.type === 'checkout.session.completed') {
+    try {
     const session = event.data.object;
     const { userId, packageId, credits } = session.metadata;
     const creditCount = parseInt(credits, 10);
@@ -96,34 +97,36 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const pkg = await getPackage(packageId);
     const pkgLabel = pkg?.name || packageId;
 
-    try {
-      // Upsert the wallet — add credits atomically
-      await Subscription.findOneAndUpdate(
-        { userId },
-        {
-          $inc: { balance: creditCount, totalPurchased: creditCount },
-          $set: { providerCustomerId: session.customer },
-          $push: {
-            creditLedger: {
-              type: 'purchase',
-              credits: creditCount,
-              description: `Purchased ${pkgLabel} (${creditCount} credits)`,
-              occurredAt: new Date(),
-            },
-            billingHistory: {
-              eventType: 'purchase',
-              amount: session.amount_total / 100,
-              currency: session.currency,
-              creditsTransacted: creditCount,
-              providerPaymentIntentId: session.payment_intent || session.id,
-              occurredAt: new Date(),
-            },
+    // Atomic dedup: only process if this payment intent hasn't been recorded yet
+    const paymentIntentId = session.payment_intent || session.id;
+
+    const result = await Subscription.findOneAndUpdate(
+      { userId, 'billingHistory.providerPaymentIntentId': { $ne: paymentIntentId } },
+      {
+        $inc: { balance: creditCount, totalPurchased: creditCount },
+        $set: { providerCustomerId: session.customer },
+        $push: {
+          creditLedger: {
+            type: 'purchase',
+            credits: creditCount,
+            description: `Purchased ${pkgLabel} (${creditCount} credits)`,
+            occurredAt: new Date(),
+          },
+          billingHistory: {
+            eventType: 'purchase',
+            amount: session.amount_total / 100,
+            currency: session.currency,
+            creditsTransacted: creditCount,
+            providerPaymentIntentId: paymentIntentId,
+            occurredAt: new Date(),
           },
         },
-        { upsert: true, new: true }
-      );
+      },
+      { upsert: true, new: true }
+    );
 
-      // Promote user to surveyor (one-way, never reverted) + sync subscription
+    // Only promote if this is a new wallet or first purchase
+    if (result) {
       await User.findByIdAndUpdate(userId, {
         role: 'surveyor',
         subscription: {
@@ -136,13 +139,14 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
           currentPeriodEnd: null,
         },
       });
-    } catch (dbErr) {
-      console.error('Webhook DB error:', dbErr);
-      return res.status(500).json({ error: 'Fulfillment failed' });
     }
-  }
 
-  res.json({ received: true });
+    res.json({ received: true });
+  } catch (dbErr) {
+    console.error('Webhook DB error:', dbErr);
+    return res.status(500).json({ error: 'Fulfillment failed' });
+  }
+  }
 });
 
 /**

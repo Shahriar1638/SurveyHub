@@ -10,8 +10,9 @@ const useProfile = () => {
   return useQuery({
     queryKey: ["profile", user?.email],
     enabled: !!user?.email,
-    staleTime: 1000 * 60 * 30, // 30 minutes
-    gcTime: 1000 * 60 * 60, // 1 hour (gcTime replaced cacheTime in v5)
+    staleTime: 1000 * 60 * 5, // 5 minutes — keeps role/ban status reasonably fresh
+    gcTime: 1000 * 60 * 30, // 30 minutes
+    refetchOnWindowFocus: true,
     queryFn: async () => {
       // Get the full profile including role (admin, user, surveyor)
       const res = await axiosSecure.get(`/api/users/${user.email}`);

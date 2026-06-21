@@ -24,6 +24,7 @@ import RecycleBin from "./Surveyor/Components/RecycleBin";
 
 import AdminOverview from "./Admin/Components/AdminOverview";
 import AdminModeration from "./Admin/Components/AdminModeration";
+import AdminReports from "./Admin/Components/AdminReports";
 import AuditLogs from "./Admin/Components/AuditLogs";
 import BroadcastControl from "./Admin/Components/BroadcastControl";
 import FeedbackManagement from "./Admin/Components/FeedbackManagement";
@@ -48,6 +49,7 @@ const SURVEYOR_SECTIONS = {
   "blog-studio": BlogStudio,
   "create-blog": CreateBlog,
   "feedback-inbox": FeedbackInbox,
+  reports: UserReports,
   "recycle-bin": RecycleBin,
   "my-profile": MyProfile,
   "profile-settings": ProfileSettings,
@@ -56,6 +58,7 @@ const SURVEYOR_SECTIONS = {
 const ADMIN_SECTIONS = {
   overview: AdminOverview,
   moderation: AdminModeration,
+  reports: AdminReports,
   "audit-logs": AuditLogs,
   broadcasts: BroadcastControl,
   feedback: FeedbackManagement,

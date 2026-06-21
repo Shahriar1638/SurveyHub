@@ -22,6 +22,7 @@ import {
   UserCircleIcon,
   Cog6ToothIcon,
   TrashIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
 // ── Sidebar nav definitions ──────────────────────────────────────────────────
@@ -31,6 +32,7 @@ const ADMIN_NAV = [
   ]},
   { group: "MANAGEMENT", items: [
     { name: "Moderation", icon: ShieldCheckIcon, id: "moderation" },
+    { name: "All Reports", icon: ExclamationTriangleIcon, id: "reports" },
     { name: "Audit Logs", icon: DocumentMagnifyingGlassIcon, id: "audit-logs" },
     { name: "Broadcasts", icon: MegaphoneIcon, id: "broadcasts" },
     { name: "Feedback", icon: ChatBubbleLeftEllipsisIcon, id: "feedback" },
@@ -50,6 +52,7 @@ const SURVEYOR_NAV = [
     { name: "AI Analytics", icon: BeakerIcon, id: "analytics" },
     { name: "Blog Studio", icon: PencilSquareIcon, id: "blog-studio" },
     { name: "Feedback Inbox", icon: InboxIcon, id: "feedback-inbox" },
+    { name: "My Reports", icon: ExclamationTriangleIcon, id: "reports" },
     { name: "Recycle Bin", icon: TrashIcon, id: "recycle-bin" },
   ]},
   { group: "PROFILE", items: [
@@ -128,6 +131,8 @@ function GeminiUsageBar() {
 
   if (isLoading || !usage) return null;
 
+  const { providers } = usage;
+
   return (
     <div className="mx-3 mb-2 p-3 rounded-xl bg-[--color-bg-subtle]/60 border border-[--color-border]">
       <div className="flex items-center justify-between mb-1">
@@ -135,12 +140,24 @@ function GeminiUsageBar() {
           AI Moderation
         </span>
         <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold bg-[--color-success-light] text-[--color-success]">
-          FREE
+          ACTIVE
         </span>
       </div>
       <p className="type-meta text-[--color-text-tertiary]">
-        {usage.requests} API call{usage.requests !== 1 ? "s" : ""} today
+        {usage.requests} call{usage.requests !== 1 ? "s" : ""} today
       </p>
+      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+        {providers?.geminiKeys > 0 && (
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[--color-bg-inset] text-[--color-text-tertiary]">
+            {providers.geminiKeys} Gemini key{providers.geminiKeys !== 1 ? "s" : ""}
+          </span>
+        )}
+        {providers?.openRouter && (
+          <span className="text-[9px] px-1.5 py-0.5 rounded bg-[--color-bg-inset] text-[--color-text-tertiary]" title={providers.openRouterModel}>
+            OpenRouter
+          </span>
+        )}
+      </div>
     </div>
   );
 }

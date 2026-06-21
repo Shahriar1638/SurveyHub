@@ -3,9 +3,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useBlogReply } from "../../Hooks/useBlogs";
 import { RoleBadge, Avatar } from "../../Components/UI/BlogCard";
+import ReportModal from "../../Components/UI/ReportModal";
 
 // ── Reply item ───────────────────────────────────────────────────────────────
-export function ReplyItem({ reply }) {
+export function ReplyItem({ reply, blogId, commentId, user }) {
   return (
     <motion.div
       initial={{ opacity: 0, x: -6 }}
@@ -29,6 +30,20 @@ export function ReplyItem({ reply }) {
         <p className="type-body-sm text-[--color-text-secondary] leading-relaxed">
           {reply.text}
         </p>
+
+        {/* Reply actions */}
+        {user && user.email !== reply.userEmail && (
+          <div className="flex items-center gap-3 mt-1.5">
+            <ReportModal url={`/api/blogs/${blogId}/comments/${commentId}/replies/${reply._id}/report`} title="Report Reply">
+              <span className="type-meta text-[--color-text-tertiary] hover:text-[--color-error] transition-colors flex items-center gap-1 cursor-pointer">
+                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                </svg>
+                Report
+              </span>
+            </ReportModal>
+          </div>
+        )}
       </div>
     </motion.div>
   );
@@ -110,6 +125,16 @@ export function CommentItem({ comment, blogId, user, userRole, onReplyAdded }) {
                 Reply
               </button>
             )}
+            {user && user.email !== comment.userEmail && (
+              <ReportModal url={`/api/blogs/${blogId}/comments/${comment._id}/report`} title="Report Comment">
+                <span className="type-meta text-[--color-text-tertiary] hover:text-[--color-error] transition-colors flex items-center gap-1 cursor-pointer">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                  </svg>
+                  Report
+                </span>
+              </ReportModal>
+            )}
             {replyCount > 0 && (
               <button
                 onClick={() => setRepliesOpen((v) => !v)}
@@ -180,8 +205,8 @@ export function CommentItem({ comment, blogId, user, userRole, onReplyAdded }) {
                 exit={{ opacity: 0, height: 0 }}
                 className="mt-2 pl-4 border-l-2 border-[--color-border] overflow-hidden"
               >
-                {comment.replies.map((reply) => (
-                  <ReplyItem key={reply._id} reply={reply} />
+                {(comment.replies || []).map((reply) => (
+                  <ReplyItem key={reply._id} reply={reply} blogId={blogId} commentId={comment._id} user={user} />
                 ))}
               </motion.div>
             )}

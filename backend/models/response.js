@@ -33,7 +33,7 @@ responseSchema.index({ surveyId: 1, status: 1 });
 responseSchema.index({ userId: 1, status: 1 });
 
 // Compute submittedAt and duration when status becomes submitted
-responseSchema.pre('save', function(next) {
+responseSchema.pre('save', function() {
   try {
     if (this.isModified('status') && this.status === 'submitted') {
       if (!this.submittedAt) this.submittedAt = new Date();
@@ -43,10 +43,8 @@ responseSchema.pre('save', function(next) {
       }
     }
   } catch (err) {
-    // don't block save for metrics calculation
     console.error('response pre-save timing calc error', err);
   }
-  next();
 });
 
 module.exports = mongoose.model('Response', responseSchema);

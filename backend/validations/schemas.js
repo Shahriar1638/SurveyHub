@@ -54,6 +54,7 @@ const createSurveySchema = z.object({
   description: z.string().max(2000).optional().or(z.literal('')),
   useCase: z.string().max(500).optional().or(z.literal('')),
   category: z.string().max(100).optional().or(z.literal('')),
+  resultAccess: z.enum(['only_me', 'participants', 'everyone']).optional(),
   deadline: z.string().min(1, 'Deadline is required'),
   image: z.string().url().optional().or(z.literal('')),
   questions: z.array(questionSchema).min(1, 'At least one question is required'),
@@ -65,6 +66,7 @@ const updateSurveySchema = z.object({
   description: z.string().max(2000).optional().or(z.literal('')),
   useCase: z.string().max(500).optional().or(z.literal('')),
   category: z.string().max(100).optional().or(z.literal('')),
+  resultAccess: z.enum(['only_me', 'participants', 'everyone']).optional(),
   deadline: z.string().optional(),
   image: z.string().url().optional().or(z.literal('')),
   questions: z.array(questionSchema).optional(),
@@ -76,7 +78,7 @@ const surveyResponseSchema = z.object({
   answers: z.array(z.object({
     questionId: z.string(),
     label: z.string().optional(),
-    value: z.union([z.string(), z.number(), z.array(z.string())]),
+    value: z.union([z.string(), z.number(), z.array(z.string()), z.record(z.string(), z.number())]),
   })),
   isDraft: z.boolean().optional(),
 });
@@ -85,6 +87,11 @@ const surveyFeedbackSchema = z.object({
   rating: z.number().min(1).max(5).optional(),
   comment: z.string().min(1, 'Comment is required').max(2000),
   suggestions: z.string().max(2000).optional().or(z.literal('')),
+});
+
+const surveyReportSchema = z.object({
+  reportReason: z.enum(['Spam', 'Hate Speech', 'Inappropriate Content', 'Other']),
+  details: z.string().max(2000).optional().or(z.literal('')),
 });
 
 // ── Blog ─────────────────────────────────────────────────────────────────────
@@ -122,7 +129,7 @@ const submitFeedbackSchema = z.object({
 });
 
 const updateFeedbackSchema = z.object({
-  status: z.enum(['pending', 'reviewed', 'resolved', 'dismissed']).optional(),
+  status: z.enum(['open', 'reviewing', 'resolved', 'dismissed']).optional(),
   adminResponse: z.object({
     message: z.string().min(1),
     respondedBy: z.string().optional(),
@@ -142,6 +149,7 @@ module.exports = {
   updateSurveySchema,
   surveyResponseSchema,
   surveyFeedbackSchema,
+  surveyReportSchema,
   createBlogSchema,
   updateBlogSchema,
   blogReactionSchema,

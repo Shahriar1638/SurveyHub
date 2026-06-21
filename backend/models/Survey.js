@@ -30,7 +30,8 @@ const surveySchema = new mongoose.Schema({
         enum: ['short_answer', 'paragraph', 'multiple_choice', 'checkbox', 'linear_scale'],
         required: true 
       },
-      options: [String], // Array of choices (empty for text questions)
+      options: [String], // [min, max, minLabel, maxLabel, ...items] for linear_scale; choices for MC/checkbox
+      scaleLabels: { type: Map, of: String }, // { "1": "Poor", "2": "Good", ... } custom column labels for linear_scale
       required: { type: Boolean, default: false }
     }
   ],
@@ -50,6 +51,11 @@ const surveySchema = new mongoose.Schema({
     },
   },
   category: String,
+  resultAccess: {
+    type: String,
+    enum: ['only_me', 'participants', 'everyone'],
+    default: 'only_me',
+  },
   participantCount: {
     type: Number,
     default: 0,

@@ -8,7 +8,6 @@ import {
   signInWithPopup,
   signOut,
 } from "firebase/auth";
-import useAxiosPublic from "@/Hooks/useAxiosPublic";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const AuthContext = createContext(null);
@@ -18,7 +17,6 @@ const googleProvider = new GoogleAuthProvider();
 const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const axiosPublic = useAxiosPublic();
 
   //Sign in with user email pass
   const createUser = useCallback((email, password) => {
@@ -56,26 +54,12 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const unSubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
-      if (currentUser) {
-        const userInfo = { email: currentUser.email };
-        axiosPublic.post("/jwt", userInfo).then((res) => {
-          if (res.data.token) {
-            localStorage.setItem(TOKEN_KEY, res.data.token);
-          }
-          setLoading(false);
-        }).catch((err) => {
-          console.error("JWT fetch error:", err);
-          setLoading(false);
-        });
-      } else {
-        localStorage.removeItem(TOKEN_KEY);
-        setLoading(false);
-      }
+      setLoading(false);
     });
     return () => {
       unSubscribe();
     };
-  }, [axiosPublic]);
+  }, []);
   const authInfo = useMemo(
     () => ({
       user,

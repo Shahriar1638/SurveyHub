@@ -11,12 +11,40 @@ import {
 import { useUpdateReport } from "../../../Hooks/useDashboardAdmin";
 
 // ── Action option configs ────────────────────────────────────────────────────
-const ACTIONS = [
+const SURVEY_ACTIONS = [
   { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
   { value: "Surveyor Warned", label: "Warn Surveyor", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
   { value: "Survey Deleted", label: "Delete Survey", icon: TrashIcon, color: "var(--color-error)" },
   { value: "Surveyor Banned", label: "Ban Surveyor", icon: NoSymbolIcon, color: "var(--color-admin)" },
 ];
+
+const BLOG_ACTIONS = [
+  { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
+  { value: "Author Warned", label: "Warn Author", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
+  { value: "Blog Deleted", label: "Delete Blog", icon: TrashIcon, color: "var(--color-error)" },
+  { value: "Author Banned", label: "Ban Author", icon: NoSymbolIcon, color: "var(--color-admin)" },
+];
+
+const COMMENT_ACTIONS = [
+  { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
+  { value: "Commenter Warned", label: "Warn Commenter", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
+  { value: "Comment Deleted", label: "Delete Comment", icon: TrashIcon, color: "var(--color-error)" },
+  { value: "Commenter Banned", label: "Ban Commenter", icon: NoSymbolIcon, color: "var(--color-admin)" },
+];
+
+const REPLY_ACTIONS = [
+  { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
+  { value: "Commenter Warned", label: "Warn Commenter", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
+  { value: "Reply Deleted", label: "Delete Reply", icon: TrashIcon, color: "var(--color-error)" },
+  { value: "Commenter Banned", label: "Ban Commenter", icon: NoSymbolIcon, color: "var(--color-admin)" },
+];
+
+const ACTIONS_BY_TYPE = {
+  survey: SURVEY_ACTIONS,
+  blog: BLOG_ACTIONS,
+  comment: COMMENT_ACTIONS,
+  reply: REPLY_ACTIONS,
+};
 
 export default function ReportSidePanel({ report, onClose }) {
   const [selectedAction, setSelectedAction] = useState("None");
@@ -25,6 +53,11 @@ export default function ReportSidePanel({ report, onClose }) {
   const updateReport = useUpdateReport();
 
   if (!report) return null;
+
+  const reportType = report.type || report.targetType || (report.survey ? "survey" : report.blog ? "blog" : "comment");
+  const actions = ACTIONS_BY_TYPE[reportType] || SURVEY_ACTIONS;
+
+  const targetTitle = report.targetTitle || report.surveyTitle || report.blogTitle || report.commentText?.slice(0, 80) || "—";
 
   const handleSubmit = async () => {
     if (updateReport.isPending) return;
@@ -86,14 +119,21 @@ export default function ReportSidePanel({ report, onClose }) {
             <div>
               <label className="form-label">Reporter</label>
               <p className="type-body-sm text-[--color-text-primary]">
-                {report.reporterEmail}
+                {report.reporterName || report.reporterEmail}
               </p>
             </div>
 
             <div>
-              <label className="form-label">Reported Survey</label>
+              <label className="form-label">Report Type</label>
+              <span className="badge badge-draft capitalize">{reportType}</span>
+            </div>
+
+            <div>
+              <label className="form-label">
+                {reportType === "survey" ? "Reported Survey" : reportType === "blog" ? "Reported Blog" : reportType === "reply" ? "Reported Reply" : "Reported Comment"}
+              </label>
               <p className="type-label-sm text-[--color-text-primary]">
-                {report.survey?.title || "Unknown Survey"}
+                {targetTitle}
               </p>
             </div>
 
@@ -169,7 +209,7 @@ export default function ReportSidePanel({ report, onClose }) {
             <div>
               <label className="form-label">Action</label>
               <div className="space-y-1.5">
-                {ACTIONS.map((action) => {
+                {actions.map((action) => {
                   const Icon = action.icon;
                   const isSelected = selectedAction === action.value;
                   return (

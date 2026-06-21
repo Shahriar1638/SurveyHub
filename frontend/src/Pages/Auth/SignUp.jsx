@@ -193,6 +193,13 @@ const SignUp = () => {
           await firebaseUser.delete();
         } catch (rollbackErr) {
           console.error("Failed to rollback firebase user:", rollbackErr);
+          // Firebase delete requires recent auth — inform user to contact support
+          Swal.fire({
+            title: 'Account Partially Created',
+            text: 'Your email is registered but profile setup failed. Please contact support to complete registration.',
+            icon: 'warning',
+            confirmButtonColor: '#2D9FCF',
+          });
         }
       }
     }
@@ -484,7 +491,20 @@ const SignUp = () => {
                     type="file"
                     accept="image/*"
                     className="w-full rounded-lg border border-border bg-bg-surface px-3 py-2.5 type-body-xs text-text-secondary outline-none transition duration-200 file:mr-4 file:rounded-md file:border-0 file:bg-visitor file:px-3 file:py-1.5 file:type-label-sm file:text-white hover:file:bg-visitor-dark file:cursor-pointer focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs"
-                    onChange={(e) => setAvatarFile(e.target.files?.[0] || null)}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0] || null;
+                      if (file && file.size > 2 * 1024 * 1024) {
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Image too large',
+                          text: 'Avatar must be under 2MB.',
+                          confirmButtonColor: '#2D9FCF',
+                        });
+                        e.target.value = '';
+                        return;
+                      }
+                      setAvatarFile(file);
+                    }}
                   />
                   <p className="text-[11px] leading-relaxed text-text-tertiary">
                     Upload a square PNG/JPG. We will host and reference it in your Mongo details.

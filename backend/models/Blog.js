@@ -31,6 +31,9 @@ const blogSchema = new mongoose.Schema({
   title: { type: String, required: true },
   content: { type: String, required: true }, // Markdown or HTML content
 
+  // Soft delete
+  deletedAt: { type: Date, default: null },
+
   // Edit tracking
   edited: { type: Boolean, default: false },
   editHistory: [{

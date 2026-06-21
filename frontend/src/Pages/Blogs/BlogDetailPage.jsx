@@ -9,6 +9,7 @@ import useProfile from "../../Hooks/useProfile";
 import { useBlogDetail, useBlogReact, useBlogComment } from "../../Hooks/useBlogs";
 import { Avatar } from "../../Components/UI/BlogCard";
 import { PageTransition } from "../../Components/UI/PageTransition";
+import ReportModal from "../../Components/UI/ReportModal";
 import { CommentItem } from "./BlogCommentReply";
 import BlogCards from "./BlogCards";
 
@@ -142,6 +143,20 @@ export default function BlogDetailPage() {
             setUserReaction(res.userReaction);
           }}
         />
+
+        {/* Report blog */}
+        {canInteract && user.email !== blog.surveyorEmail && (
+          <div className="mb-8">
+            <ReportModal url={`/api/blogs/${id}/report`} title="Report Blog">
+              <button className="btn btn-secondary btn-sm text-[--color-error] hover:bg-[--color-error-light] border-[--color-error]/20">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
+                </svg>
+                Report Blog
+              </button>
+            </ReportModal>
+          </div>
+        )}
 
         {/* Comments section */}
         <section>

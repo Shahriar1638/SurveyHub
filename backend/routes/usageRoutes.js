@@ -4,12 +4,24 @@ const GeminiUsage = require('../models/GeminiUsage');
 const { verifyToken } = require('../middlewares/authMiddleware')();
 
 /**
- * GET /api/usage/gemini — returns today's tracked Gemini API usage
+ * GET /api/usage/gemini — returns today's tracked AI usage
  */
 router.get('/gemini', verifyToken, async (req, res) => {
   try {
     const today = new Date().toISOString().split('T')[0];
     const usage = await GeminiUsage.findOne({ date: today }).lean();
+
+    // Count configured Gemini keys
+    let keyCount = 0;
+    if (process.env.GEMINI_API_KEY) {
+      process.env.GEMINI_API_KEY.split(',').forEach(k => {
+        if (k.trim()) keyCount++;
+      });
+    }
+    for (let i = 2; i <= 10; i++) {
+      if (process.env[`GEMINI_KEY_${i}`]) keyCount++;
+    }
+    const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
 
     res.json({
       success: true,
@@ -17,10 +29,15 @@ router.get('/gemini', verifyToken, async (req, res) => {
         requests: usage?.requests || 0,
         tokens: usage?.tokens || 0,
         date: today,
+        providers: {
+          geminiKeys: keyCount,
+          openRouter: hasOpenRouter,
+          openRouterModel: process.env.OPENROUTER_MODEL || 'auto (best free)',
+        },
       },
     });
   } catch (err) {
-    console.error('Error fetching Gemini usage:', err);
+    console.error('Error fetching AI usage:', err);
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });

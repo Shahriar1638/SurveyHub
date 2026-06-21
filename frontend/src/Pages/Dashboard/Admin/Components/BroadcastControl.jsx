@@ -3,6 +3,7 @@ import { useState } from "react";
 import { motion } from "motion/react";
 import { MegaphoneIcon } from "@heroicons/react/24/outline";
 import { useSendBroadcast } from "../../../../Hooks/useDashboardAdmin";
+import Swal from "sweetalert2";
 
 // ── Motion variants ──────────────────────────────────────────────────────────
 const container = {
@@ -22,6 +23,20 @@ export default function BroadcastControl() {
 
   const handleSend = async () => {
     if (!title.trim() || !message.trim() || broadcastMutation.isPending) return;
+
+    const result = await Swal.fire({
+      title: "Send Broadcast?",
+      html: `<p class="text-sm text-[--color-text-secondary]">This will send a <strong>${severity}</strong> notification to <strong>all users</strong>. This action cannot be undone.</p>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#2D9FCF",
+      cancelButtonColor: "var(--color-error)",
+      confirmButtonText: "Send to everyone",
+      customClass: { popup: "swal-popup" },
+    });
+
+    if (!result.isConfirmed) return;
+
     try {
       await broadcastMutation.mutateAsync({ title: title.trim(), message: message.trim(), severity });
       setTitle("");

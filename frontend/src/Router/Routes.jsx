@@ -13,9 +13,11 @@ import {
   BlogsPage,
   BlogDetailPage,
   SurveyDetailPage,
+  SurveyResults,
   PricingPage,
   PaymentSuccessPage,
   Dashboard,
+  NotFoundPage,
 } from "./lazyPages";
 
 const router = createBrowserRouter([
@@ -38,6 +40,10 @@ const router = createBrowserRouter([
             <SurveyDetailPage />
           </PrivateRoute>
         ),
+      },
+      {
+        path: "/surveys/:id/results",
+        element: <SurveyResults />,
       },
       {
         path: "/feedback",
@@ -89,6 +95,10 @@ const router = createBrowserRouter([
       { path: ":section", element: <DashboardSection /> },
       { path: "surveys/:id", element: <Dashboard /> },
     ],
+  },
+  {
+    path: "*",
+    element: <NotFoundPage />,
   },
 ]);
 
