@@ -107,6 +107,7 @@ async function run() {
     app.use('/api/packages', require('./routes/packageRoutes'));
     app.use('/api/dashboard', verifyToken, require('./routes/dashboardRoutes'));
     app.use('/api/usage', require('./routes/usageRoutes'));
+    app.use('/api/analytics', verifyToken, require('./routes/analyticsRoutes'));
     // Send a ping to confirm a successful connection
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -114,7 +115,8 @@ async function run() {
     // ── Start survey expiry worker + re-schedule all published surveys ──────
     const { startExpiryWorker, reScheduleAll, closeExpiryWorker } = require('./jobs/surveyExpiry');
     const redis = require('./lib/redis');
-    if (redis.status === 'ready') {
+    const redisReady = await redis.waitForReady(3000);
+    if (redisReady) {
       startExpiryWorker();
       await reScheduleAll();
     } else {

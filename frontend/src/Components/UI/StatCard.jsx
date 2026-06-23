@@ -1,19 +1,22 @@
 import { Card, CardBody } from "./Card";
 
+/**
+ * Stat / KPI Card — DESIGN_Prompt.md §"Stat / KPI Card"
+ * Icon container: accent-light bg, accent-dark icon
+ * Value: JetBrains Mono, text-3xl
+ * Delta: mono font, semantic color
+ */
 export function StatCard({
   title,
   value,
   delta,
-  deltaType = "positive", // positive, negative, neutral
+  deltaType = "positive", // "positive" | "negative" | "neutral"
   icon: Icon,
-  roleAccent = "user", // surveyor, admin, user, visitor
 }) {
-  const accentLight = `var(--color-${roleAccent}-light)`;
-  const accentDark = `var(--color-${roleAccent}-dark)`;
-
   return (
     <Card hover className="h-full">
       <CardBody className="flex flex-col gap-3 p-5 h-full justify-between">
+        {/* Top row: label + icon */}
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium font-[--font-ui] text-[--color-text-secondary]">
             {title}
@@ -21,18 +24,19 @@ export function StatCard({
           {Icon && (
             <div
               className="w-9 h-9 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: accentLight }}
+              style={{ backgroundColor: "var(--color-accent-light)" }}
             >
-              <Icon className="w-5 h-5" style={{ color: accentDark }} />
+              <Icon className="w-5 h-5" style={{ color: "var(--color-accent-dark)" }} />
             </div>
           )}
         </div>
 
-        {/* JetBrains Mono is used for the number as per DESIGN_v2.md */}
+        {/* Value — JetBrains Mono, no exceptions */}
         <div className="font-[--font-mono] text-3xl font-medium text-[--color-text-primary]">
           {value}
         </div>
 
+        {/* Delta row */}
         {delta && (
           <div className="flex items-center gap-1.5 text-xs font-[--font-mono]">
             <span

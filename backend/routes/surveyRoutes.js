@@ -561,12 +561,12 @@ router.patch('/:id/ai-insight', verifyToken, verifySurveyor, async (req, res) =>
       return res.status(403).json({ success: false, message: 'Not authorized' });
     }
 
-    const { enabled } = req.body;
-    if (typeof enabled !== 'boolean') {
-      return res.status(400).json({ success: false, message: 'enabled must be a boolean' });
+    const { autoGenerate } = req.body;
+    if (typeof autoGenerate !== 'boolean') {
+      return res.status(400).json({ success: false, message: 'autoGenerate must be a boolean' });
     }
 
-    survey.aiInsight.enabled = enabled;
+    survey.aiInsight.autoGenerate = autoGenerate;
     await survey.save();
 
     res.json({ success: true, data: { aiInsight: survey.aiInsight } });
@@ -629,6 +629,7 @@ router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), asyn
           image: image?.trim() || undefined,
           questions,
           status: 'draft',
+          aiInsight: { autoGenerate: user.autoAIInsight || false },
         });
         return res.status(429).json({
           success: false,
@@ -656,6 +657,7 @@ router.post('/', verifyToken, verifySurveyor, validate(createSurveySchema), asyn
       questions,
       status: surveyStatus,
       publishedAt: surveyStatus === 'published' ? new Date() : undefined,
+      aiInsight: { autoGenerate: user.autoAIInsight || false },
       moderation: moderationResult ? {
         decision: moderationResult.decision,
         reason: moderationResult.reason,

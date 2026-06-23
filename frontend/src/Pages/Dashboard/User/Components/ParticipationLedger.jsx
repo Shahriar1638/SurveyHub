@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { ClipboardDocumentListIcon } from "@heroicons/react/24/outline";
@@ -43,7 +43,7 @@ const columns = [
   columnHelper.accessor((row) => row.rewardPoints, {
     id: "rewards", header: () => <span className="text-right block">Rewards</span>,
     cell: (info) => (
-      <span className="type-label-sm text-[--color-user-dark] font-[--font-mono] font-bold text-right block">
+      <span className="type-label-sm text-[--color-accent-dark] font-[--font-mono] font-bold text-right block">
         +{info.getValue()} pts
       </span>
     ),

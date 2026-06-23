@@ -74,7 +74,6 @@ const surveySchema = new mongoose.Schema({
 
   // AI INSIGHT: Generated when deadline expires + auto-gen enabled
   aiInsight: {
-    enabled: { type: Boolean, default: false },
     autoGenerate: { type: Boolean, default: false },
     status: { type: String, enum: ['idle', 'pending', 'ready', 'failed'], default: 'idle' },
     

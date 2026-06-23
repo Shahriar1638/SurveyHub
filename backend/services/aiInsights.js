@@ -35,13 +35,13 @@ async function tryOpenRouter(prompt) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw new Error('No OpenRouter key configured');
 
-  // Reuse the free model picker from moderation if available, else hardcode
-  let modelId = 'deepseek/deepseek-v4-flash:free';
+  // Dynamically pick the best free model from OpenRouter
+  let modelId;
   try {
-    const moderation = require('./moderation');
-    // moderation.getBestFreeModel is not exported, so we use a sensible default
+    const { getBestFreeModel } = require('./moderation');
+    modelId = await getBestFreeModel();
   } catch {
-    // ignore
+    modelId = 'deepseek/deepseek-v4-flash:free';
   }
   // Override from env if set
   modelId = process.env.OPENROUTER_MODEL || modelId;
@@ -80,6 +80,49 @@ async function tryOpenRouter(prompt) {
   } catch (err) {
     clearTimeout(timeout);
     if (err.name === 'AbortError') throw new Error('OpenRouter request timed out');
+    throw err;
+  }
+}
+
+async function tryOpenZen(prompt) {
+  const apiKey = process.env.OPEN_ZEN_API_KEY;
+  if (!apiKey) throw new Error('No OpenCode Zen key configured');
+
+  const baseUrl = (process.env.OPEN_ZEN_BASE_URL || 'https://opencode.ai/zen/v1').replace(/\/+$/, '');
+  const modelId = process.env.OPEN_ZEN_MODEL || 'deepseek/deepseek-v4-flash:free';
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT);
+
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: modelId,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.3,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      const body = await res.text();
+      throw new Error(`OpenCode Zen ${res.status}: ${body.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('OpenCode Zen returned empty response');
+    return text.trim();
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') throw new Error('OpenCode Zen request timed out');
     throw err;
   }
 }
@@ -210,6 +253,15 @@ async function generateInsights(survey, stats) {
     return parseInsights(text);
   } catch (err) {
     console.error('[AI Insights] OpenRouter failed:', err.message);
+  }
+
+  // OpenRouter failed — try OpenCode Zen
+  try {
+    console.log('[AI Insights] Trying OpenCode Zen...');
+    const text = await tryOpenZen(prompt);
+    return parseInsights(text);
+  } catch (err) {
+    console.error('[AI Insights] OpenCode Zen failed:', err.message);
   }
 
   // All providers exhausted

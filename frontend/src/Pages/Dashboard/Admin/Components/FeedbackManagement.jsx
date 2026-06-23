@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 
 import { useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -18,7 +18,7 @@ const columnHelper = createColumnHelper();
 
 const STATUS_STYLES = {
   open: "bg-[--color-warning]/10 text-[--color-warning] border-[--color-warning]/20",
-  reviewing: "bg-[--color-admin]/10 text-[--color-admin] border-[--color-admin]/20",
+  reviewing: "bg-[--color-error]/10 text-[--color-error] border-[--color-error]/20",
   resolved: "bg-[--color-success]/10 text-[--color-success] border-[--color-success]/20",
   dismissed: "bg-[--color-bg-inset] text-[--color-text-tertiary] border-[--color-border]",
 };
@@ -154,7 +154,7 @@ export default function FeedbackManagement() {
               onClick={() => setStatusFilter(s)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors capitalize ${
                 statusFilter === s
-                  ? "bg-[--color-admin] text-white"
+                  ? "bg-[--color-error] text-white"
                   : "bg-[--color-bg-inset] text-[--color-text-secondary] hover:text-[--color-text-primary] hover:bg-[--color-bg-subtle]"
               }`}
             >

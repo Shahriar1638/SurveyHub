@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router';
 import { AuthContext } from '../../Firebase_AuthProvider/AuthProvider';
@@ -12,11 +12,11 @@ const ROLES_INFO = [
   {
     id: "visitor",
     name: "Visitor / Guest",
-    color: "var(--color-visitor)",
-    glowClass: "hover:border-visitor/40 hover:shadow-[0_0_15px_rgba(32,126,197,0.15)]",
+    color: "var(--color-accent)",
+    glowClass: "hover:border-accent/40 hover:shadow-[0_0_15px_rgba(32,126,197,0.15)]",
     description: "Explore community surveys, view public analytics, and share your perspective.",
     icon: (
-      <svg className="w-5 h-5 text-visitor" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
       </svg>
@@ -25,11 +25,11 @@ const ROLES_INFO = [
   {
     id: "user",
     name: "Registered User",
-    color: "var(--color-user)",
-    glowClass: "hover:border-user/40 hover:shadow-[0_0_15px_rgba(246,119,36,0.15)]",
+    color: "var(--color-accent)",
+    glowClass: "hover:border-accent/40 hover:shadow-[0_0_15px_rgba(246,119,36,0.15)]",
     description: "Vote on premium polls, keep a response history, and unlock profile rewards.",
     icon: (
-      <svg className="w-5 h-5 text-user" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
       </svg>
     ),
@@ -37,11 +37,11 @@ const ROLES_INFO = [
   {
     id: "surveyor",
     name: "Premium Surveyor",
-    color: "var(--color-surveyor)",
-    glowClass: "hover:border-surveyor/40 hover:shadow-[0_0_15px_rgba(91,188,234,0.15)]",
+    color: "var(--color-accent)",
+    glowClass: "hover:border-accent/40 hover:shadow-[0_0_15px_rgba(91,188,234,0.15)]",
     description: "Design advanced surveys, use dynamic questions, and run AI Analytics labs.",
     icon: (
-      <svg className="w-5 h-5 text-surveyor" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z" />
       </svg>
     ),
@@ -49,11 +49,11 @@ const ROLES_INFO = [
   {
     id: "admin",
     name: "System Admin",
-    color: "var(--color-admin)",
-    glowClass: "hover:border-admin/40 hover:shadow-[0_0_15px_rgba(219,55,37,0.15)]",
+    color: "var(--color-error)",
+    glowClass: "hover:border-error/40 hover:shadow-[0_0_15px_rgba(219,55,37,0.15)]",
     description: "Moderate content, review flagged profiles, and manage system operations.",
     icon: (
-      <svg className="w-5 h-5 text-admin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-5 h-5 text-error" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
       </svg>
     ),
@@ -210,7 +210,7 @@ const SignUp = () => {
       <div className="grid h-screen w-full grid-cols-1 md:grid-cols-[1.1fr_1fr] lg:grid-cols-[1.25fr_1fr] xl:grid-cols-[1.35fr_1fr]">
         
         {/* Left Aside Column — Beautiful visual gate showcasing 4 distinct roles */}
-        <aside className="relative order-2 sticky top-0 hidden h-screen flex-col justify-between overflow-hidden bg-navy px-8 py-10 md:order-1 md:flex text-white">
+        <aside className="relative order-2 sticky top-0 hidden h-screen flex-col justify-between overflow-hidden bg-primary px-8 py-10 md:order-1 md:flex text-white">
           
           {/* Creative Role-Mesh Background Animation */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
@@ -222,19 +222,19 @@ const SignUp = () => {
 
             {/* Glowing Blobs representing roles */}
             <div 
-              className="absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-admin opacity-[0.32] blur-[80px]"
+              className="absolute -top-20 -left-20 w-[400px] h-[400px] rounded-full bg-error opacity-[0.32] blur-[80px]"
               style={{ animation: "float-1 16s infinite ease-in-out" }}
             />
             <div 
-              className="absolute top-[20%] -right-24 w-[450px] h-[450px] rounded-full bg-surveyor opacity-[0.28] blur-[90px]"
+              className="absolute top-[20%] -right-24 w-[450px] h-[450px] rounded-full bg-accent opacity-[0.28] blur-[90px]"
               style={{ animation: "float-2 20s infinite ease-in-out" }}
             />
             <div 
-              className="absolute -bottom-24 left-[20%] w-[500px] h-[500px] rounded-full bg-user opacity-[0.25] blur-[100px]"
+              className="absolute -bottom-24 left-[20%] w-[500px] h-[500px] rounded-full bg-accent opacity-[0.25] blur-[100px]"
               style={{ animation: "float-3 18s infinite ease-in-out" }}
             />
             <div 
-              className="absolute top-[50%] left-[-10%] w-[380px] h-[380px] rounded-full bg-visitor opacity-[0.25] blur-[80px]"
+              className="absolute top-[50%] left-[-10%] w-[380px] h-[380px] rounded-full bg-accent opacity-[0.25] blur-[80px]"
               style={{ animation: "float-4 14s infinite ease-in-out" }}
             />
           </div>
@@ -288,7 +288,7 @@ const SignUp = () => {
               </span>
               <h1 className="type-heading-xl text-white font-extrabold tracking-tight leading-tight lg:type-display-lg">
                 Start your <br />
-                <span className="bg-gradient-to-r from-visitor via-surveyor to-user bg-clip-text text-transparent">data journey here</span>.
+                <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">data journey here</span>.
               </h1>
               <p className="type-body-base text-white/80 leading-relaxed max-w-md">
                 Create your SurveyHub profile to design deep insights campaigns, engage with premium voters, and generate advanced analytics.
@@ -340,7 +340,7 @@ const SignUp = () => {
           {/* Elegant Back Navigation */}
           <Link
             to="/"
-            className="group absolute top-6 left-6 flex items-center gap-2 type-body-sm font-semibold text-text-secondary transition-colors hover:text-navy sm:top-8 sm:left-8 z-20"
+            className="group absolute top-6 left-6 flex items-center gap-2 type-body-sm font-semibold text-text-secondary transition-colors hover:text-primary sm:top-8 sm:left-8 z-20"
           >
             <svg
               className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform duration-200"
@@ -370,7 +370,7 @@ const SignUp = () => {
               <p className="type-label-sm uppercase tracking-[0.24em] text-text-tertiary">
                 Registration Gate
               </p>
-              <h2 className="mt-2.5 type-heading-lg text-navy tracking-tight font-extrabold">
+              <h2 className="mt-2.5 type-heading-lg text-primary tracking-tight font-extrabold">
                 Join SurveyHub
               </h2>
               <p className="mt-2 type-body-sm text-text-secondary leading-relaxed">
@@ -401,7 +401,7 @@ const SignUp = () => {
                   type="text"
                   required
                   placeholder="John Doe"
-                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                   {...register('name', { required: 'Name is required' })}
                 />
                 {errors.name && (
@@ -422,7 +422,7 @@ const SignUp = () => {
                   type="email"
                   required
                   placeholder="you@example.com"
-                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                   {...register('email', { required: 'Email is required' })}
                 />
                 {errors.email && (
@@ -443,7 +443,7 @@ const SignUp = () => {
                   type="password"
                   required
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                   {...register('password', { required: 'Password is required' })}
                 />
                 {errors.password && (
@@ -464,7 +464,7 @@ const SignUp = () => {
                   type="password"
                   required
                   placeholder="••••••••"
-                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                  className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                   {...register('confirmPassword', {
                     required: 'Please confirm your password',
                     validate: (value) => value === password || 'Passwords do not match.',
@@ -490,7 +490,7 @@ const SignUp = () => {
                     id="avatar"
                     type="file"
                     accept="image/*"
-                    className="w-full rounded-lg border border-border bg-bg-surface px-3 py-2.5 type-body-xs text-text-secondary outline-none transition duration-200 file:mr-4 file:rounded-md file:border-0 file:bg-visitor file:px-3 file:py-1.5 file:type-label-sm file:text-white hover:file:bg-visitor-dark file:cursor-pointer focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-3 py-2.5 type-body-xs text-text-secondary outline-none transition duration-200 file:mr-4 file:rounded-md file:border-0 file:bg-accent file:px-3 file:py-1.5 file:type-label-sm file:text-white hover:file:bg-accent-dark file:cursor-pointer focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs"
                     onChange={(e) => {
                       const file = e.target.files?.[0] || null;
                       if (file && file.size > 2 * 1024 * 1024) {
@@ -518,7 +518,7 @@ const SignUp = () => {
                     id="bio"
                     rows="2.5"
                     placeholder="A short intro about your background or role interests..."
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary resize-none"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary resize-none"
                     {...register('bio')}
                   />
                 </div>
@@ -530,7 +530,7 @@ const SignUp = () => {
                     id="location"
                     type="text"
                     placeholder="Dhaka, BD"
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                     {...register('location')}
                   />
                 </div>
@@ -542,7 +542,7 @@ const SignUp = () => {
                     id="occupation"
                     type="text"
                     placeholder="Researcher, Dev..."
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                     {...register('occupation')}
                   />
                 </div>
@@ -554,7 +554,7 @@ const SignUp = () => {
                     id="twitter"
                     type="url"
                     placeholder="https://twitter.com/..."
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                     {...register('twitter')}
                   />
                 </div>
@@ -566,7 +566,7 @@ const SignUp = () => {
                     id="linkedin"
                     type="url"
                     placeholder="https://linkedin.com/in/..."
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                     {...register('linkedin')}
                   />
                 </div>
@@ -578,7 +578,7 @@ const SignUp = () => {
                     id="website"
                     type="url"
                     placeholder="https://your-site.com"
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                     {...register('website')}
                   />
                 </div>
@@ -590,7 +590,7 @@ const SignUp = () => {
                     id="preferences"
                     type="text"
                     placeholder="survey design, feedback, analytics..."
-                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-visitor focus:ring-4 focus:ring-visitor-light/30 shadow-xs placeholder:text-text-tertiary"
+                    className="w-full rounded-lg border border-border bg-bg-surface px-4 py-2.5 type-body-sm text-text-primary outline-none transition duration-200 focus:border-accent focus:ring-4 focus:ring-accent-light/30 shadow-xs placeholder:text-text-tertiary"
                     {...register('preferences')}
                   />
                   <p className="text-[11px] leading-relaxed text-text-tertiary">
@@ -624,7 +624,7 @@ const SignUp = () => {
                 Already have an account?{' '}
                 <Link 
                   to="/login" 
-                  className="font-bold text-visitor hover:text-visitor-dark hover:underline transition"
+                  className="font-bold text-accent hover:text-accent-dark hover:underline transition"
                 >
                   Log in
                 </Link>

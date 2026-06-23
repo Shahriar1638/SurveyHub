@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { useBlogReply } from "../../Hooks/useBlogs";
@@ -107,7 +107,7 @@ export function CommentItem({ comment, blogId, user, userRole, onReplyAdded }) {
             {user && (
               <button
                 onClick={() => setShowReplyBox((v) => !v)}
-                className="type-meta text-[--color-text-tertiary] hover:text-[--color-surveyor-dark] transition-colors flex items-center gap-1"
+                className="type-meta text-[--color-text-tertiary] hover:text-[--color-accent-dark] transition-colors flex items-center gap-1"
               >
                 <svg
                   className="w-3.5 h-3.5"
@@ -138,7 +138,7 @@ export function CommentItem({ comment, blogId, user, userRole, onReplyAdded }) {
             {replyCount > 0 && (
               <button
                 onClick={() => setRepliesOpen((v) => !v)}
-                className={`type-meta flex items-center gap-1 transition-colors ${repliesOpen ? "text-[--color-surveyor-dark]" : "text-[--color-text-tertiary]"}`}
+                className={`type-meta flex items-center gap-1 transition-colors ${repliesOpen ? "text-[--color-accent-dark]" : "text-[--color-text-tertiary]"}`}
               >
                 <svg
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${repliesOpen ? "rotate-90" : ""}`}
@@ -178,7 +178,7 @@ export function CommentItem({ comment, blogId, user, userRole, onReplyAdded }) {
                   <button
                     onClick={handleReply}
                     disabled={submitting || !replyText.trim()}
-                    className="btn btn-sm px-3 py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50 bg-[--color-surveyor-dark]"
+                    className="btn btn-sm px-3 py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50 bg-[--color-accent-dark]"
                   >
                     {submitting ? "…" : "Post"}
                   </button>

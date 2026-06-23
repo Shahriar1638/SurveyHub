@@ -1,9 +1,8 @@
 const variantClasses = {
-  primary: "btn-primary",
-  surveyor: "btn-surveyor",
-  secondary: "btn-secondary",
-  ghost: "btn-ghost",
-  destructive: "btn-destructive",
+  primary:     "btn-primary",     // accent orange — one CTA per section
+  secondary:   "btn-secondary",   // navy — non-CTA primaries
+  ghost:       "btn-ghost",       // border/transparent
+  destructive: "btn-destructive", // error red
 };
 
 const sizeClasses = {
@@ -21,13 +20,12 @@ export function Button({
   disabled = false,
   ...props
 }) {
-  const baseClass = "btn";
   const vClass = variantClasses[variant] || variantClasses.primary;
   const sClass = sizeClasses[size] || sizeClasses.md;
 
   return (
     <button
-      className={`${baseClass} ${vClass} ${sClass} ${className}`}
+      className={`btn ${vClass} ${sClass} ${className}`}
       disabled={disabled || loading}
       {...props}
     >

@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -101,7 +101,7 @@ export default function SurveyTable({ statusFilter, search, sort }) {
             }}
             className={`btn btn-sm flex items-center gap-1.5 ${
               canReview
-                ? "bg-[--color-admin-light] text-[--color-admin] hover:bg-[--color-admin]/20"
+                ? "bg-[--color-error-light] text-[--color-error] hover:bg-[--color-error]/20"
                 : "btn-secondary opacity-50 cursor-not-allowed"
             }`}
             disabled={!canReview}

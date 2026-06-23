@@ -77,8 +77,13 @@ const USER_NAV = [
 ];
 
 // ── Sidebar nav item ─────────────────────────────────────────────────────────
-function NavItem({ item, accentColor, accentLight, onNav }) {
+// Active style per DESIGN_Prompt.md:
+//   Surveyor/User: bg-accent-light text-accent-dark border-l-2 border-accent
+//   Admin:         bg-primary text-white
+function NavItem({ item, role, onNav }) {
   const Icon = item.icon;
+  const isAdmin = role === "admin";
+
   return (
     <NavLink
       to={item.id}
@@ -88,14 +93,19 @@ function NavItem({ item, accentColor, accentLight, onNav }) {
         `group w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] transition-all duration-200 ease-[var(--ease-out-expo)] ${
           isActive
             ? ""
-            : "text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            : "text-[--color-text-secondary] hover:text-[--color-text-primary] hover:bg-[--color-bg-subtle]"
         }`
       }
-      style={({ isActive }) =>
-        isActive
-          ? { backgroundColor: accentLight, color: accentColor }
-          : undefined
-      }
+      style={({ isActive }) => {
+        if (!isActive) return undefined;
+        return isAdmin
+          ? { backgroundColor: "var(--color-primary)", color: "white" }
+          : {
+              backgroundColor: "var(--color-accent-light)",
+              color: "var(--color-accent-dark)",
+              borderLeft: "2px solid var(--color-accent)",
+            };
+      }}
     >
       {({ isActive }) => (
         <>
@@ -103,7 +113,12 @@ function NavItem({ item, accentColor, accentLight, onNav }) {
             className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-all duration-200"
             style={
               isActive
-                ? { backgroundColor: accentColor, color: "white" }
+                ? {
+                    backgroundColor: isAdmin
+                      ? "rgba(255,255,255,0.15)"
+                      : "var(--color-accent)",
+                    color: "white",
+                  }
                 : undefined
             }
           >
@@ -116,7 +131,9 @@ function NavItem({ item, accentColor, accentLight, onNav }) {
           {isActive && (
             <div
               className="ml-auto w-1.5 h-1.5 rounded-full shrink-0"
-              style={{ backgroundColor: accentColor }}
+              style={{
+                backgroundColor: isAdmin ? "rgba(255,255,255,0.6)" : "var(--color-accent)",
+              }}
             />
           )}
         </>
@@ -169,7 +186,6 @@ export default function DashboardLayout() {
   const { data: profile } = useProfile();
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  const activeSection = location.pathname.split("/").pop();
 
   const role = profile?.role;
 
@@ -180,17 +196,8 @@ export default function DashboardLayout() {
     return [];
   }, [role]);
 
-  const accentColor = useMemo(() => {
-    if (role === "admin") return "var(--color-admin)";
-    if (role === "surveyor") return "var(--color-surveyor-dark)";
-    return "var(--color-user)";
-  }, [role]);
-
-  const accentLight = useMemo(() => {
-    if (role === "admin") return "var(--color-admin-light)";
-    if (role === "surveyor") return "var(--color-surveyor-light)";
-    return "var(--color-user-light)";
-  }, [role]);
+  // User avatar initials
+  const avatarInitial = (profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase();
 
   // ── Sidebar content (shared between desktop & mobile) ──────────────────────
   const sidebarContent = (
@@ -198,7 +205,10 @@ export default function DashboardLayout() {
       {/* Workspace header */}
       <div className="px-5 pt-6 pb-5">
         <Link to="/" className="flex items-center gap-3 mb-5 group/logo">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0" style={{ backgroundColor: accentLight }}>
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ backgroundColor: "var(--color-accent-light)" }}
+          >
             <img src={logo} alt="SurveyHub" className="h-5 w-5 object-cover" />
           </div>
           <span className="type-heading-sm text-[--color-text-primary] tracking-tight text-base">
@@ -206,30 +216,39 @@ export default function DashboardLayout() {
           </span>
         </Link>
 
-        {/* User info */}
+        {/* User info card */}
         <div className="flex items-center gap-3 p-3 rounded-xl bg-[--color-bg-subtle]/60">
           {profile?.avatar || user?.photoURL ? (
             <img
               src={profile?.avatar || user?.photoURL}
               alt=""
               className="w-9 h-9 rounded-full object-cover shrink-0"
-              style={{ boxShadow: `0 0 0 2px ${accentLight}` }}
+              style={{ boxShadow: "0 0 0 2px var(--color-accent-light)" }}
             />
           ) : (
             <div
               className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-              style={{ backgroundColor: accentColor }}
+              style={{ backgroundColor: "var(--color-accent)" }}
             >
-              {(profile?.name || user?.displayName || user?.email || "?")[0].toUpperCase()}
+              {avatarInitial}
             </div>
           )}
           <div className="min-w-0 flex-1">
             <p className="type-label-sm text-[--color-text-primary] truncate text-sm leading-tight">
               {profile?.name || user?.displayName || "User"}
             </p>
-            <p className="text-[11px] font-[--font-ui] text-[--color-text-tertiary] truncate capitalize leading-tight mt-0.5">
+            {/* Role badge pill */}
+            <span
+              className={`text-[10px] font-semibold font-[--font-ui] uppercase tracking-wide px-1.5 py-px rounded-full mt-0.5 inline-block ${
+                role === "admin"
+                  ? "bg-[--color-primary] text-white"
+                  : role === "surveyor"
+                    ? "bg-[--color-accent-light] text-[--color-accent-dark]"
+                    : "bg-[--color-bg-inset] text-[--color-text-secondary]"
+              }`}
+            >
               {role || "Member"}
-            </p>
+            </span>
           </div>
         </div>
       </div>
@@ -249,8 +268,7 @@ export default function DashboardLayout() {
                 <NavItem
                   key={item.id}
                   item={item}
-                  accentColor={accentColor}
-                  accentLight={accentLight}
+                  role={role}
                   onNav={() => setMobileOpen(false)}
                 />
               ))}
@@ -267,9 +285,7 @@ export default function DashboardLayout() {
       <div className="px-3 py-4 space-y-1">
         <button
           onClick={() => navigate("/")}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:text-[--color-text-primary] transition-all duration-200 ease-[var(--ease-out-expo)]"
-          onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = "var(--color-bg-subtle)"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = "transparent"; }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:text-[--color-text-primary] hover:bg-[--color-bg-subtle] transition-all duration-200 ease-[var(--ease-out-expo)]"
         >
           <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
             <ArrowLeftIcon className="w-[18px] h-[18px] text-[--color-text-tertiary]" />
@@ -280,15 +296,7 @@ export default function DashboardLayout() {
           onClick={async () => {
             try { await logOut(); } finally { navigate("/"); }
           }}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:text-[--color-error] transition-all duration-200 ease-[var(--ease-out-expo)]"
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "var(--color-error-light)";
-            e.currentTarget.style.color = "var(--color-error)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "transparent";
-            e.currentTarget.style.color = "var(--color-text-secondary)";
-          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium font-[--font-ui] text-[--color-text-secondary] hover:text-[--color-error] hover:bg-[--color-error-light] transition-all duration-200 ease-[var(--ease-out-expo)]"
         >
           <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0">
             <ArrowLeftStartOnRectangleIcon className="w-[18px] h-[18px] text-[--color-text-tertiary]" />
@@ -302,7 +310,10 @@ export default function DashboardLayout() {
   return (
     <div className="flex h-screen bg-[--color-bg-base] overflow-hidden">
       {/* ── Desktop sidebar ───────────────────────────────────────────────── */}
-      <aside className="hidden lg:flex w-64 bg-[--color-bg-surface] flex-col shrink-0" style={{ boxShadow: "1px 0 0 0 var(--color-border), 4px 0 12px -4px rgba(0,0,0,0.04)" }}>
+      <aside
+        className="hidden lg:flex w-64 bg-[--color-bg-surface] flex-col shrink-0"
+        style={{ boxShadow: "1px 0 0 0 var(--color-border), 4px 0 12px -4px rgba(0,0,0,0.04)" }}
+      >
         {sidebarContent}
       </aside>
 
@@ -321,7 +332,7 @@ export default function DashboardLayout() {
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
               className="fixed left-0 top-0 h-full w-64 bg-[--color-bg-surface] z-50 lg:hidden"
               style={{ boxShadow: "4px 0 24px -4px rgba(0,0,0,0.12)" }}
             >

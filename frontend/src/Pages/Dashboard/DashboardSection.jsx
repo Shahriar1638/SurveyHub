@@ -17,6 +17,7 @@ import SurveyorOverview from "./Surveyor/Components/SurveyorOverview";
 import MySurveys from "./Surveyor/Components/MySurveys";
 import CreateSurvey from "./Surveyor/Components/CreateSurvey";
 import AiAnalytics from "./Surveyor/Components/AiAnalytics";
+import AiChat from "./Surveyor/Components/AiChat";
 import BlogStudio from "./Surveyor/Components/BlogStudio";
 import CreateBlog from "./Surveyor/Components/CreateBlog";
 import FeedbackInbox from "./Surveyor/Components/FeedbackInbox";
@@ -46,6 +47,7 @@ const SURVEYOR_SECTIONS = {
   surveys: MySurveys,
   "create-survey": CreateSurvey,
   analytics: AiAnalytics,
+  "analytics-chat": AiChat,
   "blog-studio": BlogStudio,
   "create-blog": CreateBlog,
   "feedback-inbox": FeedbackInbox,

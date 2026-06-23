@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+﻿import { useNavigate } from "react-router";
 import { useMemo } from "react";
 import { motion } from "motion/react";
 import { PencilSquareIcon, TrashIcon } from "@heroicons/react/24/outline";
@@ -10,7 +10,7 @@ export function RoleBadge({ role }) {
       <span
         title="Verified Surveyor"
         className="inline-flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-        style={{ backgroundColor: "var(--color-surveyor-light)", color: "var(--color-surveyor-dark)" }}
+        style={{ backgroundColor: "var(--color-accent-light)", color: "var(--color-accent-dark)" }}
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -24,7 +24,7 @@ export function RoleBadge({ role }) {
       <span
         title="Platform Admin"
         className="inline-flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full"
-        style={{ backgroundColor: "var(--color-admin-light)", color: "var(--color-admin)" }}
+        style={{ backgroundColor: "var(--color-error-light)", color: "var(--color-error)" }}
       >
         <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
           <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -41,10 +41,10 @@ export function Avatar({ author, size = 9 }) {
   const initials = (author?.name || author?.email || "?")[0].toUpperCase();
   const roleColor =
     author?.role === "admin"
-      ? "var(--color-admin)"
+      ? "var(--color-error)"
       : author?.role === "surveyor"
-      ? "var(--color-surveyor-dark)"
-      : "var(--color-user)";
+      ? "var(--color-accent-dark)"
+      : "var(--color-accent)";
   const SIZE_MAP = {
     7: "w-7 h-7",
     8: "w-8 h-8",
@@ -97,10 +97,10 @@ export function ReactionBar({ counts, userReaction, onReact, readonly = false })
               readonly ? "cursor-default" : "cursor-pointer hover:scale-105 active:scale-95"
             } ${isActive ? "ring-2" : ""}`}
             style={{
-              backgroundColor: isActive ? "var(--color-visitor-light)" : "var(--color-bg-subtle)",
-              color: isActive ? "var(--color-visitor-dark)" : "var(--color-text-secondary)",
-              ringColor: isActive ? "var(--color-visitor)" : "transparent",
-              border: isActive ? "1px solid var(--color-visitor)" : "1px solid var(--color-border)",
+              backgroundColor: isActive ? "var(--color-accent-light)" : "var(--color-bg-subtle)",
+              color: isActive ? "var(--color-accent-dark)" : "var(--color-text-secondary)",
+              ringColor: isActive ? "var(--color-accent)" : "transparent",
+              border: isActive ? "1px solid var(--color-accent)" : "1px solid var(--color-border)",
             }}
           >
             <span>{emoji}</span>
@@ -165,7 +165,7 @@ export function BlogCard({ blog, index, onEdit, onDelete }) {
       </div>
 
       {/* Title & excerpt */}
-      <h2 className="type-heading-sm text-[--color-text-primary] mb-2 group-hover:text-[--color-visitor] transition-colors line-clamp-2">
+      <h2 className="type-heading-sm text-[--color-text-primary] mb-2 group-hover:text-[--color-accent] transition-colors line-clamp-2">
         {blog.title}
       </h2>
       <p className="type-body-sm text-[--color-text-secondary] line-clamp-3 mb-4">
@@ -202,7 +202,7 @@ export function BlogCard({ blog, index, onEdit, onDelete }) {
             <button
               onClick={() => onDelete(blog)}
               title="Delete"
-              className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-secondary] hover:text-[--color-admin] transition-colors"
+              className="p-1.5 rounded-md hover:bg-[--color-error-light] text-[--color-text-secondary] hover:text-[--color-error] transition-colors"
             >
               <TrashIcon className="w-4 h-4" />
             </button>

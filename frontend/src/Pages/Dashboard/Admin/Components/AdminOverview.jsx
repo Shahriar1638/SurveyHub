@@ -49,25 +49,21 @@ export default function AdminOverview() {
           title="Total Users"
           value={health.totalUsers?.toLocaleString() || "0"}
           icon={UsersIcon}
-          roleAccent="admin"
         />
         <StatCard
           title="Active Surveyors"
           value={health.activeSurveyors?.toString() || "0"}
           icon={ChartBarSquareIcon}
-          roleAccent="admin"
         />
         <StatCard
           title="Surveys Published (MTD)"
           value={health.surveysPublishedThisMonth?.toString() || "0"}
           icon={ClipboardDocumentListIcon}
-          roleAccent="admin"
         />
         <StatCard
           title="Revenue MTD"
           value={`$${(health.revenueMTD || 0).toLocaleString()}`}
           icon={CurrencyDollarIcon}
-          roleAccent="admin"
         />
       </motion.div>
 
@@ -82,8 +78,8 @@ export default function AdminOverview() {
             <BarChart data={mockRevenueData}>
               <defs>
                 <linearGradient id="adminBarGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#DB3725" stopOpacity={0.9} />
-                  <stop offset="95%" stopColor="#DB3725" stopOpacity={0.4} />
+                  <stop offset="5%" stopColor="#0B3056" stopOpacity={0.9} />
+                  <stop offset="95%" stopColor="#0B3056" stopOpacity={0.4} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
@@ -139,8 +135,8 @@ export default function AdminOverview() {
       {(overview?.pendingReports > 0 || overview?.investigatingReports > 0) && (
         <motion.div variants={item} className="admin-notice-banner">
           <div className="flex items-center gap-2">
-            <ExclamationTriangleIcon className="w-5 h-5" style={{ color: "var(--color-admin)" }} />
-            <p className="type-body-sm text-[--color-admin] font-medium">
+            <ExclamationTriangleIcon className="w-5 h-5" style={{ color: "var(--color-error)" }} />
+            <p className="type-body-sm font-medium" style={{ color: "var(--color-error)" }}>
               {overview.pendingReports} pending and {overview.investigatingReports} investigating reports require attention.
             </p>
           </div>

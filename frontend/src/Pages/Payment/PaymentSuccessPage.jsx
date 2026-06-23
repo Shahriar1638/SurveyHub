@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useSearchParams, Link } from "react-router";
 import { motion } from "motion/react";
 import { PageTransition } from "../../Components/UI/PageTransition";
@@ -69,7 +69,7 @@ export default function PaymentSuccessPage() {
             </h1>
             <p className="type-body-sm text-[--color-text-secondary] mb-6">
               Your account has been upgraded to{" "}
-              <span className="font-semibold" style={{ color: "var(--color-surveyor-dark)" }}>
+              <span className="font-semibold" style={{ color: "var(--color-accent-dark)" }}>
                 Surveyor
               </span>{" "}
               and your credits have been added.
@@ -78,15 +78,15 @@ export default function PaymentSuccessPage() {
             {details && (
               <div
                 className="rounded-xl px-6 py-4 mb-6 text-center"
-                style={{ backgroundColor: "var(--color-surveyor-light)" }}
+                style={{ backgroundColor: "var(--color-accent-light)" }}
               >
                 <div
                   className="font-[--font-mono] text-4xl font-bold mb-1"
-                  style={{ color: "var(--color-surveyor-dark)" }}
+                  style={{ color: "var(--color-accent-dark)" }}
                 >
                   +{details.credits ?? 0}
                 </div>
-                <div className="type-body-sm font-medium" style={{ color: "var(--color-surveyor-dark)" }}>
+                <div className="type-body-sm font-medium" style={{ color: "var(--color-accent-dark)" }}>
                   credits added to your wallet
                 </div>
                 <div className="type-meta text-[--color-text-tertiary] mt-1">

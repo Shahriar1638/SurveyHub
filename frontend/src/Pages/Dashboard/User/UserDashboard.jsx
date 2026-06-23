@@ -1,4 +1,4 @@
-import { useContext } from "react";
+﻿import { useContext } from "react";
 import { Link, useLocation } from "react-router";
 import { AuthContext } from "../../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../../Hooks/useProfile";
@@ -25,7 +25,7 @@ export default function UserDashboard({ children }) {
           </p>
         </div>
         {activeSection === "overview" && (
-          <Link to="/dashboard/participation" className="btn btn-user btn-md font-semibold text-white flex items-center gap-2">
+          <Link to="/dashboard/participation" className="btn btn-primary btn-md font-semibold text-white flex items-center gap-2">
             View History
           </Link>
         )}

@@ -1,4 +1,4 @@
-import { useState, useContext, useCallback } from "react";
+﻿import { useState, useContext, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
@@ -27,16 +27,16 @@ const FEEDBACK_TYPES = [
     label: "General Feedback",
     icon: "💬",
     description: "Share your thoughts or experience",
-    color: "var(--color-visitor)",
-    light: "var(--color-visitor-light)",
+    color: "var(--color-accent)",
+    light: "var(--color-accent-light)",
   },
   {
     value: "complaint",
     label: "Complaint",
     icon: "🚨",
     description: "Report a serious issue or concern",
-    color: "var(--color-admin)",
-    light: "var(--color-admin-light)",
+    color: "var(--color-error)",
+    light: "var(--color-error-light)",
   },
 ];
 
@@ -277,8 +277,8 @@ function FeedbackForm() {
             <div
               className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-4"
               style={{
-                backgroundColor: "var(--color-visitor-light)",
-                color: "var(--color-visitor-dark)",
+                backgroundColor: "var(--color-accent-light)",
+                color: "var(--color-accent-dark)",
               }}
             >
               <svg
@@ -458,7 +458,7 @@ function FeedbackForm() {
                 {files.length < 3 && (
                   <label
                     htmlFor="feedback-attachments"
-                    className="mt-1 flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-[--color-border] rounded-xl cursor-pointer hover:border-[--color-visitor] hover:bg-[--color-visitor-light] transition-all duration-150"
+                    className="mt-1 flex flex-col items-center justify-center gap-2 p-6 border-2 border-dashed border-[--color-border] rounded-xl cursor-pointer hover:border-[--color-accent] hover:bg-[--color-accent-light] transition-all duration-150"
                   >
                     <svg
                       className="w-8 h-8 text-[--color-text-tertiary]"
@@ -632,7 +632,7 @@ function FeedbackForm() {
                       <p className="type-label-sm text-[--color-text-primary]">
                         {item.label}
                       </p>
-                      <p className="type-body-sm text-[--color-visitor]">
+                      <p className="type-body-sm text-[--color-accent]">
                         {item.value}
                       </p>
                     </div>
@@ -656,8 +656,8 @@ function FeedbackForm() {
                     <span
                       className="type-meta-sm font-bold px-2 py-0.5 rounded-md shrink-0"
                       style={{
-                        backgroundColor: "var(--color-visitor-light)",
-                        color: "var(--color-visitor-dark)",
+                        backgroundColor: "var(--color-accent-light)",
+                        color: "var(--color-accent-dark)",
                       }}
                     >
                       {item.step}

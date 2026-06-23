@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 
 import { useMemo } from "react";
 import {
@@ -13,16 +13,16 @@ import { SortHeader } from "./ModerationShared";
 
 const STATUS_STYLES = {
   pending: "bg-[--color-warning]/10 text-[--color-warning] border-[--color-warning]/20",
-  investigating: "bg-[--color-admin]/10 text-[--color-admin] border-[--color-admin]/20",
+  investigating: "bg-[--color-error]/10 text-[--color-error] border-[--color-error]/20",
   resolved: "bg-[--color-success]/10 text-[--color-success] border-[--color-success]/20",
   dismissed: "bg-[--color-bg-inset] text-[--color-text-tertiary] border-[--color-border]",
 };
 
 const TYPE_STYLES = {
-  survey: "bg-[--color-surveyor]/10 text-[--color-surveyor] border-[--color-surveyor]/20",
-  blog: "bg-[--color-visitor]/10 text-[--color-visitor] border-[--color-visitor]/20",
+  survey: "bg-[--color-accent]/10 text-[--color-accent] border-[--color-accent]/20",
+  blog: "bg-[--color-accent]/10 text-[--color-accent] border-[--color-accent]/20",
   comment: "bg-[--color-info]/10 text-[--color-info] border-[--color-info]/20",
-  reply: "bg-[--color-user]/10 text-[--color-user] border-[--color-user]/20",
+  reply: "bg-[--color-accent]/10 text-[--color-accent] border-[--color-accent]/20",
 };
 
 function getReportType(r) {

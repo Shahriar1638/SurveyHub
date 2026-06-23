@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { useState, useContext, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router";
 import { useQueryClient } from "@tanstack/react-query";
@@ -189,7 +189,7 @@ export default function BlogDetailPage() {
                     onClick={handlePostComment}
                     disabled={commentMutation.isPending || !commentText.trim()}
                     className="btn btn-sm font-semibold text-white px-4 py-2 rounded-lg disabled:opacity-50 flex items-center gap-2"
-                    style={{ backgroundColor: "var(--color-visitor)" }}
+                    style={{ backgroundColor: "var(--color-accent)" }}
                   >
                     {commentMutation.isPending ? (
                       <>

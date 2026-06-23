@@ -1,4 +1,4 @@
-import { useContext } from "react";
+﻿import { useContext } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
@@ -106,7 +106,7 @@ export default function AdminHome() {
             </p>
           </div>
           {reports.length > 0 && (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg type-meta font-medium text-white bg-[--color-admin]">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg type-meta font-medium text-white bg-[--color-error]">
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
               {reports.length} pending reports
             </span>
@@ -153,12 +153,12 @@ export default function AdminHome() {
           SECTION 3 — System Notices (conditional)
       ══════════════════════════════════════════════════ */}
       {systemNotices.length > 0 && (
-        <section className="py-6 bg-[--color-admin-light]">
+        <section className="py-6 bg-[--color-error-light]">
           <div className="container-app mx-auto flex flex-col gap-2">
             {systemNotices.map((notice, i) => (
-              <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl border-l-4 border-l-[--color-admin] bg-white">
+              <div key={i} className="flex items-start gap-3 px-4 py-3 rounded-xl border-l-4 border-l-[--color-error] bg-white">
                 <svg
-                  className="w-4 h-4 mt-0.5 shrink-0 text-[--color-admin]"
+                  className="w-4 h-4 mt-0.5 shrink-0 text-[--color-error]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -170,7 +170,7 @@ export default function AdminHome() {
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   />
                 </svg>
-                <p className="type-body-sm text-[--color-admin]">
+                <p className="type-body-sm text-[--color-error]">
                   {notice.message || notice}
                 </p>
               </div>
@@ -208,7 +208,7 @@ export default function AdminHome() {
               >
                 {reports.slice(0, 5).map((r) => (
                   <motion.div key={r._id} variants={itemVariants}>
-                    <Card hover className="border-l-4 border-l-[--color-admin]">
+                    <Card hover className="border-l-4 border-l-[--color-error]">
                       <CardBody className="p-4 flex items-center justify-between gap-4">
                         <div className="min-w-0">
                           <div className="flex items-center gap-2 mb-1 flex-wrap">
@@ -301,7 +301,7 @@ export default function AdminHome() {
                         </div>
                         <Link
                           to={`/survey-approval/${s._id}`}
-                          className="btn btn-sm shrink-0 bg-[--color-admin-light] text-[--color-admin]"
+                          className="btn btn-sm shrink-0 bg-[--color-error-light] text-[--color-error]"
                         >
                           Review
                         </Link>
@@ -369,7 +369,7 @@ export default function AdminHome() {
                           className="w-8 h-8 rounded-full object-cover"
                         />
                       ) : (
-                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-[--color-admin]">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white bg-[--color-error]">
                           {(u.name || u.email || "?")[0].toUpperCase()}
                         </div>
                       )}

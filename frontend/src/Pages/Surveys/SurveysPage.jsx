@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useContext } from "react";
+﻿import { useState, useCallback, useEffect, useContext } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import useSurveys from "../../Hooks/useSurveys";
@@ -29,7 +29,7 @@ function questionLengthLabel(count) {
     };
   return {
     label: "Long",
-    className: "bg-[--color-user-light] text-[--color-user]",
+    className: "bg-[--color-accent-light] text-[--color-accent]",
   };
 }
 
@@ -169,7 +169,7 @@ function SurveyListCard({ survey, user, profile }) {
         {!user ? (
           <Link
             to="/login"
-            className="btn btn-sm text-[0.75rem] py-1.5 px-3.5 bg-[--color-visitor] text-white hover:bg-[--color-visitor-dark]"
+            className="btn btn-sm text-[0.75rem] py-1.5 px-3.5 bg-[--color-accent] text-white hover:bg-[--color-accent-dark]"
           >
             Login to participate
           </Link>
@@ -197,7 +197,7 @@ function SurveyListCard({ survey, user, profile }) {
         ) : (
           <Link
             to={`/surveys/${survey._id}`}
-            className="btn btn-sm btn-primary text-white bg-[--color-visitor] hover:bg-[--color-visitor-dark] text-[0.75rem] py-1.5 px-3.5"
+            className="btn btn-sm btn-primary text-white bg-[--color-accent] hover:bg-[--color-accent-dark] text-[0.75rem] py-1.5 px-3.5"
           >
             Take Survey
           </Link>
@@ -284,7 +284,7 @@ function FilterSidebar({ filters, onChange, categories, onReset }) {
         {hasActiveFilters && (
           <button
             onClick={onReset}
-            className="type-body-sm text-[--color-visitor] hover:underline"
+            className="type-body-sm text-[--color-accent] hover:underline"
           >
             Reset all
           </button>
@@ -345,7 +345,7 @@ function FilterSidebar({ filters, onChange, categories, onReset }) {
               onClick={() => onChange("length", opt.value)}
               className={`text-left px-3 py-2 rounded-lg type-body-sm transition-colors duration-150 ${
                 filters.length === opt.value
-                  ? "bg-[--color-visitor-light] text-[--color-visitor-dark] font-semibold"
+                  ? "bg-[--color-accent-light] text-[--color-accent-dark] font-semibold"
                   : "text-[--color-text-secondary] hover:bg-[--color-bg-subtle]"
               }`}
             >
@@ -365,7 +365,7 @@ function FilterSidebar({ filters, onChange, categories, onReset }) {
               onClick={() => onChange("statusFilter", opt.value)}
               className={`text-left px-3 py-2 rounded-lg type-body-sm transition-colors duration-150 ${
                 filters.statusFilter === opt.value
-                  ? "bg-[--color-visitor-light] text-[--color-visitor-dark] font-semibold"
+                  ? "bg-[--color-accent-light] text-[--color-accent-dark] font-semibold"
                   : "text-[--color-text-secondary] hover:bg-[--color-bg-subtle]"
               }`}
             >
@@ -445,7 +445,7 @@ export default function SurveysPage() {
       <div className="border-b border-[--color-border] bg-[--color-bg-surface]">
         <div className="container-marketing py-8">
           <div className="flex flex-col gap-1">
-            <p className="type-meta text-[--color-visitor] uppercase tracking-widest">
+            <p className="type-meta text-[--color-accent] uppercase tracking-widest">
               Explore
             </p>
             <h1 className="type-heading-xl text-[--color-text-primary]">
@@ -724,7 +724,7 @@ export default function SurveysPage() {
 // ── FilterChip ────────────────────────────────────────────────────────────────
 function FilterChip({ label, onRemove }) {
   return (
-    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[--color-visitor-light] text-[--color-visitor-dark] type-body-sm font-medium">
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[--color-accent-light] text-[--color-accent-dark] type-body-sm font-medium">
       {label}
       <button
         onClick={onRemove}

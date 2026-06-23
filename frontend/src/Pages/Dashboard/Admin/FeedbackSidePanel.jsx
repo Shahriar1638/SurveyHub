@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { motion } from "motion/react";
 import {
   XMarkIcon,
@@ -68,7 +68,7 @@ export default function FeedbackSidePanel({ ticket, onClose }) {
         {/* Header */}
         <div className="side-panel-header">
           <div className="flex items-center gap-2">
-            <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-[--color-admin]" />
+            <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-[--color-error]" />
             <h3 className="type-heading-sm text-[--color-text-primary]">
               Support Ticket
             </h3>
@@ -139,7 +139,7 @@ export default function FeedbackSidePanel({ ticket, onClose }) {
                       href={url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-[--color-admin] underline hover:no-underline"
+                      className="text-xs text-[--color-error] underline hover:no-underline"
                     >
                       Screenshot {i + 1}
                     </a>
@@ -153,10 +153,10 @@ export default function FeedbackSidePanel({ ticket, onClose }) {
 
           {/* Previous admin response */}
           {hasExistingResponse && (
-            <div className="p-4 bg-[--color-admin-light]/30 border border-[--color-admin-light] rounded-lg">
+            <div className="p-4 bg-[--color-error-light]/30 border border-[--color-error-light] rounded-lg">
               <div className="flex items-center gap-2 mb-1.5">
-                <CheckCircleIcon className="w-4 h-4 text-[--color-admin]" />
-                <span className="type-label-sm text-[--color-admin] font-bold">Previous Admin Response</span>
+                <CheckCircleIcon className="w-4 h-4 text-[--color-error]" />
+                <span className="type-label-sm text-[--color-error] font-bold">Previous Admin Response</span>
               </div>
               <p className="type-body-sm text-[--color-text-primary] italic">
                 &ldquo;{ticket.adminResponse.message}&rdquo;
@@ -211,7 +211,7 @@ export default function FeedbackSidePanel({ ticket, onClose }) {
             onClick={handleSubmit}
             disabled={!message.trim() || updateFeedback.isPending}
             className="btn btn-sm font-semibold text-white px-4 py-2 rounded-lg disabled:opacity-50 flex items-center gap-1.5"
-            style={{ backgroundColor: "var(--color-admin)" }}
+            style={{ backgroundColor: "var(--color-error)" }}
           >
             {updateFeedback.isPending ? (
               <span className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars */
+﻿/* eslint-disable no-unused-vars */
 import { useState } from "react";
 import { motion } from "motion/react";
 import { MegaphoneIcon } from "@heroicons/react/24/outline";
@@ -110,7 +110,7 @@ export default function BroadcastControl() {
             onClick={handleSend}
             disabled={!title.trim() || !message.trim() || broadcastMutation.isPending}
             className="btn btn-md font-semibold text-white px-6 disabled:opacity-50 flex items-center gap-2"
-            style={{ backgroundColor: "var(--color-admin)" }}
+            style={{ backgroundColor: "var(--color-error)" }}
           >
             {broadcastMutation.isPending ? (
               <>

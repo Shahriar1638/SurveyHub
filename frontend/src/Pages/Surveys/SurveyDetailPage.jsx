@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect, useCallback, useRef } from "react";
+﻿import { useState, useContext, useEffect, useCallback, useRef } from "react";
 import { useParams, useNavigate, Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
@@ -28,7 +28,7 @@ function ProgressBar({ answered, total }) {
       <div className="flex-1 h-2 rounded-full bg-[--color-bg-inset] overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ backgroundColor: "var(--color-visitor)" }}
+          style={{ backgroundColor: "var(--color-accent)" }}
           initial={{ width: 0 }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
@@ -174,7 +174,7 @@ export default function SurveyDetailPage() {
       <PageTransition>
         <div className="min-h-screen flex items-center justify-center">
           <div className="flex flex-col items-center gap-3">
-            <div className="spinner w-8 h-8 text-[--color-visitor]" />
+            <div className="spinner w-8 h-8 text-[--color-accent]" />
             <p className="type-body-sm text-[--color-text-tertiary]">Loading survey…</p>
           </div>
         </div>
@@ -236,7 +236,7 @@ export default function SurveyDetailPage() {
             </button>
             <Link
               to="/blogs"
-              className="btn btn-primary btn-md bg-[--color-visitor] text-white hover:bg-[--color-visitor-dark]"
+              className="btn btn-primary btn-md bg-[--color-accent] text-white hover:bg-[--color-accent-dark]"
             >
               Explore Blogs
             </Link>
@@ -380,13 +380,13 @@ export default function SurveyDetailPage() {
               </div>
             )}
             {!user && !isExpired && (
-              <div className="mt-5 p-4 rounded-lg border flex items-center justify-between gap-3 bg-[--color-visitor-light] border-[--color-visitor]">
-                <p className="type-body-sm text-[--color-visitor-dark]">
+              <div className="mt-5 p-4 rounded-lg border flex items-center justify-between gap-3 bg-[--color-accent-light] border-[--color-accent]">
+                <p className="type-body-sm text-[--color-accent-dark]">
                   Sign in to participate in this survey and save your progress.
                 </p>
                 <Link
                   to="/login"
-                  className="btn btn-sm text-white shrink-0 bg-[--color-visitor] hover:bg-[--color-visitor-dark]"
+                  className="btn btn-sm text-white shrink-0 bg-[--color-accent] hover:bg-[--color-accent-dark]"
                 >
                   Sign In
                 </Link>
@@ -445,7 +445,7 @@ export default function SurveyDetailPage() {
               <button
                 onClick={handleSubmit}
                 disabled={submitMutation.isPending}
-                className="btn btn-lg font-semibold text-white px-8 py-3 rounded-xl flex items-center gap-2 disabled:opacity-60 transition-all bg-[--color-visitor] hover:bg-[--color-visitor-dark]"
+                className="btn btn-lg font-semibold text-white px-8 py-3 rounded-xl flex items-center gap-2 disabled:opacity-60 transition-all bg-[--color-accent] hover:bg-[--color-accent-dark]"
               >
                 {submitMutation.isPending ? (
                   <>

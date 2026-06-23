@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { motion } from "motion/react";
 import {
   XMarkIcon,
@@ -15,28 +15,28 @@ const SURVEY_ACTIONS = [
   { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
   { value: "Surveyor Warned", label: "Warn Surveyor", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
   { value: "Survey Deleted", label: "Delete Survey", icon: TrashIcon, color: "var(--color-error)" },
-  { value: "Surveyor Banned", label: "Ban Surveyor", icon: NoSymbolIcon, color: "var(--color-admin)" },
+  { value: "Surveyor Banned", label: "Ban Surveyor", icon: NoSymbolIcon, color: "var(--color-error)" },
 ];
 
 const BLOG_ACTIONS = [
   { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
   { value: "Author Warned", label: "Warn Author", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
   { value: "Blog Deleted", label: "Delete Blog", icon: TrashIcon, color: "var(--color-error)" },
-  { value: "Author Banned", label: "Ban Author", icon: NoSymbolIcon, color: "var(--color-admin)" },
+  { value: "Author Banned", label: "Ban Author", icon: NoSymbolIcon, color: "var(--color-error)" },
 ];
 
 const COMMENT_ACTIONS = [
   { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
   { value: "Commenter Warned", label: "Warn Commenter", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
   { value: "Comment Deleted", label: "Delete Comment", icon: TrashIcon, color: "var(--color-error)" },
-  { value: "Commenter Banned", label: "Ban Commenter", icon: NoSymbolIcon, color: "var(--color-admin)" },
+  { value: "Commenter Banned", label: "Ban Commenter", icon: NoSymbolIcon, color: "var(--color-error)" },
 ];
 
 const REPLY_ACTIONS = [
   { value: "None", label: "No Action", icon: CheckCircleIcon, color: "var(--color-text-secondary)" },
   { value: "Commenter Warned", label: "Warn Commenter", icon: ExclamationTriangleIcon, color: "var(--color-warning)" },
   { value: "Reply Deleted", label: "Delete Reply", icon: TrashIcon, color: "var(--color-error)" },
-  { value: "Commenter Banned", label: "Ban Commenter", icon: NoSymbolIcon, color: "var(--color-admin)" },
+  { value: "Commenter Banned", label: "Ban Commenter", icon: NoSymbolIcon, color: "var(--color-error)" },
 ];
 
 const ACTIONS_BY_TYPE = {
@@ -98,7 +98,7 @@ export default function ReportSidePanel({ report, onClose }) {
           <div className="flex items-center gap-2">
             <ShieldExclamationIcon
               className="w-5 h-5"
-              style={{ color: "var(--color-admin)" }}
+              style={{ color: "var(--color-error)" }}
             />
             <h3 className="type-heading-sm text-[--color-text-primary]">
               Investigate Report
@@ -255,7 +255,7 @@ export default function ReportSidePanel({ report, onClose }) {
             onClick={handleSubmit}
             disabled={updateReport.isPending}
             className="btn btn-sm font-semibold text-white px-4 py-2 rounded-lg disabled:opacity-50"
-            style={{ backgroundColor: "var(--color-admin)" }}
+            style={{ backgroundColor: "var(--color-error)" }}
           >
             {updateReport.isPending ? (
               <span className="flex items-center gap-2">

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useContext } from "react";
+﻿import { useEffect, useRef, useContext } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
@@ -53,8 +53,8 @@ export default function BlogsPage() {
               <span
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider mb-3"
                 style={{
-                  backgroundColor: "var(--color-visitor-light)",
-                  color: "var(--color-visitor-dark)",
+                  backgroundColor: "var(--color-accent-light)",
+                  color: "var(--color-accent-dark)",
                 }}
               >
                 <svg

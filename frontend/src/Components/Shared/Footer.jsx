@@ -5,86 +5,109 @@ const YEAR = new Date().getFullYear();
 
 export function Footer() {
   return (
-    <footer className="border-t border-[--color-border] bg-[--color-bg-surface] py-12 mt-auto">
+    <footer className="py-12 mt-auto" style={{ backgroundColor: "var(--color-primary)" }}>
       <div className="container-app mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8">
         <div className="flex flex-col gap-4">
           <Link to="/" className="flex items-center gap-2">
             <img src={logo} alt="SurveyHub" className="h-8 w-8 rounded-lg object-cover" />
-            <span className="type-heading-sm text-[--color-text-primary]">
+            <span className="type-heading-sm tracking-tight" style={{ color: "white" }}>
               SurveyHub
             </span>
           </Link>
-          <p className="type-body-sm text-[--color-text-secondary]">
+          <p className="type-body-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
             Turn survey responses into AI-powered stories. Create, collect, and
             publish insights fast.
           </p>
         </div>
 
         <div className="flex flex-col gap-3">
-          <h4 className="type-heading-sm text-[--color-text-primary]">
+          <h4 className="type-heading-sm" style={{ color: "white" }}>
             Platform
           </h4>
           <Link
             to="/surveys"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Explore Surveys
           </Link>
           <Link
             to="/insights"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Insights Hub
           </Link>
           <Link
             to="/pricing"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Pricing
           </Link>
         </div>
 
         <div className="flex flex-col gap-3">
-          <h4 className="type-heading-sm text-[--color-text-primary]">Roles</h4>
+          <h4 className="type-heading-sm" style={{ color: "white" }}>Roles</h4>
           <Link
             to="/sign-up"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Become a Surveyor
           </Link>
           <Link
             to="/login"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Participant Login
           </Link>
         </div>
 
         <div className="flex flex-col gap-3">
-          <h4 className="type-heading-sm text-[--color-text-primary]">Legal</h4>
+          <h4 className="type-heading-sm" style={{ color: "white" }}>Legal</h4>
           <Link
             to="/terms"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Terms of Service
           </Link>
           <Link
             to="/privacy"
-            className="type-body-sm text-[--color-text-secondary] hover:text-[--color-text-primary]"
+            className="type-body-sm transition-colors"
+            style={{ color: "rgba(255,255,255,0.6)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.6)")}
           >
             Privacy Policy
           </Link>
         </div>
       </div>
 
-      <div className="container-app mx-auto px-4 mt-12 pt-8 border-t border-[--color-border] flex flex-col md:flex-row items-center justify-between gap-4">
-        <p className="type-meta text-[--color-text-tertiary]">
+      <div className="container-app mx-auto px-4 mt-12 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+        <p className="type-meta" style={{ color: "rgba(255,255,255,0.4)" }}>
           &copy; {YEAR} SurveyHub. All rights reserved.
         </p>
         <div className="flex items-center gap-4">
           <a
             href="#"
-            className="text-[--color-text-tertiary] hover:text-[--color-text-primary]"
+            style={{ color: "rgba(255,255,255,0.4)" }}
+            onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
+            onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.4)")}
           >
             <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
               <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />

@@ -53,8 +53,9 @@ function startExpiryWorker() {
         survey.aiInsight.stats = stats;
         console.log(`[ExpiryWorker] Stats aggregated: ${stats.totalResponses} responses, ${stats.perQuestion.length} questions`);
 
-        // 3. Generate AI insights
-        if (stats.totalResponses > 0) {
+        // 3. Generate AI insights (only if autoGenerate is enabled)
+        const autoGen = survey.aiInsight?.autoGenerate;
+        if (autoGen && stats.totalResponses > 0) {
           try {
             const insights = await generateInsights(survey, stats);
             if (insights) {
@@ -116,7 +117,7 @@ async function scheduleExpiry(surveyId, deadline) {
     return null;
   }
 
-  const jobId = `survey:${surveyId}`;
+  const jobId = `survey-${surveyId}`;
 
   // Remove any existing job for this survey first
   try {
@@ -136,7 +137,7 @@ async function scheduleExpiry(surveyId, deadline) {
 
 // ── Helper: remove expiry job ────────────────────────────────────────────────
 async function removeExpiryJob(surveyId) {
-  const jobId = `survey:${surveyId}`;
+  const jobId = `survey-${surveyId}`;
   try {
     const existingJob = await expiryQueue.getJob(jobId);
     if (existingJob) {
@@ -168,7 +169,7 @@ async function reScheduleAll() {
         // Deadline already passed — expire immediately via a zero-delay job
         await expiryQueue.add('expire-survey', { surveyId: s._id }, {
           delay: 0,
-          jobId: `survey:${s._id}`,
+          jobId: `survey-${s._id}`,
         });
         scheduled++;
       }

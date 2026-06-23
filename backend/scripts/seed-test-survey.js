@@ -15,9 +15,9 @@ const Survey = require('../models/Survey');
 const Response = require('../models/response');
 
 const SURVEYOR_ID = '6a057f325e1ef28d44f1a372';
-const OLD_SURVEY_ID = '6a37823d2ce4f28ed56c13dc';
+const OLD_SURVEY_ID = '6a3a062d877b3b4533c652ac';
 
-const deadline = new Date(Date.now() + 3.5 * 60 * 60 * 1000);
+const deadline = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now for quick testing
 
 const surveyData = {
   surveyorId: SURVEYOR_ID,
@@ -26,10 +26,11 @@ const surveyData = {
   useCase: 'Product improvement and customer retention analysis',
   category: 'Customer Feedback',
   resultAccess: 'everyone',
-  deadline: deadline.toISOString().split('T')[0],
+  deadline: deadline.toISOString(), // Full ISO string with time for precise expiry scheduling
   status: 'published',
   publishedAt: new Date(),
   participantCount: 0,
+  aiInsight: { autoGenerate: true },
   moderation: {
     decision: 'approved',
     reason: 'Passed automated moderation',

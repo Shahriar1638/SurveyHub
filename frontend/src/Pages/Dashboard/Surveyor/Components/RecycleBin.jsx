@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 import { motion } from "motion/react";
 import {
   ArrowPathIcon,
@@ -100,8 +100,8 @@ export default function RecycleBin() {
               key={survey._id}
               className="card p-4 flex items-center gap-4 hover:shadow-[--shadow-md] transition-shadow"
             >
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-[--color-admin-light]">
-                <TrashIcon className="w-5 h-5 text-[--color-admin]" />
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 bg-[--color-error-light]">
+                <TrashIcon className="w-5 h-5 text-[--color-error]" />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -144,7 +144,7 @@ export default function RecycleBin() {
                   <button
                     onClick={() => handlePermanentDelete(survey)}
                     disabled={deleteSurvey.isPending}
-                    className="btn btn-sm bg-[--color-admin-light] text-[--color-admin] hover:bg-[--color-admin]/20 border-none flex items-center gap-1.5"
+                    className="btn btn-sm bg-[--color-error-light] text-[--color-error] hover:bg-[--color-error]/20 border-none flex items-center gap-1.5"
                   >
                     <TrashIcon className="w-4 h-4" />
                     Delete

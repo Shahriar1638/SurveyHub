@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef, useContext } from "react";
+﻿import { useState, useEffect, useCallback, useRef, useContext } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import {
@@ -162,14 +162,14 @@ function QuestionEditor({ question, onSave, onCancel }) {
                       className="form-input flex-1"
                     />
                     {options.length > 1 && (
-                      <button onClick={() => handleRemoveOption(idx)} className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-tertiary] hover:text-[--color-admin] transition-colors">
+                      <button onClick={() => handleRemoveOption(idx)} className="p-1.5 rounded-md hover:bg-[--color-error-light] text-[--color-text-tertiary] hover:text-[--color-error] transition-colors">
                         <TrashIcon className="w-4 h-4" />
                       </button>
                     )}
                   </div>
                 ))}
               </div>
-              <button onClick={handleAddOption} className="mt-2 text-xs font-medium text-[--color-surveyor] hover:text-[--color-surveyor-dark] flex items-center gap-1 transition-colors">
+              <button onClick={handleAddOption} className="mt-2 text-xs font-medium text-[--color-accent] hover:text-[--color-accent-dark] flex items-center gap-1 transition-colors">
                 <PlusIcon className="w-3.5 h-3.5" />
                 Add Option
               </button>
@@ -254,7 +254,7 @@ function QuestionEditor({ question, onSave, onCancel }) {
                       />
                       <button
                         onClick={() => setScaleItems(scaleItems.filter((_, i) => i !== idx))}
-                        className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-tertiary] hover:text-[--color-admin] transition-colors"
+                        className="p-1.5 rounded-md hover:bg-[--color-error-light] text-[--color-text-tertiary] hover:text-[--color-error] transition-colors"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </button>
@@ -263,7 +263,7 @@ function QuestionEditor({ question, onSave, onCancel }) {
                 </div>
                 <button
                   onClick={() => setScaleItems([...scaleItems, ""])}
-                  className="mt-2 text-xs font-medium text-[--color-surveyor] hover:text-[--color-surveyor-dark] flex items-center gap-1 transition-colors"
+                  className="mt-2 text-xs font-medium text-[--color-accent] hover:text-[--color-accent-dark] flex items-center gap-1 transition-colors"
                 >
                   <PlusIcon className="w-3.5 h-3.5" />
                   Add Item
@@ -307,7 +307,7 @@ function QuestionEditor({ question, onSave, onCancel }) {
               type="checkbox"
               checked={required}
               onChange={(e) => setRequired(e.target.checked)}
-              className="w-4 h-4 rounded border-[--color-border] text-[--color-surveyor] focus:ring-[--color-surveyor]/30"
+              className="w-4 h-4 rounded border-[--color-border] text-[--color-accent] focus:ring-[--color-accent]/30"
             />
             <span className="type-body-sm text-[--color-text-primary]">Required</span>
           </label>
@@ -315,7 +315,7 @@ function QuestionEditor({ question, onSave, onCancel }) {
 
         <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-[--color-border]">
           <button onClick={onCancel} className="btn btn-secondary btn-sm">Cancel</button>
-          <button onClick={handleSave} disabled={!label.trim()} className="btn btn-surveyor btn-sm text-white disabled:opacity-50">
+          <button onClick={handleSave} disabled={!label.trim()} className="btn btn-primary btn-sm text-white disabled:opacity-50">
             Save Question
           </button>
         </div>
@@ -477,11 +477,11 @@ export default function CreateSurvey() {
 
   const handleSaveDraft = useCallback(async () => {
     if (!title.trim()) {
-      Swal.fire({ icon: "warning", title: "Title required", text: "Please enter a survey title before saving.", confirmButtonColor: "var(--color-surveyor)" });
+      Swal.fire({ icon: "warning", title: "Title required", text: "Please enter a survey title before saving.", confirmButtonColor: "var(--color-accent)" });
       return;
     }
     if (!deadline) {
-      Swal.fire({ icon: "warning", title: "Deadline required", text: "Please set a deadline before saving.", confirmButtonColor: "var(--color-surveyor)" });
+      Swal.fire({ icon: "warning", title: "Deadline required", text: "Please set a deadline before saving.", confirmButtonColor: "var(--color-accent)" });
       return;
     }
     try {
@@ -495,7 +495,7 @@ export default function CreateSurvey() {
       showSavedIndicator();
       Swal.fire({ icon: "success", title: "Draft Saved", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Save Failed", text: err?.response?.data?.message || "Could not save draft.", confirmButtonColor: "var(--color-admin)" });
+      Swal.fire({ icon: "error", title: "Save Failed", text: err?.response?.data?.message || "Could not save draft.", confirmButtonColor: "var(--color-error)" });
     }
   }, [title, deadline, savedSurveyId, buildPayload, createMutation, updateMutation, showSavedIndicator]);
 
@@ -508,7 +508,7 @@ export default function CreateSurvey() {
       showCancelButton: true,
       confirmButtonText: "Publish",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "var(--color-surveyor)",
+      confirmButtonColor: "var(--color-accent)",
     });
     if (!result.isConfirmed) return;
 
@@ -523,7 +523,7 @@ export default function CreateSurvey() {
       // Rejected by moderation — saved as rejected, show warning
       if (res?.moderation?.decision === 'rejected') {
         setModerationInfo(res.moderation);
-        Swal.fire({ icon: "warning", title: "Content Rejected", text: res.moderation.message || "Your survey was flagged by AI moderation. Saved as rejected.", confirmButtonColor: "var(--color-surveyor)" });
+        Swal.fire({ icon: "warning", title: "Content Rejected", text: res.moderation.message || "Your survey was flagged by AI moderation. Saved as rejected.", confirmButtonColor: "var(--color-accent)" });
       } else {
         Swal.fire({ icon: "success", title: "Survey Published!", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
         navigate("/dashboard/surveys");
@@ -534,7 +534,7 @@ export default function CreateSurvey() {
         Swal.fire({ icon: "warning", title: "AI limit reached", text: "Try again after 24 hours. Survey saved as draft.", timer: 4000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
         navigate("/dashboard/surveys");
       } else {
-        Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish survey.", confirmButtonColor: "var(--color-admin)" });
+        Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish survey.", confirmButtonColor: "var(--color-error)" });
       }
     }
   }, [canPublish, title, questions, savedSurveyId, buildPayload, createMutation, updateMutation, navigate]);
@@ -671,14 +671,14 @@ export default function CreateSurvey() {
                       <button onClick={(e) => { e.stopPropagation(); handleMoveQuestion(idx, 1); }} className="p-1 rounded hover:bg-[--color-bg-subtle] text-[--color-text-tertiary]" disabled={idx === questions.length - 1}>
                         <ArrowDownIcon className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={(e) => { e.stopPropagation(); handleDeleteQuestion(idx); }} className="p-1 rounded hover:bg-[--color-admin-light] text-[--color-text-tertiary] hover:text-[--color-admin]">
+                      <button onClick={(e) => { e.stopPropagation(); handleDeleteQuestion(idx); }} className="p-1 rounded hover:bg-[--color-error-light] text-[--color-text-tertiary] hover:text-[--color-error]">
                         <TrashIcon className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </motion.div>
                 ))}
               </div>
-              <button onClick={handleAddQuestion} className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-[--color-surveyor] text-[--color-surveyor] text-sm font-medium hover:bg-[--color-surveyor-light] transition-colors">
+              <button onClick={handleAddQuestion} className="mt-3 w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg border border-dashed border-[--color-accent] text-[--color-accent] text-sm font-medium hover:bg-[--color-accent-light] transition-colors">
                 <PlusIcon className="w-4 h-4" />
                 Add Question
               </button>
@@ -770,9 +770,12 @@ export default function CreateSurvey() {
             <button
               onClick={handlePublish}
               disabled={!canPublish || createMutation.isPending}
-              className="btn btn-surveyor btn-md text-white flex items-center gap-2 disabled:opacity-50"
+              className="btn btn-primary btn-md text-white flex items-center gap-2 disabled:opacity-50 relative overflow-hidden"
             >
-              Publish Survey
+              {createMutation.isPending && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[shimmer_1.5s_infinite]" />
+              )}
+              {createMutation.isPending ? "Publishing..." : "Publish Survey"}
             </button>
           </div>
         </div>

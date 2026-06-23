@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 
 import {
   DocumentTextIcon,
@@ -73,10 +73,10 @@ export function DetailModal({ item, type, onClose }) {
         <div className="flex items-center justify-between px-6 pt-5 pb-4 border-b border-[--color-border]">
           <div className="flex items-center gap-3 min-w-0">
             <div className={`w-10 h-10 rounded-lg flex items-center justify-center shrink-0 ${
-              type === "survey" ? "bg-[--color-admin-light]" : "bg-[--color-surveyor-light]"
+              type === "survey" ? "bg-[--color-error-light]" : "bg-[--color-accent-light]"
             }`}>
               <DocumentTextIcon className={`w-5 h-5 ${
-                type === "survey" ? "text-[--color-admin]" : "text-[--color-surveyor]"
+                type === "survey" ? "text-[--color-error]" : "text-[--color-accent]"
               }`} />
             </div>
             <div className="min-w-0">

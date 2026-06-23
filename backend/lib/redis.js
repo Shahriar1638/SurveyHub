@@ -1,26 +1,38 @@
 const Redis = require('ioredis');
 
-const redis = new Redis(process.env.REDIS_URL || 'redis://127.0.0.1:6379', {
-  maxRetriesPerRequest: null, // Required by BullMQ
+const redisUrl = process.env.REDIS_URL || 'redis://127.0.0.1:6379';
+
+const redis = new Redis(redisUrl, {
+  maxRetriesPerRequest: null,
   retryStrategy(times) {
-    if (times > 5) {
-      console.warn('[Redis] Could not connect after 5 retries — expiry pipeline disabled');
-      return null; // stop retrying
+    if (times > 10) {
+      console.warn('[Redis] Could not connect after 10 retries — expiry pipeline disabled');
+      return null;
     }
-    return Math.min(times * 200, 2000);
+    return Math.min(times * 300, 3000);
   },
-  lazyConnect: true, // don't block server startup
 });
 
 redis.on('error', (err) => {
-  // Only log first few errors to avoid flooding
-  if (redis.retryAttempts <= 3) {
-    console.error('Redis connection error:', err.message);
-  }
+  console.error('[Redis] Error:', err.message);
 });
 
-redis.connect().catch(() => {
-  console.warn('[Redis] Not available — expiry pipeline will not run');
-});
+// Helper: wait for Redis to become ready (up to timeout ms)
+function waitForReady(timeout = 5000) {
+  return new Promise((resolve) => {
+    if (redis.status === 'ready') return resolve(true);
+    if (redis.status === 'close' || redis.status === 'end') {
+      console.warn('[Redis] Status is', redis.status, '— not available');
+      return resolve(false);
+    }
+    console.log('[Redis] Waiting for connection (status:', redis.status, ')...');
+    const timer = setTimeout(() => {
+      console.warn('[Redis] Timed out after', timeout, 'ms (status:', redis.status, ')');
+      resolve(redis.status === 'ready');
+    }, timeout);
+    redis.once('ready', () => { clearTimeout(timer); resolve(true); });
+  });
+}
 
 module.exports = redis;
+module.exports.waitForReady = waitForReady;

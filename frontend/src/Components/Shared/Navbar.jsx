@@ -1,7 +1,7 @@
 import { useContext, useState, useEffect, useMemo } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { FaUser, FaCrown } from "react-icons/fa";
+import { FaCrown } from "react-icons/fa";
 import { IoShieldHalfOutline } from "react-icons/io5";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
@@ -28,15 +28,8 @@ const USER_LINKS = [
   { name: "Dashboard", path: "/dashboard" },
 ];
 
-// Surveyor nav links
-const SURVEYOR_LINKS = [
-  { name: "Home", path: "/" },
-  { name: "Explore Surveys", path: "/surveys" },
-  { name: "Blogs", path: "/blogs" },
-  { name: "Pricing", path: "/pricing" },
-  { name: "Feedback & Support", path: "/feedback" },
-  { name: "Dashboard", path: "/dashboard" },
-];
+// Surveyor nav links (same as user)
+const SURVEYOR_LINKS = USER_LINKS;
 
 // Admin nav links
 const ADMIN_LINKS = [
@@ -46,17 +39,22 @@ const ADMIN_LINKS = [
   { name: "Dashboard", path: "/dashboard" },
 ];
 
-// Role indicator icon shown next to avatar (declared outside of render to prevent recreation)
+// ── Role indicator pill shown next to avatar ──────────────────────────────────
+// Admin:    navy shield badge
+// Surveyor: accent-light pill with credit balance
+// User:     no badge
 const RoleIndicator = ({ role, user, isProfileLoading, creditBalance }) => {
   if (isProfileLoading || !user) return null;
 
   if (role === "admin") {
     return (
-      <span title="Administrator">
-        <IoShieldHalfOutline
-          style={{ color: "var(--color-admin)" }}
-          className="w-5 h-5"
-        />
+      <span
+        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold font-[--font-ui] uppercase tracking-wide"
+        style={{ backgroundColor: "var(--color-primary)", color: "white" }}
+        title="Administrator"
+      >
+        <IoShieldHalfOutline className="w-3 h-3" />
+        Admin
       </span>
     );
   }
@@ -66,18 +64,19 @@ const RoleIndicator = ({ role, user, isProfileLoading, creditBalance }) => {
       <span
         className="flex items-center gap-1.5 px-2 py-0.5 rounded-full"
         style={{
-          backgroundColor: "var(--color-surveyor-light)",
+          backgroundColor: "var(--color-accent-light)",
+          border: "1px solid #F5CBA7",
         }}
         title="Surveyor — Credit Balance"
       >
         <FaCrown
-          style={{ color: "var(--color-surveyor)" }}
-          className="w-3.5 h-3.5"
+          style={{ color: "var(--color-accent)" }}
+          className="w-3 h-3"
         />
         {creditBalance !== null && (
           <span
             className="font-[--font-mono] text-xs font-bold"
-            style={{ color: "var(--color-surveyor-dark)" }}
+            style={{ color: "var(--color-accent-dark)" }}
           >
             {creditBalance}
           </span>
@@ -86,12 +85,8 @@ const RoleIndicator = ({ role, user, isProfileLoading, creditBalance }) => {
     );
   }
 
-  // Regular user
-  return (
-    <span title="Member">
-      <FaUser style={{ color: "var(--color-user)" }} className="w-4 h-4" />
-    </span>
-  );
+  // Regular user — no badge per spec
+  return null;
 };
 
 export function Navbar() {
@@ -129,21 +124,14 @@ export function Navbar() {
     return USER_LINKS;
   }, [user, role]);
 
-  // Memoized role accent color for active indicator
-  const accentColor = useMemo(() => {
-    if (!user) return "var(--color-visitor)";
-    if (role === "admin") return "var(--color-admin)";
-    if (role === "surveyor") return "var(--color-surveyor)";
-    return "var(--color-user)";
-  }, [user, role]);
+  const avatarInitial = (
+    profile?.name || user?.displayName || user?.email || "?"
+  )[0].toUpperCase();
 
   return (
     <nav
-      className="sticky top-0 z-50 w-full border-b border-[--color-border] backdrop-blur-md"
-      style={{
-        backgroundColor:
-          "color-mix(in srgb, var(--color-bg-surface) 85%, transparent)",
-      }}
+      className="sticky top-0 z-50 w-full border-b border-[--color-border]"
+      style={{ backgroundColor: "var(--color-primary)" }}
     >
       <div className="container-app mx-auto flex h-[64px] w-full items-center justify-between px-4">
         {/* ── Brand ── */}
@@ -153,7 +141,10 @@ export function Navbar() {
             alt="SurveyHub"
             className="h-8 w-8 rounded-lg object-cover"
           />
-          <span className="type-heading-sm hidden sm:block text-[--color-text-primary] tracking-tight">
+          <span
+            className="type-heading-sm hidden sm:block tracking-tight"
+            style={{ color: "white" }}
+          >
             SurveyHub
           </span>
         </Link>
@@ -168,8 +159,8 @@ export function Navbar() {
               className={({ isActive }) =>
                 `relative px-3 py-1.5 rounded-lg text-sm font-medium font-[--font-ui] transition-colors ${
                   isActive
-                    ? "text-[--color-text-primary] bg-[--color-bg-subtle]"
-                    : "text-[--color-text-secondary] hover:text-[--color-text-primary] hover:bg-[--color-bg-subtle]"
+                    ? "text-white bg-white/15"
+                    : "text-white/70 hover:text-white hover:bg-white/10"
                 }`
               }
             >
@@ -179,7 +170,7 @@ export function Navbar() {
                   {isActive && (
                     <span
                       className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
-                      style={{ backgroundColor: accentColor }}
+                      style={{ backgroundColor: "var(--color-accent)" }}
                     />
                   )}
                 </>
@@ -192,12 +183,12 @@ export function Navbar() {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <div className="flex items-center gap-3">
-              {/* Avatar + role icon + name → profile link */}
+              {/* Avatar + role indicator → profile link */}
               <Link
                 to="/dashboard/my-profile"
-                className="flex items-center gap-2 hover:opacity-80 transition-all rounded-lg p-1.5 hover:bg-[--color-bg-subtle]"
+                className="flex items-center gap-2 rounded-lg p-1.5 hover:bg-white/10 transition-all"
               >
-                {/* Role indicator (icon) */}
+                {/* Role indicator */}
                 <RoleIndicator
                   role={role}
                   user={user}
@@ -210,51 +201,56 @@ export function Navbar() {
                   <img
                     src={profile?.avatar || user.photoURL}
                     alt={profile?.name || user.displayName || "avatar"}
-                    className="w-8 h-8 rounded-full object-cover ring-2 ring-[--color-border]"
+                    className="w-8 h-8 rounded-full object-cover"
+                    style={{ boxShadow: "0 0 0 2px rgba(255,255,255,0.3)" }}
                   />
                 ) : (
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                    style={{ backgroundColor: accentColor }}
+                    style={{ backgroundColor: "var(--color-accent)" }}
                   >
-                    {(profile?.name ||
-                      user.displayName ||
-                      user.email ||
-                      "?")[0].toUpperCase()}
+                    {avatarInitial}
                   </div>
                 )}
 
-                {/* First name on large screen */}
-                <span className="hidden lg:block text-sm font-medium text-[--color-text-primary]">
+                {/* First name on large screens */}
+                <span className="hidden lg:block text-sm font-medium text-white/90">
                   {(profile?.name || user.displayName || "User").split(" ")[0]}
                 </span>
               </Link>
 
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
                 onClick={async () => {
-                  try {
-                    await logOut();
-                  } finally {
-                    navigate("/");
-                  }
+                  try { await logOut(); } finally { navigate("/"); }
                 }}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium font-[--font-ui] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
               >
                 Log out
-              </Button>
+              </button>
             </div>
           ) : (
             <div className="flex items-center gap-2">
               <Link to="/login">
-                <Button variant="ghost" size="sm">
+                <button className="px-3 py-1.5 rounded-lg text-sm font-medium font-[--font-ui] text-white/70 hover:text-white hover:bg-white/10 transition-colors">
                   Sign In
-                </Button>
+                </button>
               </Link>
               <Link to="/sign-up">
-                <Button variant="primary" size="sm">
+                <button
+                  className="px-4 py-1.5 rounded-lg text-sm font-semibold font-[--font-ui] transition-colors"
+                  style={{
+                    backgroundColor: "var(--color-accent)",
+                    color: "white",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--color-accent-dark)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = "var(--color-accent)";
+                  }}
+                >
                   Get Started
-                </Button>
+                </button>
               </Link>
             </div>
           )}
@@ -263,29 +259,14 @@ export function Navbar() {
         {/* ── Mobile Hamburger ── */}
         <button
           aria-label="Toggle menu"
-          className="md:hidden p-2 rounded-lg text-[--color-text-secondary] hover:bg-[--color-bg-subtle] transition-colors"
+          className="md:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             {mobileMenuOpen ? (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             ) : (
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 6h16M4 12h16M4 18h16"
-              />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
             )}
           </svg>
         </button>
@@ -299,7 +280,8 @@ export function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="absolute top-[64px] left-0 w-full bg-[--color-bg-primary] border-b border-[--color-border] shadow-xl md:hidden"
+            className="absolute top-[64px] left-0 w-full border-b border-white/10 shadow-xl md:hidden"
+            style={{ backgroundColor: "var(--color-primary)" }}
           >
             <div className="p-4 flex flex-col gap-1">
               {links.map((link) => (
@@ -309,10 +291,10 @@ export function Navbar() {
                   end={link.path === "/"}
                   onClick={() => setMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `type-body-sm font-medium px-3 py-2.5 rounded-lg ${
+                    `type-body-sm font-medium px-3 py-2.5 rounded-lg transition-colors ${
                       isActive
-                        ? "bg-[--color-bg-subtle] text-[--color-text-primary]"
-                        : "text-[--color-text-secondary] hover:bg-[--color-bg-subtle]"
+                        ? "bg-white/15 text-white"
+                        : "text-white/70 hover:text-white hover:bg-white/10"
                     }`
                   }
                 >
@@ -320,13 +302,13 @@ export function Navbar() {
                 </NavLink>
               ))}
 
-              <div className="mt-3 pt-3 border-t border-[--color-border] flex flex-col gap-2">
+              <div className="mt-3 pt-3 border-t border-white/10 flex flex-col gap-2">
                 {user ? (
                   <>
                     <Link
                       to="/dashboard/my-profile"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-2 px-3 py-1 hover:bg-[--color-bg-subtle] rounded-lg transition-colors"
+                      className="flex items-center gap-2 px-3 py-1 hover:bg-white/10 rounded-lg transition-colors"
                     >
                       {profile?.avatar || user.photoURL ? (
                         <img
@@ -337,64 +319,48 @@ export function Navbar() {
                       ) : (
                         <div
                           className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
-                          style={{ backgroundColor: accentColor }}
+                          style={{ backgroundColor: "var(--color-accent)" }}
                         >
-                          {(profile?.name ||
-                            user.displayName ||
-                            user.email ||
-                            "?")[0].toUpperCase()}
+                          {avatarInitial}
                         </div>
                       )}
                       <div className="flex flex-col min-w-0">
-                        <span className="type-meta text-[--color-text-tertiary] truncate font-medium">
+                        <span className="type-meta text-white/80 truncate font-medium">
                           {profile?.name || user.displayName || user.email}
                         </span>
-                        {!isProfileLoading && (
-                          <span className="flex items-center gap-1">
-                            <RoleIndicator
-                              role={role}
-                              user={user}
-                              isProfileLoading={isProfileLoading}
-                              creditBalance={creditBalance}
-                            />
-                            {role === "surveyor" && creditBalance !== null && (
-                              <span className="type-meta text-[--color-text-tertiary]">
-                                {creditBalance} credits
-                              </span>
-                            )}
+                        {!isProfileLoading && role && (
+                          <span className="text-[10px] text-white/50 capitalize font-[--font-ui]">
+                            {role}
                           </span>
                         )}
                       </div>
                     </Link>
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start"
+                    <button
+                      className="w-full px-3 py-2 rounded-lg text-sm font-medium font-[--font-ui] text-white/70 hover:text-white hover:bg-white/10 transition-colors text-left"
                       onClick={async () => {
-                        try {
-                          await logOut();
-                        } finally {
+                        try { await logOut(); } finally {
                           setMobileMenuOpen(false);
                           navigate("/");
                         }
                       }}
                     >
                       Log out
-                    </Button>
+                    </button>
                   </>
                 ) : (
                   <>
                     <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-                      <Button variant="ghost" className="w-full">
+                      <button className="w-full px-3 py-2 rounded-lg text-sm font-medium font-[--font-ui] text-white/70 hover:text-white hover:bg-white/10 transition-colors text-left">
                         Sign In
-                      </Button>
+                      </button>
                     </Link>
-                    <Link
-                      to="/sign-up"
-                      onClick={() => setMobileMenuOpen(false)}
-                    >
-                      <Button variant="primary" className="w-full">
+                    <Link to="/sign-up" onClick={() => setMobileMenuOpen(false)}>
+                      <button
+                        className="w-full px-4 py-2 rounded-lg text-sm font-semibold font-[--font-ui] transition-colors"
+                        style={{ backgroundColor: "var(--color-accent)", color: "white" }}
+                      >
                         Get Started Free
-                      </Button>
+                      </button>
                     </Link>
                   </>
                 )}

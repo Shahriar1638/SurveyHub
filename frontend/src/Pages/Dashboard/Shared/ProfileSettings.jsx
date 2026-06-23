@@ -1,4 +1,4 @@
-import { useForm } from "react-hook-form";
+﻿import { useForm } from "react-hook-form";
 import useProfile from "../../../Hooks/useProfile";
 import { useUpdateProfile, useToggleAutoAIInsight } from "../../../Hooks/useProfileData";
 import { useGeminiUsage } from "../../../Hooks/useGeminiUsage";
@@ -210,9 +210,9 @@ export default function ProfileSettings() {
           <button
             onClick={handleAutoAIToggle}
             disabled={isToggling}
-            className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[--color-surveyor] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-[--color-accent] focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             style={{
-              backgroundColor: profile?.autoAIInsight ? "var(--color-surveyor)" : "var(--color-bg-inset)",
+              backgroundColor: profile?.autoAIInsight ? "var(--color-accent)" : "var(--color-bg-inset)",
             }}
           >
             <span

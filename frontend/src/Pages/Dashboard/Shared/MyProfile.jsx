@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import {
@@ -11,9 +11,9 @@ import {
 import useProfile from "../../../Hooks/useProfile";
 
 const ROLE_CLASS = {
-  user: { light: "bg-[--color-user-light]", dark: "text-[--color-user-dark]", accent: "var(--color-user)" },
-  surveyor: { light: "bg-[--color-surveyor-light]", dark: "text-[--color-surveyor-dark]", accent: "var(--color-surveyor)" },
-  admin: { light: "bg-[--color-admin-light]", dark: "text-[--color-admin-dark]", accent: "var(--color-admin)" },
+  user: { light: "bg-[--color-accent-light]", dark: "text-[--color-accent-dark]", accent: "var(--color-accent)" },
+  surveyor: { light: "bg-[--color-accent-light]", dark: "text-[--color-accent-dark]", accent: "var(--color-accent)" },
+  admin: { light: "bg-[--color-error-light]", dark: "text-[--color-error-dark]", accent: "var(--color-error)" },
 };
 
 const PLAN_LABELS = { free: "Free", starter: "Starter", growth: "Growth", pro: "Pro", enterprise: "Enterprise" };
@@ -125,7 +125,7 @@ export default function MyProfile() {
                     {role}
                   </span>
                   {profile?.status === "banned" && (
-                    <span className="type-meta px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide bg-[--color-admin-light] text-[--color-admin]">
+                    <span className="type-meta px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide bg-[--color-error-light] text-[--color-error]">
                       Banned
                     </span>
                   )}

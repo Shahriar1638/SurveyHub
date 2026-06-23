@@ -1,4 +1,4 @@
-export default function LinearScale({ question, value, onChange, disabled }) {
+﻿export default function LinearScale({ question, value, onChange, disabled }) {
   const rawMin = parseInt(question.options?.[0]) || 1;
   const rawMax = parseInt(question.options?.[1]) || 5;
   const min = Math.max(Math.min(rawMin, 10), 1);
@@ -65,8 +65,8 @@ export default function LinearScale({ question, value, onChange, disabled }) {
                 onClick={() => handleItemClick(idx, n)}
                 className={`w-14 h-10 rounded-lg text-sm font-semibold border-2 transition-all duration-150 mx-0.5 ${
                   matrixValue[idx] === n
-                    ? "bg-visitor border-visitor text-white"
-                    : "border-border text-text-secondary hover:border-visitor hover:bg-visitor-light"
+                    ? "bg-accent border-accent text-white"
+                    : "border-border text-text-secondary hover:border-accent hover:bg-accent-light"
                 } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 {hasScaleLabels && scaleLabels[String(n)] ? scaleLabels[String(n)] : n}
@@ -94,8 +94,8 @@ export default function LinearScale({ question, value, onChange, disabled }) {
               onClick={() => onChange(question.id, n)}
               className={`w-10 h-10 rounded-lg text-sm font-semibold border-2 transition-all duration-150 ${
                 value === n
-                  ? "bg-visitor border-visitor text-white"
-                  : "border-border text-text-secondary hover:border-visitor hover:bg-visitor-light"
+                  ? "bg-accent border-accent text-white"
+                  : "border-border text-text-secondary hover:border-accent hover:bg-accent-light"
               } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
             >
               {hasScaleLabels && scaleLabels[String(n)] ? scaleLabels[String(n)] : n}

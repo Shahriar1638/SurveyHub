@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from "react";
+﻿import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
@@ -9,10 +9,10 @@ import useAxiosSecure from "../../Hooks/useAxiosSecure";
 
 // Frontend color themes per package id (not stored in DB)
 const PACKAGE_THEMES = {
-  starter:    { color: "var(--color-visitor)",      colorLight: "var(--color-visitor-light)",  colorDark: "var(--color-visitor-dark)" },
-  growth:     { color: "var(--color-surveyor-dark)", colorLight: "var(--color-surveyor-light)", colorDark: "var(--color-surveyor-dark)" },
-  pro:        { color: "var(--color-user)",          colorLight: "var(--color-user-light)",     colorDark: "var(--color-user-dark)" },
-  enterprise: { color: "var(--color-admin)",         colorLight: "var(--color-admin-light)",    colorDark: "var(--color-admin-dark)" },
+  starter:    { color: "var(--color-accent)",      colorLight: "var(--color-accent-light)",  colorDark: "var(--color-accent-dark)" },
+  growth:     { color: "var(--color-accent-dark)", colorLight: "var(--color-accent-light)", colorDark: "var(--color-accent-dark)" },
+  pro:        { color: "var(--color-accent)",          colorLight: "var(--color-accent-light)",     colorDark: "var(--color-accent-dark)" },
+  enterprise: { color: "var(--color-error)",         colorLight: "var(--color-error-light)",    colorDark: "var(--color-error-dark)" },
 };
 
 export default function PricingPage() {
@@ -87,8 +87,8 @@ export default function PricingPage() {
             transition={{ duration: 0.4 }}
             className="inline-block px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest mb-4"
             style={{
-              backgroundColor: "var(--color-visitor-light)",
-              color: "var(--color-visitor-dark)",
+              backgroundColor: "var(--color-accent-light)",
+              color: "var(--color-accent-dark)",
             }}
           >
             Credit-Based Pricing

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { ArrowLeftIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
@@ -43,7 +43,7 @@ export default function CreateBlog() {
 
   const handleSaveDraft = async () => {
     if (!title.trim()) {
-      Swal.fire({ icon: "warning", title: "Title required", text: "Please enter a blog title.", confirmButtonColor: "var(--color-surveyor)" });
+      Swal.fire({ icon: "warning", title: "Title required", text: "Please enter a blog title.", confirmButtonColor: "var(--color-accent)" });
       return;
     }
     try {
@@ -61,7 +61,7 @@ export default function CreateBlog() {
       }
       Swal.fire({ icon: "success", title: "Draft Saved", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
     } catch (err) {
-      Swal.fire({ icon: "error", title: "Save Failed", text: err?.response?.data?.message || "Could not save draft.", confirmButtonColor: "var(--color-admin)" });
+      Swal.fire({ icon: "error", title: "Save Failed", text: err?.response?.data?.message || "Could not save draft.", confirmButtonColor: "var(--color-error)" });
     }
   };
 
@@ -74,7 +74,7 @@ export default function CreateBlog() {
       showCancelButton: true,
       confirmButtonText: "Publish",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "var(--color-surveyor)",
+      confirmButtonColor: "var(--color-accent)",
     });
     if (!result.isConfirmed) return;
 
@@ -90,7 +90,7 @@ export default function CreateBlog() {
       // Rejected by moderation — saved as rejected, show warning
       if (res?.moderation?.decision === 'rejected') {
         setModerationInfo(res.moderation);
-        Swal.fire({ icon: "warning", title: "Content Rejected", text: res.moderation.message || "Your blog was flagged by AI moderation. Saved as rejected.", confirmButtonColor: "var(--color-surveyor)" });
+        Swal.fire({ icon: "warning", title: "Content Rejected", text: res.moderation.message || "Your blog was flagged by AI moderation. Saved as rejected.", confirmButtonColor: "var(--color-accent)" });
       } else {
         Swal.fire({ icon: "success", title: "Blog Published!", timer: 2000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
         navigate("/dashboard/blog-studio");
@@ -101,7 +101,7 @@ export default function CreateBlog() {
         Swal.fire({ icon: "warning", title: "AI limit reached", text: "Try again after 24 hours. Blog saved as draft.", timer: 4000, showConfirmButton: false, position: "top-end", toast: true, background: "var(--color-bg-surface)", color: "var(--color-text-primary)" });
         navigate("/dashboard/blog-studio");
       } else {
-        Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish blog.", confirmButtonColor: "var(--color-admin)" });
+        Swal.fire({ icon: "error", title: "Publish Failed", text: err?.response?.data?.message || "Could not publish blog.", confirmButtonColor: "var(--color-error)" });
       }
     }
   };
@@ -204,9 +204,12 @@ export default function CreateBlog() {
             <button
               onClick={handlePublish}
               disabled={!canPublish || createMutation.isPending || updateMutation.isPending}
-              className="btn btn-surveyor btn-md text-white flex items-center gap-2 disabled:opacity-50"
+              className="btn btn-primary btn-md text-white flex items-center gap-2 disabled:opacity-50 relative overflow-hidden"
             >
-              Publish
+              {(createMutation.isPending || updateMutation.isPending) && (
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent animate-[shimmer_1.5s_infinite]" />
+              )}
+              {createMutation.isPending || updateMutation.isPending ? "Publishing..." : "Publish"}
             </button>
           </div>
         </div>

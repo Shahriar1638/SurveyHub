@@ -41,25 +41,25 @@ export function useSurveyFeedback(surveyId) {
 }
 
 /**
- * useToggleAIInsight — toggles aiInsight.enabled for a single survey.
+ * useToggleAIInsight — toggles aiInsight.autoGenerate for a single survey.
  */
 export function useToggleAIInsight() {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, enabled }) => {
-      const res = await axiosSecure.patch(`/api/surveys/${id}/ai-insight`, { enabled });
+    mutationFn: async ({ id, autoGenerate }) => {
+      const res = await axiosSecure.patch(`/api/surveys/${id}/ai-insight`, { autoGenerate });
       return res.data;
     },
-    onMutate: async ({ id, enabled }) => {
+    onMutate: async ({ id, autoGenerate }) => {
       await queryClient.cancelQueries({ queryKey: ["mySurveys"] });
       const previous = queryClient.getQueriesData({ queryKey: ["mySurveys"] });
 
       queryClient.setQueriesData({ queryKey: ["mySurveys"] }, (old) => {
         if (!old) return old;
         return old.map((s) =>
-          s._id === id ? { ...s, aiInsight: { ...s.aiInsight, enabled } } : s
+          s._id === id ? { ...s, aiInsight: { ...s.aiInsight, autoGenerate } } : s
         );
       });
 

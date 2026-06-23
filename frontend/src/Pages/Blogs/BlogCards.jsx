@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+﻿import { Link, useNavigate } from "react-router";
 import DOMPurify from "dompurify";
 import { RoleBadge, Avatar, ReactionBar } from "../../Components/UI/BlogCard";
 
@@ -94,7 +94,7 @@ export default function BlogCards({
             <ReactionBar counts={counts} disabled />
             <Link
               to="/login"
-              className="type-body-sm text-[--color-visitor] hover:underline"
+              className="type-body-sm text-[--color-accent] hover:underline"
             >
               Sign in to react
             </Link>

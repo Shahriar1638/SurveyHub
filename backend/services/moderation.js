@@ -183,6 +183,67 @@ async function tryOpenRouter(prompt) {
   }
 }
 
+// ── Try OpenCode Zen ─────────────────────────────────────────────────────────
+async function tryOpenZen(prompt) {
+  const apiKey = process.env.OPEN_ZEN_API_KEY;
+  if (!apiKey) throw new Error('No OpenCode Zen key configured');
+
+  const baseUrl = (process.env.OPEN_ZEN_BASE_URL || 'https://opencode.ai/zen/v1').replace(/\/+$/, '');
+  const modelId = process.env.OPEN_ZEN_MODEL || 'deepseek/deepseek-v4-flash:free';
+  console.log(`[Moderation] Calling OpenCode Zen (${modelId})...`);
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENROUTER_TIMEOUT);
+
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: modelId,
+        messages: [{ role: 'user', content: prompt }],
+        temperature: 0.1,
+      }),
+      signal: controller.signal,
+    });
+
+    clearTimeout(timeout);
+
+    if (res.status === 429) {
+      const body = await res.text();
+      console.error(`[Moderation] OpenCode Zen rate limited: ${body}`);
+      throw new Error('OpenCode Zen quota exceeded');
+    }
+
+    if (!res.ok) {
+      const body = await res.text();
+      console.error(`[Moderation] OpenCode Zen HTTP ${res.status}: ${body}`);
+      throw new Error(`OpenCode Zen error ${res.status}: ${body.slice(0, 200)}`);
+    }
+
+    const data = await res.json();
+
+    if (!data.choices?.[0]?.message?.content) {
+      console.error('[Moderation] OpenCode Zen empty response:', JSON.stringify(data).slice(0, 500));
+      throw new Error('OpenCode Zen returned empty response');
+    }
+
+    const text = data.choices[0].message.content.trim();
+    console.log(`[Moderation] OpenCode Zen responded (${text.length} chars)`);
+    return text;
+  } catch (err) {
+    clearTimeout(timeout);
+    if (err.name === 'AbortError') {
+      console.error('[Moderation] OpenCode Zen request timed out');
+      throw new Error('OpenCode Zen request timed out');
+    }
+    throw err;
+  }
+}
+
 // ── Build the moderation prompt ──────────────────────────────────────────────
 function buildPrompt(policy, contentText) {
   const rulesText = policy.rules
@@ -279,7 +340,16 @@ Content: ${content || 'No content'}`;
     console.error('[Moderation] OpenRouter failed:', err.message);
   }
 
-  // 5. All providers exhausted
+  // 5. OpenRouter failed — try OpenCode Zen
+  try {
+    console.log('[Moderation] Trying OpenCode Zen...');
+    const text = await tryOpenZen(prompt);
+    return parseResponse(text);
+  } catch (err) {
+    console.error('[Moderation] OpenCode Zen failed:', err.message);
+  }
+
+  // 6. All providers exhausted
   console.log('[Moderation] ALL providers exhausted — content will be saved as draft');
   return {
     safe: false,
@@ -290,4 +360,4 @@ Content: ${content || 'No content'}`;
   };
 }
 
-module.exports = { moderateContent };
+module.exports = { moderateContent, getBestFreeModel };

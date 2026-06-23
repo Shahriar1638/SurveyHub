@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -101,7 +101,7 @@ export default function AdminModeration() {
               onClick={() => setStatusFilter(s.value)}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
                 statusFilter === s.value
-                  ? "bg-[--color-admin] text-white"
+                  ? "bg-[--color-error] text-white"
                   : "bg-[--color-bg-inset] text-[--color-text-secondary] hover:text-[--color-text-primary] hover:bg-[--color-bg-subtle]"
               }`}
             >

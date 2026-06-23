@@ -1,4 +1,4 @@
-import { useContext } from "react";
+﻿import { useContext } from "react";
 import { Link, useLocation } from "react-router";
 import { ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { AuthContext } from "../../../Firebase_AuthProvider/AuthProvider";
@@ -28,7 +28,7 @@ export default function AdminDashboard({ children }) {
           </p>
         </div>
         {activeSection === "overview" && overview?.pendingReports > 0 && (
-          <Link to="/dashboard/reports" className="btn btn-md font-semibold text-white flex items-center gap-2" style={{ backgroundColor: "var(--color-admin)" }}>
+          <Link to="/dashboard/reports" className="btn btn-md font-semibold text-white flex items-center gap-2" style={{ backgroundColor: "var(--color-error)" }}>
             <ShieldCheckIcon className="w-4 h-4" />
             {overview.pendingReports} Pending Reports
           </Link>

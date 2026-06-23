@@ -1,4 +1,4 @@
-import { useContext, useRef, useState } from "react";
+﻿import { useContext, useRef, useState } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { gsap } from "gsap";
@@ -111,7 +111,7 @@ export default function UserHome() {
       ══════════════════════════════════════════════════ */}
       <section
         ref={heroRef}
-        className="relative overflow-hidden bg-[--color-user] min-h-[320px] flex items-center"
+        className="relative overflow-hidden bg-[--color-accent] min-h-[320px] flex items-center"
         style={{ background: "linear-gradient(135deg, #C45D18 0%, #F67724 50%, #F9A36A 100%)" }}
       >
         {/* Abstract background image */}
@@ -145,7 +145,7 @@ export default function UserHome() {
             </p>
             <div className="flex flex-wrap gap-3">
               <Link to="/surveys" className="uh-cta btn btn-lg"
-                style={{ background: "white", color: "var(--color-user-dark)" }}>
+                style={{ background: "white", color: "var(--color-accent-dark)" }}>
                 Browse Surveys →
               </Link>
               <Link to="/insights" className="uh-cta btn btn-lg"
@@ -381,9 +381,9 @@ export default function UserHome() {
                   to={`/insights/${b._id}`}
                   className="card card-hover p-6 flex gap-5 items-start group"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-[--color-surveyor-light] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
+                  <div className="w-12 h-12 rounded-xl bg-[--color-accent-light] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform duration-200">
                     <svg
-                      className="w-6 h-6 text-[--color-surveyor-dark]"
+                      className="w-6 h-6 text-[--color-accent-dark]"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
@@ -403,7 +403,7 @@ export default function UserHome() {
                     <p className="type-meta text-[--color-text-tertiary] font-[--font-mono]">
                       {new Date(b.createdAt).toLocaleDateString()}
                     </p>
-                    <p className="type-meta-sm text-[--color-surveyor-dark] tracking-widest uppercase mt-2">
+                    <p className="type-meta-sm text-[--color-accent-dark] tracking-widest uppercase mt-2">
                       Read insight →
                     </p>
                   </div>
@@ -426,7 +426,7 @@ export default function UserHome() {
             className="relative overflow-hidden py-20"
             style={{
               background:
-                "linear-gradient(135deg, var(--color-navy) 0%, #2A3F66 100%)",
+                "linear-gradient(135deg, var(--color-primary) 0%, #2A3F66 100%)",
             }}
           >
             {/* Decorative abstract image */}
@@ -446,7 +446,7 @@ export default function UserHome() {
                 following as a Surveyor. Your data, your story.
               </p>
               <div className="flex flex-wrap gap-4 justify-center mt-2">
-                <Link to="/pricing" className="btn btn-surveyor btn-lg">
+                <Link to="/pricing" className="btn btn-primary btn-lg">
                   Become a Surveyor →
                 </Link>
                 <button

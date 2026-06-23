@@ -50,25 +50,21 @@ export default function SurveyorOverview() {
           title="Total Responses"
           value={kpis.totalResponses?.toLocaleString() || "0"}
           icon={ChartBarIcon}
-          roleAccent="surveyor"
         />
         <StatCard
           title="Active Surveys"
           value={kpis.activeSurveys?.toString() || "0"}
           icon={ClipboardDocumentListIcon}
-          roleAccent="surveyor"
         />
         <StatCard
           title="Completion Rate"
           value={kpis.avgCompletionRate ? `${kpis.avgCompletionRate}%` : "—"}
           icon={CheckCircleIcon}
-          roleAccent="surveyor"
         />
         <StatCard
           title="New Responses (7d)"
           value={kpis.newResponses7d?.toString() || "0"}
           icon={ArrowTrendingUpIcon}
-          roleAccent="surveyor"
         />
       </motion.div>
 
@@ -83,8 +79,8 @@ export default function SurveyorOverview() {
             <AreaChart data={mockTrendData}>
               <defs>
                 <linearGradient id="surveyorGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#2D9FCF" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="#2D9FCF" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#F57026" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="#F57026" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
@@ -111,7 +107,7 @@ export default function SurveyorOverview() {
               <Area
                 type="monotone"
                 dataKey="responses"
-                stroke="#2D9FCF"
+                stroke="#F57026"
                 strokeWidth={2}
                 fill="url(#surveyorGrad)"
               />

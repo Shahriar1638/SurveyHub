@@ -1,4 +1,4 @@
-import { useContext, useRef, useState, useEffect, useCallback } from "react";
+﻿import { useContext, useRef, useState, useEffect, useCallback } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { gsap } from "gsap";
@@ -108,7 +108,7 @@ function ModerationBanner({ rejectedSurveys }) {
                           <button
                             onClick={() => handleAppeal(s._id)}
                             disabled={appealMutation.isPending}
-                            className="btn btn-sm btn-surveyor"
+                            className="btn btn-sm btn-primary"
                           >
                             {appealMutation.isPending ? "Submitting..." : "Submit Appeal"}
                           </button>
@@ -203,7 +203,7 @@ function ActiveSurveysBanner({ surveys }) {
             <p className="type-body-sm text-[--color-text-secondary] mt-2 max-w-xs mx-auto">
               Ready to hear what people think? Create your first survey and start collecting real responses.
             </p>
-            <Link to="/dashboard/create-survey" className="btn btn-surveyor btn-md mt-5">
+            <Link to="/dashboard/create-survey" className="btn btn-primary btn-md mt-5">
               Create Your First Survey
             </Link>
           </div>
@@ -231,7 +231,7 @@ function ActiveSurveysBanner({ surveys }) {
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-full h-full bg-[--color-navy]" />
+            <div className="w-full h-full bg-[--color-primary]" />
           )}
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
@@ -247,7 +247,7 @@ function ActiveSurveysBanner({ surveys }) {
             className="max-w-xl"
           >
             {survey.category && (
-              <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] bg-[--color-surveyor]/90 text-white mb-4">
+              <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] bg-[--color-accent]/90 text-white mb-4">
                 {survey.category}
               </span>
             )}
@@ -262,7 +262,7 @@ function ActiveSurveysBanner({ surveys }) {
             <div className="flex items-center gap-4">
               <Link
                 to="/dashboard/my-surveys"
-                className="btn btn-surveyor btn-md gap-2"
+                className="btn btn-primary btn-md gap-2"
               >
                 View Details
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -308,7 +308,7 @@ function ActiveSurveysBanner({ surveys }) {
               onClick={() => setCurrent(i)}
               className={`transition-all duration-300 rounded-full ${
                 i === current
-                  ? "w-6 h-2 bg-[--color-surveyor]"
+                  ? "w-6 h-2 bg-[--color-accent]"
                   : "w-2 h-2 bg-white/50 hover:bg-white/75"
               }`}
             />
@@ -382,7 +382,7 @@ export default function SurveyorHome() {
       ══════════════════════════════════════════════════ */}
       <section
         ref={heroRef}
-        className="relative overflow-hidden bg-[--color-navy] min-h-[320px] flex items-center"
+        className="relative overflow-hidden bg-[--color-primary] min-h-[320px] flex items-center"
       >
         {/* Abstract background image */}
         <img
@@ -392,12 +392,12 @@ export default function SurveyorHome() {
           className="absolute inset-0 w-full h-full object-cover opacity-20 select-none pointer-events-none"
         />
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[--color-navy] via-[--color-navy]/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[--color-primary] via-[--color-primary]/80 to-transparent" />
 
         <div className="relative container-app mx-auto py-16 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
           {/* Left text */}
           <div className="max-w-xl">
-            <span className="sh-eyebrow inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-surveyor-light] text-[--color-surveyor-dark] mb-5">
+            <span className="sh-eyebrow inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-accent-light] text-[--color-accent-dark] mb-5">
               Surveyor Workspace
             </span>
             <h1 className="sh-title type-display-lg text-white mb-3">
@@ -410,7 +410,7 @@ export default function SurveyorHome() {
             <div className="flex flex-wrap gap-3">
               <Link
                 to="/create-survey"
-                className="sh-cta btn btn-surveyor btn-lg"
+                className="sh-cta btn btn-primary btn-lg"
               >
                 + Create New Survey
               </Link>
@@ -448,7 +448,7 @@ export default function SurveyorHome() {
               </p>
               <Link
                 to="/dashboard/my-surveys"
-                className="btn btn-surveyor btn-sm w-full justify-center"
+                className="btn btn-primary btn-sm w-full justify-center"
               >
                 View All
               </Link>
@@ -527,27 +527,27 @@ export default function SurveyorHome() {
                 label: "Create New Survey",
                 desc: "Build a dynamic survey with MCQ, scale, and paragraph questions. Launch in minutes.",
                 to: "/create-survey",
-                accent: "--color-surveyor",
-                accentLight: "--color-surveyor-light",
-                accentDark: "--color-surveyor-dark",
+                accent: "--color-accent",
+                accentLight: "--color-accent-light",
+                accentDark: "--color-accent-dark",
               },
               {
                 icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
                 label: "AI Analytics Lab",
                 desc: "Let Gemini analyse your response data and surface the themes that matter most.",
                 to: "/analytics",
-                accent: "--color-visitor",
-                accentLight: "--color-visitor-light",
-                accentDark: "--color-visitor-dark",
+                accent: "--color-accent",
+                accentLight: "--color-accent-light",
+                accentDark: "--color-accent-dark",
               },
               {
                 icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
                 label: "Write Insight Blog",
                 desc: "Turn your survey findings into a compelling AI-generated insight post for your audience.",
                 to: "/blog-management",
-                accent: "--color-user",
-                accentLight: "--color-user-light",
-                accentDark: "--color-user-dark",
+                accent: "--color-accent",
+                accentLight: "--color-accent-light",
+                accentDark: "--color-accent-dark",
               },
             ].map((action, i) => (
               <motion.div
@@ -649,7 +649,7 @@ export default function SurveyorHome() {
                     </div>
                     <Link
                       to={`/surveys/${d._id}/edit`}
-                      className="btn btn-surveyor btn-sm shrink-0"
+                      className="btn btn-primary btn-sm shrink-0"
                     >
                       Pay &amp; Publish
                     </Link>
@@ -682,7 +682,7 @@ export default function SurveyorHome() {
               <div className="flex flex-col gap-3">
                 {blogActivity.slice(0, 4).map((a) => (
                   <div key={a._id} className="card p-5 flex items-start gap-4">
-                    <div className="w-9 h-9 rounded-full bg-[--color-surveyor-light] flex items-center justify-center shrink-0 text-sm font-bold text-[--color-surveyor-dark]">
+                    <div className="w-9 h-9 rounded-full bg-[--color-accent-light] flex items-center justify-center shrink-0 text-sm font-bold text-[--color-accent-dark]">
                       {(a.userEmail || "U")[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -712,7 +712,7 @@ export default function SurveyorHome() {
       {/* ══════════════════════════════════════════════════
           SECTION 6 — Motivational CTA Banner
       ══════════════════════════════════════════════════ */}
-      <section className="py-20 bg-[--color-navy] text-center">
+      <section className="py-20 bg-[--color-primary] text-center">
         <div className="container-app mx-auto">
           <h2 className="type-display-lg text-white mb-4">
             Every Response Tells a Story
@@ -722,7 +722,7 @@ export default function SurveyorHome() {
             analysing — your next insight could change the conversation.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/analytics" className="btn btn-surveyor btn-lg">
+            <Link to="/analytics" className="btn btn-primary btn-lg">
               Run AI Analysis →
             </Link>
             <Link

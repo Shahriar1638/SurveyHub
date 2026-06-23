@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
@@ -58,7 +58,7 @@ function SortButton({ field, label, sortConfig, onSort }) {
   return (
     <button
       onClick={() => onSort(field)}
-      className={`inline-flex items-center gap-1 text-left ${active ? "text-[--color-surveyor]" : "text-[--color-text-secondary]"}`}
+      className={`inline-flex items-center gap-1 text-left ${active ? "text-[--color-accent]" : "text-[--color-text-secondary]"}`}
     >
       {label}
       {active ? (
@@ -105,7 +105,7 @@ export default function MySurveys() {
   };
 
   const handleToggleAI = (survey) => {
-    const next = !survey.aiInsight?.enabled;
+    const next = !survey.aiInsight?.autoGenerate;
     Swal.fire({
       title: next ? "Enable AI Insights?" : "Disable AI Insights?",
       text: next
@@ -117,7 +117,7 @@ export default function MySurveys() {
       confirmButtonText: next ? "Enable" : "Disable",
     }).then((result) => {
       if (result.isConfirmed) {
-        toggleAI.mutate({ id: survey._id, enabled: next });
+        toggleAI.mutate({ id: survey._id, autoGenerate: next });
       }
     });
   };
@@ -197,20 +197,20 @@ export default function MySurveys() {
       header: "AI",
       cell: (info) => {
         const ai = info.getValue();
-        const enabled = ai?.enabled;
+        const autoGenerate = ai?.autoGenerate;
         return (
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleToggleAI(info.row.original);
             }}
-            title={enabled ? "AI insight enabled — click to disable" : "AI insight disabled — click to enable"}
+            title={autoGenerate ? "AI insight enabled — click to disable" : "AI insight disabled — click to enable"}
             className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 focus:outline-none"
-            style={{ backgroundColor: enabled ? "#16A34A" : "#DC2626" }}
+            style={{ backgroundColor: autoGenerate ? "#16A34A" : "#DC2626" }}
           >
             <span
               className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                enabled ? "translate-x-[22px]" : "translate-x-[4px]"
+                autoGenerate ? "translate-x-[22px]" : "translate-x-[4px]"
               }`}
             />
           </button>
@@ -232,7 +232,7 @@ export default function MySurveys() {
               <button
                 title="View Feedback"
                 onClick={() => setFeedbackModal({ open: true, surveyId: survey._id, title: survey.title })}
-                className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-surveyor] transition-colors"
+                className="p-1.5 rounded-md hover:bg-[--color-bg-subtle] text-[--color-text-secondary] hover:text-[--color-accent] transition-colors"
               >
                 <ChatBubbleLeftEllipsisIcon className="w-4 h-4" />
               </button>
@@ -275,7 +275,7 @@ export default function MySurveys() {
             <button
               title="Delete"
               onClick={() => handleDelete(survey)}
-              className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-secondary] hover:text-[--color-admin] transition-colors"
+              className="p-1.5 rounded-md hover:bg-[--color-error-light] text-[--color-text-secondary] hover:text-[--color-error] transition-colors"
             >
               <TrashIcon className="w-4 h-4" />
             </button>
@@ -307,7 +307,7 @@ export default function MySurveys() {
         <h2 className="type-heading-lg text-[--color-text-primary]">My Surveys</h2>
         <button
           onClick={() => navigate("/dashboard/create-survey")}
-          className="btn btn-surveyor btn-sm flex items-center gap-2"
+          className="btn btn-primary btn-sm flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
           Create Survey

@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
@@ -56,7 +56,7 @@ function SortButton({ field, label, sortConfig, onSort }) {
   return (
     <button
       onClick={() => onSort(field)}
-      className={`inline-flex items-center gap-1 text-left ${active ? "text-[--color-surveyor]" : "text-[--color-text-secondary]"}`}
+      className={`inline-flex items-center gap-1 text-left ${active ? "text-[--color-accent]" : "text-[--color-text-secondary]"}`}
     >
       {label}
       {active ? (
@@ -120,7 +120,7 @@ export default function BlogStudio() {
       showCancelButton: true,
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
-      confirmButtonColor: "var(--color-admin)",
+      confirmButtonColor: "var(--color-error)",
     }).then((result) => {
       if (result.isConfirmed) {
         deleteMutation.mutate(blog._id, {
@@ -226,7 +226,7 @@ export default function BlogStudio() {
             <button
               title="Delete"
               onClick={() => handleDelete(blog)}
-              className="p-1.5 rounded-md hover:bg-[--color-admin-light] text-[--color-text-secondary] hover:text-[--color-admin] transition-colors"
+              className="p-1.5 rounded-md hover:bg-[--color-error-light] text-[--color-text-secondary] hover:text-[--color-error] transition-colors"
             >
               <TrashIcon className="w-4 h-4" />
             </button>
@@ -249,7 +249,7 @@ export default function BlogStudio() {
         <h2 className="type-heading-lg text-[--color-text-primary]">Blog Studio</h2>
         <button
           onClick={() => navigate("/dashboard/create-blog")}
-          className="btn btn-surveyor btn-sm flex items-center gap-2"
+          className="btn btn-primary btn-sm flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
           New Blog Post
@@ -455,7 +455,7 @@ export default function BlogStudio() {
                 <button
                   onClick={handleAppeal}
                   disabled={appealMutation.isPending || !appealMsg.trim()}
-                  className="btn btn-surveyor btn-sm"
+                  className="btn btn-primary btn-sm"
                 >
                   {appealMutation.isPending ? "Submitting..." : "Submit Appeal"}
                 </button>

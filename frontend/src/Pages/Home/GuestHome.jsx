@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+﻿import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -129,13 +129,13 @@ export default function GuestHome() {
         ref={heroRef}
         className="min-h-[85vh] flex flex-col items-center justify-center text-center py-24 container-marketing mx-auto"
       >
-        <span className="hero-eyebrow inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-surveyor-light] text-[--color-surveyor-dark] mb-6">
+        <span className="hero-eyebrow inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase mb-6" style={{ backgroundColor: "var(--color-accent-light)", color: "var(--color-accent-dark)" }}>
           AI-Powered Survey Platform
         </span>
         <h1 className="hero-title type-display-xl text-[--color-text-primary] max-w-4xl mb-5">
           Turn Survey Responses into
           <br />
-          <span className="text-[--color-visitor]">AI-Powered Stories</span>
+          <span style={{ color: "var(--color-accent)" }}>AI-Powered Stories</span>
         </h1>
         <p className="hero-subtitle type-body-lg text-[--color-text-secondary] max-w-2xl mb-8">
           Create surveys, collect responses, and publish AI-generated insights —
@@ -157,7 +157,7 @@ export default function GuestHome() {
       {/* ══════════════════════════════════════════════════
           SECTION 2 — Live Platform Stats Bar
       ══════════════════════════════════════════════════ */}
-      <section className="bg-[--color-navy] py-10">
+      <section className="py-10" style={{ backgroundColor: "var(--color-primary)" }}>
         <div className="container-marketing mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           {[
             {
@@ -304,7 +304,7 @@ export default function GuestHome() {
                 className="step-item flex flex-col items-center text-center"
                 
               >
-                <div className="w-16 h-16 rounded-full bg-[--color-navy] flex items-center justify-center mb-5 relative z-10">
+                <div className="w-16 h-16 rounded-full bg-[--color-primary] flex items-center justify-center mb-5 relative z-10">
                   <svg
                     className="w-7 h-7 text-white"
                     fill="none"
@@ -341,7 +341,7 @@ export default function GuestHome() {
         <div className="grid gap-12 lg:grid-cols-2 items-center">
           {/* Left text */}
           <div>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-visitor-light] text-[--color-visitor-dark] mb-5">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase mb-5" style={{ backgroundColor: "var(--color-accent-light)", color: "var(--color-accent-dark)" }}>
               AI Insight Spotlight
             </span>
             <h2 className="type-heading-lg text-[--color-text-primary] mb-4">
@@ -397,7 +397,7 @@ export default function GuestHome() {
                 </div>
               )}
             </div>
-            <div className="absolute -inset-1 bg-linear-to-tr from-[--color-surveyor-light] to-transparent rounded-2xl -z-10" />
+            <div className="absolute -inset-1 rounded-2xl -z-10" style={{ background: "linear-gradient(to top right, var(--color-accent-light), transparent)" }} />
           </div>
         </div>
       </section>
@@ -419,7 +419,7 @@ export default function GuestHome() {
           <div className="grid gap-6 md:grid-cols-2 max-w-2xl mx-auto">
             {/* Free */}
             <div className="card p-8">
-              <div className="badge badge-visitor mb-4">Free</div>
+              <div className="badge badge-info mb-4">Free</div>
               <div className="font-[--font-mono] text-4xl font-medium text-[--color-text-primary] mb-1">
                 $0
               </div>
@@ -461,8 +461,8 @@ export default function GuestHome() {
 
             {/* Surveyor */}
             <div
-              className="card p-8 border-2 border-[--color-surveyor]"
-              style={{ boxShadow: "var(--shadow-lg)" }}
+              className="card p-8 border-2"
+              style={{ borderColor: "var(--color-accent)", boxShadow: "var(--shadow-lg)" }}
             >
               <div className="badge badge-surveyor mb-4">Surveyor</div>
               <div className="font-[--font-mono] text-4xl font-medium text-[--color-text-primary] mb-1">
@@ -481,10 +481,11 @@ export default function GuestHome() {
                 ].map((f) => (
                   <li key={f} className="flex items-center gap-2 type-body-sm">
                     <svg
-                      className="w-4 h-4 text-[--color-surveyor-dark] shrink-0"
+                      className="w-4 h-4 shrink-0"
                       fill="none"
                       viewBox="0 0 24 24"
                       stroke="currentColor"
+                      style={{ color: "var(--color-accent-dark)" }}
                     >
                       <path
                         strokeLinecap="round"
@@ -499,7 +500,7 @@ export default function GuestHome() {
               </ul>
               <Link
                 to="/pricing"
-                className="btn btn-surveyor btn-md w-full justify-center"
+                className="btn btn-primary btn-md w-full justify-center"
               >
                 See Full Pricing →
               </Link>
@@ -513,7 +514,7 @@ export default function GuestHome() {
       ══════════════════════════════════════════════════ */}
       <section
         className="py-20 text-center"
-        style={{ backgroundColor: "var(--color-navy)" }}
+        style={{ backgroundColor: "var(--color-primary)" }}
       >
         <div className="container-marketing mx-auto">
           <h2 className="type-display-lg text-white mb-4">
@@ -525,7 +526,7 @@ export default function GuestHome() {
           </p>
           <Link
             to="/sign-up"
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-[--color-navy] font-semibold font-[--font-ui] text-base hover:bg-[--color-bg-subtle] transition-colors duration-150"
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-white text-[--color-primary] font-semibold font-[--font-ui] text-base hover:bg-[--color-bg-subtle] transition-colors duration-150"
           >
             Create Free Account →
           </Link>

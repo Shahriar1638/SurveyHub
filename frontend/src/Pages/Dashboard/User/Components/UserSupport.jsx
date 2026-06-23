@@ -1,4 +1,4 @@
-"use no memo";
+﻿"use no memo";
 /* eslint-disable no-unused-vars */
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
@@ -57,8 +57,8 @@ const columns = [
     cell: ({ row }) => {
       const ticket = row.original;
       return ticket.adminResponse?.message ? (
-        <div className="inline-block text-left max-w-[240px] p-2 bg-[--color-user-light] border border-[--color-user-light]/40 rounded-lg text-xs">
-          <span className="type-label-sm text-[--color-user-dark] block font-bold text-[10px] uppercase">Reply from Admin:</span>
+        <div className="inline-block text-left max-w-[240px] p-2 bg-[--color-accent-light] border border-[--color-accent-light]/40 rounded-lg text-xs">
+          <span className="type-label-sm text-[--color-accent-dark] block font-bold text-[10px] uppercase">Reply from Admin:</span>
           <p className="type-body-sm text-[--color-text-primary] italic mt-0.5 font-[500]">
             "{ticket.adminResponse.message}"
           </p>
@@ -97,7 +97,7 @@ export default function UserSupport() {
         icon: "success",
         title: "Ticket Submitted",
         text: "Thank you! Our support team will review it shortly.",
-        confirmButtonColor: "var(--color-user)",
+        confirmButtonColor: "var(--color-accent)",
       });
     } catch (e) {
       console.error(e);
@@ -105,7 +105,7 @@ export default function UserSupport() {
         icon: "error",
         title: "Submission Failed",
         text: "Could not create the ticket. Please try again.",
-        confirmButtonColor: "var(--color-admin)",
+        confirmButtonColor: "var(--color-error)",
       });
     }
   };
@@ -121,7 +121,7 @@ export default function UserSupport() {
         </div>
         <button
           onClick={() => setDrawerOpen(true)}
-          className="btn btn-user btn-md font-semibold text-white flex items-center gap-2"
+          className="btn btn-primary btn-md font-semibold text-white flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
           New Ticket
@@ -195,7 +195,7 @@ export default function UserSupport() {
             >
               <div className="side-panel-header">
                 <div className="flex items-center gap-2">
-                  <QuestionMarkCircleIcon className="w-5 h-5 text-[--color-user]" />
+                  <QuestionMarkCircleIcon className="w-5 h-5 text-[--color-accent]" />
                   <h3 className="type-heading-sm text-[--color-text-primary]">Create Support Ticket</h3>
                 </div>
                 <button
@@ -257,7 +257,7 @@ export default function UserSupport() {
                   <button
                     type="submit"
                     disabled={submitTicketMutation.isPending}
-                    className="btn btn-user btn-md text-white font-semibold flex items-center gap-1.5 disabled:opacity-50"
+                    className="btn btn-primary btn-md text-white font-semibold flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {submitTicketMutation.isPending ? (
                       "Submitting…"

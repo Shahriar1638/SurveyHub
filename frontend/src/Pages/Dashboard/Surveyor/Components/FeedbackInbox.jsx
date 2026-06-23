@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+﻿import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   ChatBubbleLeftEllipsisIcon,
@@ -39,9 +39,9 @@ function TicketCard({ ticket }) {
       <div className="flex items-start gap-4">
         <div
           className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
-          style={{ backgroundColor: "var(--color-surveyor-light)" }}
+          style={{ backgroundColor: "var(--color-accent-light)" }}
         >
-          <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-[--color-surveyor]" />
+          <ChatBubbleLeftEllipsisIcon className="w-5 h-5 text-[--color-accent]" />
         </div>
 
         <div className="flex-1 min-w-0">
@@ -74,7 +74,7 @@ function TicketCard({ ticket }) {
             <div className="mt-3 border-t border-[--color-border] pt-3">
               <button
                 onClick={() => setExpanded(!expanded)}
-                className="flex items-center gap-1.5 text-xs font-semibold text-[--color-surveyor-dark] hover:text-[--color-surveyor] transition-colors"
+                className="flex items-center gap-1.5 text-xs font-semibold text-[--color-accent-dark] hover:text-[--color-accent] transition-colors"
               >
                 {expanded ? (
                   <>
@@ -98,10 +98,10 @@ function TicketCard({ ticket }) {
                     transition={{ duration: 0.25, ease: "easeOut" }}
                     className="overflow-hidden mt-3"
                   >
-                    <div className="p-4 bg-[--color-admin-light]/40 border border-[--color-admin-light] rounded-lg">
+                    <div className="p-4 bg-[--color-error-light]/40 border border-[--color-error-light] rounded-lg">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <ChatBubbleLeftEllipsisIcon className="w-4 h-4 text-[--color-admin]" />
-                        <span className="type-label-sm text-[--color-admin] font-bold">
+                        <ChatBubbleLeftEllipsisIcon className="w-4 h-4 text-[--color-error]" />
+                        <span className="type-label-sm text-[--color-error] font-bold">
                           Response from Admin
                         </span>
                       </div>
@@ -167,7 +167,7 @@ export default function FeedbackInbox() {
         icon: "success",
         title: "Ticket Submitted",
         text: "Thank you! Our team will review it shortly.",
-        confirmButtonColor: "var(--color-surveyor)",
+        confirmButtonColor: "var(--color-accent)",
       });
     } catch (e) {
       console.error(e);
@@ -175,7 +175,7 @@ export default function FeedbackInbox() {
         icon: "error",
         title: "Submission Failed",
         text: "Could not create the ticket. Please try again.",
-        confirmButtonColor: "var(--color-admin)",
+        confirmButtonColor: "var(--color-error)",
       });
     }
   };
@@ -191,7 +191,7 @@ export default function FeedbackInbox() {
         </div>
         <button
           onClick={() => setDrawerOpen(true)}
-          className="btn btn-surveyor btn-md font-semibold text-white flex items-center gap-2"
+          className="btn btn-primary btn-md font-semibold text-white flex items-center gap-2"
         >
           <PlusIcon className="w-4 h-4" />
           New Ticket
@@ -242,7 +242,7 @@ export default function FeedbackInbox() {
             >
               <div className="side-panel-header">
                 <div className="flex items-center gap-2">
-                  <QuestionMarkCircleIcon className="w-5 h-5 text-[--color-surveyor]" />
+                  <QuestionMarkCircleIcon className="w-5 h-5 text-[--color-accent]" />
                   <h3 className="type-heading-sm text-[--color-text-primary]">Create Support Ticket</h3>
                 </div>
                 <button
@@ -302,7 +302,7 @@ export default function FeedbackInbox() {
                   <button
                     type="submit"
                     disabled={submitTicketMutation.isPending}
-                    className="btn btn-surveyor btn-md text-white font-semibold flex items-center gap-1.5 disabled:opacity-50"
+                    className="btn btn-primary btn-md text-white font-semibold flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {submitTicketMutation.isPending ? (
                       "Submitting…"
