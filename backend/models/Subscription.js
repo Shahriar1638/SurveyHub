@@ -65,6 +65,10 @@ const billingEventSchema = new mongoose.Schema(
   { _id: false }
 );
 
+// ── Caps for unbounded arrays ───────────────────────────────────────────────
+const MAX_CREDIT_LEDGER = 500;
+const MAX_BILLING_HISTORY = 200;
+
 // ── Main Billing/Wallet Schema ──────────────────────────────────────────────
 const subscriptionSchema = new mongoose.Schema(
   {
@@ -93,13 +97,42 @@ const subscriptionSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    // Historical Logs
-    creditLedger: [creditTransactionSchema],
-    billingHistory: [billingEventSchema],
+    // Historical Logs (capped to prevent unbounded growth)
+    creditLedger: {
+      type: [creditTransactionSchema],
+      default: [],
+      validate: {
+        validator: function (v) {
+          return v.length <= MAX_CREDIT_LEDGER;
+        },
+        message: `creditLedger exceeds max of ${MAX_CREDIT_LEDGER} entries`,
+      },
+    },
+    billingHistory: {
+      type: [billingEventSchema],
+      default: [],
+      validate: {
+        validator: function (v) {
+          return v.length <= MAX_BILLING_HISTORY;
+        },
+        message: `billingHistory exceeds max of ${MAX_BILLING_HISTORY} entries`,
+      },
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// Pre-save hook: trim arrays to cap size (keep newest entries)
+subscriptionSchema.pre('save', function (next) {
+  if (this.creditLedger.length > MAX_CREDIT_LEDGER) {
+    this.creditLedger = this.creditLedger.slice(-MAX_CREDIT_LEDGER);
+  }
+  if (this.billingHistory.length > MAX_BILLING_HISTORY) {
+    this.billingHistory = this.billingHistory.slice(-MAX_BILLING_HISTORY);
+  }
+  next();
+});
 
 module.exports = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);

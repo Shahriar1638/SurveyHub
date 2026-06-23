@@ -37,7 +37,7 @@ function escapeRegex(str) {
  */
 router.get('/', async (req, res) => {
   try {
-    const { sort, category, search, length, statusFilter, dateFrom, dateTo, userId } = req.query;
+    const { sort, category, search, length, statusFilter, dateFrom, dateTo, userId, page, limit } = req.query;
 
     // Base query: only show published or expired surveys
     const query = { status: { $in: ['published', 'expired'] } };
@@ -86,17 +86,25 @@ router.get('/', async (req, res) => {
     if (sort === 'title_asc') sortOption = { title: 1 };
     if (sort === 'title_desc') sortOption = { title: -1 };
 
-    // Fetch all matching surveys (filtering by question length is done post-query)
-    let surveys = await Survey.find(query).sort(sortOption).lean();
-
-    // Question length filter (post-query since it's on array length)
+    // Question length filter (use $expr + $size to filter in DB, not in-memory)
     if (length === 'short') {
-      surveys = surveys.filter(s => s.questions.length < 10);
+      query.$expr = { $lt: [{ $size: '$questions' }, 10] };
     } else if (length === 'medium') {
-      surveys = surveys.filter(s => s.questions.length >= 10 && s.questions.length <= 15);
+      query.$expr = { $and: [{ $gte: [{ $size: '$questions' }, 10] }, { $lte: [{ $size: '$questions' }, 15] }] };
     } else if (length === 'long') {
-      surveys = surveys.filter(s => s.questions.length > 15);
+      query.$expr = { $gt: [{ $size: '$questions' }, 15] };
     }
+
+    // Pagination
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const pageSize = Math.min(50, Math.max(1, parseInt(limit, 10) || 12));
+    const skip = (pageNum - 1) * pageSize;
+
+    // Get total count for pagination (before applying skip/limit)
+    const totalCount = await Survey.countDocuments(query);
+
+    // Fetch matching surveys
+    let surveys = await Survey.find(query).sort(sortOption).skip(skip).limit(pageSize).lean();
 
     // If userId provided, attach participation flags
     if (userId) {
@@ -117,7 +125,10 @@ router.get('/', async (req, res) => {
 
     res.json({
       success: true,
-      total: surveys.length,
+      total: totalCount,
+      page: pageNum,
+      pageSize,
+      totalPages: Math.ceil(totalCount / pageSize),
       categories: categories.filter(Boolean).sort(),
       data: surveys,
     });

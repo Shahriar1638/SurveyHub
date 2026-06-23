@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Survey = require('../models/Survey');
+const Response = require('../models/response');
 const Blog = require('../models/Blog');
 const User = require('../models/User');
 
@@ -22,6 +23,25 @@ router.get('/', async (req, res) => {
     const surveys = await Survey.find({ surveyorId });
     const activeSurveys = surveys.filter(s => s.status === 'published').length;
     const totalResponses = surveys.reduce((sum, s) => sum + (s.participantCount || 0), 0);
+
+    // Completion rate: submitted / (draft + submitted) across all surveys
+    const surveyIds = surveys.map(s => s._id);
+    let avgCompletionRate = 0;
+    let newResponses7d = 0;
+    if (surveyIds.length > 0) {
+      const [submittedCount, draftCount, recentCount] = await Promise.all([
+        Response.countDocuments({ surveyId: { $in: surveyIds }, status: 'submitted' }),
+        Response.countDocuments({ surveyId: { $in: surveyIds }, status: 'draft' }),
+        Response.countDocuments({
+          surveyId: { $in: surveyIds },
+          status: 'submitted',
+          submittedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+        }),
+      ]);
+      const total = submittedCount + draftCount;
+      avgCompletionRate = total > 0 ? Math.round((submittedCount / total) * 100) : 0;
+      newResponses7d = recentCount;
+    }
     
     // 2. Your Active Surveys — top 3 by engagement
     const publishedSurveys = await Survey.find({ surveyorId, status: 'published' })
@@ -81,8 +101,8 @@ router.get('/', async (req, res) => {
         kpis: {
           totalResponses,
           activeSurveys,
-          avgCompletionRate: 0, // To be calculated based on views vs completions
-          newResponses7d: 0 // Mocked metric
+          avgCompletionRate,
+          newResponsesLast7Days: newResponses7d,
         },
         publishedSurveys,
         draftSurveys,

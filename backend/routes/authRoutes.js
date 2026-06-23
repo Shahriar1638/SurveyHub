@@ -102,7 +102,7 @@ router.post('/login', validate(loginSchema), async (req, res) => {
     }
 
     // Optional: generate JWT if not handled globally
-    const token = jwt.sign({ email: user.email, role: user.role }, process.env.ACCESS_TOKEN_SECRET || 'secret', { expiresIn: '1h' });
+    const token = jwt.sign({ email: user.email, role: user.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
     res.status(200).send({ message: 'Login successful', user, token });
   } catch (error) {

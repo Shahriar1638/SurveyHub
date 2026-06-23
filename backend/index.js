@@ -13,6 +13,10 @@ require('dotenv').config({ path: envPath });
 
 const port = process.env.PORT || 3000;
 
+// ── Request ID (must be first — sets req.id for all downstream middleware) ────
+const requestIdMiddleware = require('./middlewares/requestId');
+app.use(requestIdMiddleware);
+
 // ── Security Headers ────────────────────────────────────────────────────────
 app.use(helmet({
   contentSecurityPolicy: false,   // disabled — frontend relies on inline styles/scripts
@@ -84,6 +88,12 @@ const getMongoUri = () => {
 
 async function run() {
   try {
+    // ── Fail-fast if critical env vars are missing ────────────────────────────
+    if (!process.env.ACCESS_TOKEN_SECRET) {
+      console.error('FATAL: ACCESS_TOKEN_SECRET is not set. Refusing to start.');
+      process.exit(1);
+    }
+
     await mongoose.connect(getMongoUri(), {
       dbName: 'surveyDB',
     });

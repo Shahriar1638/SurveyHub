@@ -92,16 +92,16 @@ router.get('/stats', async (req, res) => {
 
     else if (user.role === 'surveyor') {
       // Total responses across all their surveys
-      const surveys = await Survey.find({ createdBy: userId }, { _id: 1 }).lean();
+      const surveys = await Survey.find({ surveyorId: userId }, { _id: 1 }).lean();
       const surveyIds = surveys.map(s => s._id);
       const totalResponses = await Response.countDocuments({ surveyId: { $in: surveyIds } });
 
       // Blogs published
-      const blogsPublished = await Blog.countDocuments({ author: userId, status: 'active' });
+      const blogsPublished = await Blog.countDocuments({ surveyorEmail: email, status: 'active' });
 
       // Active surveys
       const activeSurveys = await Survey.find(
-        { createdBy: userId, status: 'published' },
+        { surveyorId: userId, status: 'published' },
         { title: 1, participantCount: 1, deadline: 1, category: 1, image: 1 }
       ).sort({ createdAt: -1 }).limit(6).lean();
 

@@ -14,10 +14,12 @@ Homepage_idea.md
 profile_idea.md
 dashboard_idea.md
 start.txt
+Reports/
 # Ignore environment files
 .env
 .env.local
 ".env.local"
 
-DESIGN_Prompt.md
+design_prompt.md
+
 SYSTEM_DESIGN_REVIEW.md
