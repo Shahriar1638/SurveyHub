@@ -1,0 +1,1 @@
+import{t as e}from"./jsx-runtime-CnSBKPes.js";var t=e();function n({children:e,className:n=``,hover:r=!1,...i}){return(0,t.jsx)(`div`,{className:`card ${r?`card-hover`:``} ${n}`,...i,children:e})}export{n as t};

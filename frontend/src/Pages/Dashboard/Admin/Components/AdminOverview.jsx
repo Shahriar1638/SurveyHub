@@ -22,16 +22,6 @@ const item = {
   show: { opacity: 1, y: 0, transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] } },
 };
 
-// ── Mock revenue data ────────────────────────────────────────────────────────
-const mockRevenueData = [
-  { month: "Jan", revenue: 420 },
-  { month: "Feb", revenue: 580 },
-  { month: "Mar", revenue: 750 },
-  { month: "Apr", revenue: 620 },
-  { month: "May", revenue: 890 },
-  { month: "Jun", revenue: 1040 },
-];
-
 export default function AdminOverview() {
   const { data: overview, isLoading, isError } = useAdminOverview();
 
@@ -40,6 +30,7 @@ export default function AdminOverview() {
 
   const health = overview?.health || {};
   const modStats = overview?.moderationStats || {};
+  const revenueData = overview?.revenueByMonth || [];
 
   return (
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-8">
@@ -75,7 +66,7 @@ export default function AdminOverview() {
         </div>
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={mockRevenueData}>
+            <BarChart data={revenueData}>
               <defs>
                 <linearGradient id="adminBarGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#0B3056" stopOpacity={0.9} />

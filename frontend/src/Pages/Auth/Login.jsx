@@ -237,7 +237,7 @@ const Login = () => {
               </span>
               <h1 className="type-heading-xl text-white font-extrabold tracking-tight leading-tight lg:type-display-lg">
                 The gateway to <br />
-                <span className="bg-gradient-to-r from-accent via-primary to-accent bg-clip-text text-transparent">survey intelligence</span>.
+                <span className="bg-gradient-to-r from-accent via-white to-accent bg-clip-text text-transparent">survey intelligence</span>.
               </h1>
               <p className="type-body-base text-white/80 leading-relaxed max-w-md">
                 Log in to connect with users, design intelligent feedback loops, and compile rich datasets powered by automated AI analytics.

@@ -1,32 +1,43 @@
-﻿import { useContext, useRef, useState, useEffect, useCallback } from "react";
+import { useContext, useRef, useState, useEffect, useCallback } from "react";
 import { Link } from "react-router";
-import { motion } from "motion/react";
-import { gsap } from "gsap";
-import { useGSAP } from "@gsap/react";
+import { motion, AnimatePresence } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
+import {
+  PlusIcon,
+  BeakerIcon,
+  PencilSquareIcon,
+  ChartBarIcon,
+  ClipboardDocumentListIcon,
+  CheckCircleIcon,
+  ArrowTrendingUpIcon,
+  ExclamationCircleIcon,
+  ArrowRightIcon,
+  ChatBubbleLeftEllipsisIcon,
+} from "@heroicons/react/24/outline";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { StatCard } from "../../Components/UI/StatCard";
 import { PageTransition } from "../../Components/UI/PageTransition";
 import { useAppealSurvey } from "../../Hooks/useSurveysMutation";
 
-const listVariants = {
+// ── Motion variants ──────────────────────────────────────────────────────────
+const container = {
   hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-  },
+  show: { opacity: 1, transition: { staggerChildren: 0.07, delayChildren: 0.1 } },
 };
-const itemVariants = {
+const item = {
   hidden: { opacity: 0, y: 16 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.38, ease: [0.16, 1, 0.3, 1] } },
 };
 
-// ── Moderation Banner for rejected/pending surveys ─────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+// ── Moderation Banner ─────────────────────────────────────────────────────────
 function ModerationBanner({ rejectedSurveys }) {
   const [appealId, setAppealId] = useState(null);
   const [appealMsg, setAppealMsg] = useState("");
@@ -38,99 +49,73 @@ function ModerationBanner({ rejectedSurveys }) {
     if (!appealMsg.trim()) return;
     appealMutation.mutate(
       { id, message: appealMsg },
-      {
-        onSuccess: () => {
-          setAppealId(null);
-          setAppealMsg("");
-        },
-      }
+      { onSuccess: () => { setAppealId(null); setAppealMsg(""); } }
     );
   };
 
   return (
-    <section className="py-10 bg-[--color-bg-surface]">
+    <section className="py-8" style={{ backgroundColor: "var(--color-error-light)" }}>
       <div className="container-app mx-auto">
-        <div className="mb-6">
-          <p className="type-meta-sm text-[--color-error] tracking-widest uppercase mb-2">
-            Attention Required
-          </p>
-          <h2 className="type-heading-md text-[--color-text-primary]">
-            Content Review
+        <div className="flex items-center gap-2.5 mb-5">
+          <ExclamationCircleIcon className="w-5 h-5 shrink-0" style={{ color: "var(--color-error)" }} />
+          <h2 className="font-heading font-bold text-lg" style={{ color: "var(--color-error)" }}>
+            {rejectedSurveys.length} Survey{rejectedSurveys.length !== 1 ? "s" : ""} Need Attention
           </h2>
-          <p className="type-body-sm text-[--color-text-secondary] mt-1">
-            Some of your content needs attention before it can be published.
-          </p>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {rejectedSurveys.map((s) => (
             <div
               key={s._id}
-              className={`card p-5 border-l-4 ${
-                s.status === "rejected"
-                  ? "border-l-[--color-error]"
-                  : "border-l-[--color-warning]"
-              }`}
+              className="rounded-xl bg-white p-5 border-l-4 flex items-start justify-between gap-4"
+              style={{ borderLeftColor: "var(--color-error)", borderColor: "var(--color-border)" }}
             >
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <p className="type-label-sm text-[--color-text-primary]">
-                    {s.title}
+              <div className="min-w-0">
+                <p className="font-semibold text-sm" style={{ color: "var(--color-text-primary)" }}>{s.title}</p>
+                <p className="text-xs font-[--font-mono] mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
+                  {s.status === "rejected" ? "Rejected" : "Pending Review"} ·{" "}
+                  {new Date(s.updatedAt || s.createdAt).toLocaleDateString()}
+                </p>
+                {s.moderation?.reason && (
+                  <p className="text-xs mt-2" style={{ color: "var(--color-error)" }}>
+                    Reason: {s.moderation.reason}
                   </p>
-                  <p className="type-meta text-[--color-text-tertiary] mt-0.5 font-[--font-mono]">
-                    {s.status === "rejected"
-                      ? "Rejected"
-                      : "Pending Review"}{" "}
-                    ·{" "}
-                    {new Date(s.updatedAt || s.createdAt).toLocaleDateString()}
+                )}
+                {s.moderation?.appeal && (
+                  <p className="text-xs mt-1 italic" style={{ color: "var(--color-text-tertiary)" }}>
+                    Appeal submitted: "{s.moderation.appeal.message}"
                   </p>
-                  {s.moderation?.reason && (
-                    <p className="type-body-sm text-[--color-error] mt-2">
-                      Reason: {s.moderation.reason}
-                    </p>
-                  )}
-                  {s.moderation?.appeal && (
-                    <p className="type-body-sm text-[--color-text-tertiary] mt-1 italic">
-                      Appeal submitted: &ldquo;{s.moderation.appeal.message}&rdquo;
-                    </p>
-                  )}
-                </div>
-                {s.status === "rejected" && !s.moderation?.appeal && (
-                  <div className="shrink-0">
-                    {appealId === s._id ? (
-                      <div className="flex flex-col gap-2 min-w-[240px]">
-                        <textarea
-                          value={appealMsg}
-                          onChange={(e) => setAppealMsg(e.target.value)}
-                          placeholder="Explain why this should be approved..."
-                          className="input-field text-sm min-h-[80px]"
-                        />
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleAppeal(s._id)}
-                            disabled={appealMutation.isPending}
-                            className="btn btn-sm btn-primary"
-                          >
-                            {appealMutation.isPending ? "Submitting..." : "Submit Appeal"}
-                          </button>
-                          <button
-                            onClick={() => { setAppealId(null); setAppealMsg(""); }}
-                            className="btn btn-sm btn-ghost"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => setAppealId(s._id)}
-                        className="btn btn-sm btn-outline text-[--color-error] border-[--color-error] hover:bg-[--color-error]/10"
-                      >
-                        Appeal
-                      </button>
-                    )}
-                  </div>
                 )}
               </div>
+              {s.status === "rejected" && !s.moderation?.appeal && (
+                <div className="shrink-0">
+                  {appealId === s._id ? (
+                    <div className="flex flex-col gap-2 min-w-[240px]">
+                      <textarea
+                        value={appealMsg}
+                        onChange={(e) => setAppealMsg(e.target.value)}
+                        placeholder="Explain why this should be approved..."
+                        className="input-field text-sm min-h-[72px]"
+                      />
+                      <div className="flex gap-2">
+                        <button onClick={() => handleAppeal(s._id)} disabled={appealMutation.isPending} className="btn btn-sm btn-primary">
+                          {appealMutation.isPending ? "Submitting…" : "Submit Appeal"}
+                        </button>
+                        <button onClick={() => { setAppealId(null); setAppealMsg(""); }} className="btn btn-sm btn-ghost">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => setAppealId(s._id)}
+                      className="btn btn-sm"
+                      style={{ border: "1px solid var(--color-error)", color: "var(--color-error)", backgroundColor: "transparent" }}
+                    >
+                      Appeal
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -139,230 +124,145 @@ function ModerationBanner({ rejectedSurveys }) {
   );
 }
 
-function getGreeting() {
-  const h = new Date().getHours();
-  if (h < 12) return "Good morning";
-  if (h < 18) return "Good afternoon";
-  return "Good evening";
-}
-
-function Skeleton() {
-  return (
-    <PageTransition>
-      <div className="animate-pulse">
-        <div className="h-72 bg-[--color-bg-subtle]" />
-        <div className="container-app mx-auto py-10 space-y-8">
-          <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-28 bg-[--color-bg-inset] rounded-xl" />
-            ))}
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="h-24 bg-[--color-bg-inset] rounded-xl" />
-            ))}
-          </div>
-          <div className="h-48 bg-[--color-bg-inset] rounded-xl" />
-        </div>
-      </div>
-    </PageTransition>
-  );
-}
-
-// ── Active Surveys Banner Slider ─────────────────────────────────────────────
-function ActiveSurveysBanner({ surveys }) {
+// ── Survey Slider ─────────────────────────────────────────────────────────────
+function ActiveSurveySlider({ surveys }) {
   const [current, setCurrent] = useState(0);
   const [paused, setPaused] = useState(false);
 
-  const next = useCallback(() => {
-    setCurrent((i) => (i + 1) % surveys.length);
-  }, [surveys.length]);
+  const next = useCallback(() => setCurrent((i) => (i + 1) % surveys.length), [surveys.length]);
+  const prev = useCallback(() => setCurrent((i) => (i - 1 + surveys.length) % surveys.length), [surveys.length]);
 
-  const prev = useCallback(() => {
-    setCurrent((i) => (i - 1 + surveys.length) % surveys.length);
-  }, [surveys.length]);
-
-  // Auto-advance every 5s
   useEffect(() => {
     if (paused || surveys.length <= 1) return;
     const id = setInterval(next, 5000);
     return () => clearInterval(id);
   }, [paused, next, surveys.length]);
 
-  if (surveys.length === 0) {
-    return (
-      <section className="py-20 bg-[--color-bg-subtle]">
-        <div className="container-app mx-auto text-center">
-          <div className="empty-state py-16">
-            <div className="empty-state-icon mx-auto">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-              </svg>
-            </div>
-            <h3 className="type-heading-sm mt-4">No active surveys yet</h3>
-            <p className="type-body-sm text-[--color-text-secondary] mt-2 max-w-xs mx-auto">
-              Ready to hear what people think? Create your first survey and start collecting real responses.
-            </p>
-            <Link to="/dashboard/create-survey" className="btn btn-primary btn-md mt-5">
-              Create Your First Survey
-            </Link>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
+  if (surveys.length === 0) return null;
   const survey = surveys[current];
 
   return (
-    <section
-      className="relative bg-[--color-bg-subtle] overflow-hidden"
+    <div
+      className="relative rounded-2xl overflow-hidden"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
     >
-      {/* Banner */}
-      <div className="relative h-[320px] sm:h-[360px] lg:h-[400px]">
-        {/* Background image */}
-        <div className="absolute inset-0">
-          {survey.image ? (
-            <img
-              src={survey.image}
-              alt={survey.title}
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <div className="w-full h-full bg-[--color-primary]" />
-          )}
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-        </div>
-
-        {/* Content */}
-        <div className="relative h-full container-app mx-auto px-6 flex flex-col justify-end pb-12 sm:pb-14">
-          <motion.div
-            key={survey._id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="max-w-xl"
-          >
-            {survey.category && (
-              <span className="inline-flex px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-[0.2em] bg-[--color-accent]/90 text-white mb-4">
-                {survey.category}
-              </span>
-            )}
-            <h3 className="type-heading-xl text-white font-extrabold mb-2 leading-tight">
-              {survey.title}
-            </h3>
-            {survey.description && (
-              <p className="type-body-base text-white/75 line-clamp-2 mb-5 max-w-lg">
-                {survey.description}
-              </p>
-            )}
-            <div className="flex items-center gap-4">
-              <Link
-                to="/dashboard/my-surveys"
-                className="btn btn-primary btn-md gap-2"
-              >
-                View Details
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-              <span className="type-meta text-white/60 font-[--font-mono]">
-                {survey.participantCount ?? 0} responses
-              </span>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Navigation arrows — only if more than 1 */}
-        {surveys.length > 1 && (
-          <>
-            <button
-              onClick={prev}
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 transition-colors z-10"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <button
-              onClick={next}
-              className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white hover:bg-white/25 transition-colors z-10"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            </button>
-          </>
+      {/* Background */}
+      <div className="absolute inset-0" style={{ backgroundColor: "var(--color-primary)" }}>
+        {survey.image && (
+          <img src={survey.image} alt="" className="w-full h-full object-cover opacity-30" />
         )}
+        <div className="absolute inset-0" style={{ background: "linear-gradient(135deg, rgba(11,48,86,0.95) 0%, rgba(11,48,86,0.75) 100%)" }} />
       </div>
+
+      {/* Content */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={survey._id}
+          initial={{ opacity: 0, x: 16 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -16 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+          className="relative p-8"
+        >
+          {survey.category && (
+            <span className="inline-block mb-3 text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.18em] px-2.5 py-1 rounded-full"
+              style={{ backgroundColor: "var(--color-accent)", color: "white" }}
+            >
+              {survey.category}
+            </span>
+          )}
+          <h3 className="font-heading font-bold text-xl text-white leading-snug mb-2 max-w-xs">
+            {survey.title}
+          </h3>
+          {survey.description && (
+            <p className="text-sm text-white/65 line-clamp-2 mb-5 max-w-sm">
+              {survey.description}
+            </p>
+          )}
+          <div className="flex items-center gap-4">
+            <Link to="/dashboard/surveys" className="btn btn-primary btn-sm">
+              View Details
+            </Link>
+            <span className="text-xs font-[--font-mono] text-white/50">
+              {survey.participantCount ?? 0} responses
+            </span>
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Dots */}
       {surveys.length > 1 && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
-          {surveys.map((s, i) => (
+        <div className="absolute bottom-4 right-6 flex items-center gap-2">
+          <button onClick={prev} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "rgba(255,255,255,0.12)", color: "white" }}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          {surveys.map((_, i) => (
             <button
-              key={s._id}
+              key={i}
               onClick={() => setCurrent(i)}
-              className={`transition-all duration-300 rounded-full ${
-                i === current
-                  ? "w-6 h-2 bg-[--color-accent]"
-                  : "w-2 h-2 bg-white/50 hover:bg-white/75"
-              }`}
+              className="rounded-full transition-all duration-300"
+              style={{
+                width: i === current ? "20px" : "6px",
+                height: "6px",
+                backgroundColor: i === current ? "var(--color-accent)" : "rgba(255,255,255,0.35)",
+              }}
             />
           ))}
+          <button onClick={next} className="w-7 h-7 rounded-full flex items-center justify-center transition-colors"
+            style={{ backgroundColor: "rgba(255,255,255,0.12)", color: "white" }}>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         </div>
       )}
-    </section>
+    </div>
   );
 }
 
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+function Skeleton() {
+  return (
+    <PageTransition>
+      <div className="animate-pulse">
+        <div className="h-72" style={{ backgroundColor: "var(--color-bg-subtle)" }} />
+        <div className="container-app mx-auto py-10 space-y-8">
+          <div className="grid grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => <div key={i} className="h-28 rounded-xl" style={{ backgroundColor: "var(--color-bg-inset)" }} />)}
+          </div>
+          <div className="h-64 rounded-xl" style={{ backgroundColor: "var(--color-bg-inset)" }} />
+        </div>
+      </div>
+    </PageTransition>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
 export default function SurveyorHome() {
   const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
-  const heroRef = useRef(null);
 
   const { data, isPending, error } = useQuery({
     queryKey: ["home", "surveyor", user?.uid],
     enabled: Boolean(user?.uid),
     queryFn: async () => {
       const uid = user?.uid || "";
-      const response = await axiosSecure.get(
-        `/api/homepages/surveyor${uid ? `?surveyorId=${uid}` : ""}`,
-      );
-      return response.data;
+      const res = await axiosSecure.get(`/api/homepages/surveyor${uid ? `?surveyorId=${uid}` : ""}`);
+      return res.data;
     },
   });
-
-  // GSAP hero entrance
-  useGSAP(
-    () => {
-      const prefersReduced = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      if (prefersReduced || !heroRef.current) return;
-      const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
-      tl.from(".sh-eyebrow", { opacity: 0, y: 16, duration: 0.45 })
-        .from(".sh-title", { opacity: 0, y: 24, duration: 0.6 }, "-=0.2")
-        .from(".sh-subtitle", { opacity: 0, y: 16, duration: 0.45 }, "-=0.35")
-        .from(
-          ".sh-cta",
-          { opacity: 0, y: 12, duration: 0.35, stagger: 0.1 },
-          "-=0.25",
-        );
-    },
-    { scope: heroRef, dependencies: [isPending] },
-  );
 
   if (isPending) return <Skeleton />;
   if (error)
     return (
-      <PageTransition className="container-app mx-auto py-24 text-center">
-        <p className="type-body-base text-[--color-error]">
-          {error.message || "Failed to load"}
-        </p>
+      <PageTransition>
+        <div className="container-app mx-auto py-24 text-center">
+          <p className="text-sm" style={{ color: "var(--color-error)" }}>{error.message || "Failed to load"}</p>
+        </div>
       </PageTransition>
     );
 
@@ -372,371 +272,439 @@ export default function SurveyorHome() {
   const drafts = payload.draftSurveys || [];
   const rejectedSurveys = payload.rejectedSurveys || [];
   const blogActivity = payload.recentBlogActivity || [];
-  const name = user?.displayName || "";
+  const firstName = (user?.displayName || "").split(" ")[0] || "there";
+  const greeting = getGreeting();
 
   return (
     <PageTransition>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 1 — Hero Banner
+          HERO — Personal welcome, navy + orange
       ══════════════════════════════════════════════════ */}
-      <section
-        ref={heroRef}
-        className="relative overflow-hidden bg-[--color-primary] min-h-[320px] flex items-center"
-      >
-        {/* Abstract background image */}
-        <img
-          src="/surveyor-hero.png"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover opacity-20 select-none pointer-events-none"
-        />
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-[--color-primary] via-[--color-primary]/80 to-transparent" />
+      <section style={{ backgroundColor: "var(--color-primary)" }} className="relative overflow-hidden">
+        {/* Subtle geometric decoration */}
+        <div className="absolute inset-0 pointer-events-none select-none" aria-hidden="true">
+          {/* Large soft glow circle top-right */}
+          <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full opacity-[0.07]"
+            style={{ background: "radial-gradient(circle, var(--color-accent) 0%, transparent 70%)" }} />
+          {/* Small accent circle bottom-left */}
+          <div className="absolute bottom-0 left-1/4 w-64 h-64 rounded-full opacity-[0.05]"
+            style={{ background: "radial-gradient(circle, #5BBCEA 0%, transparent 70%)" }} />
+          {/* Grid dots */}
+          <svg className="absolute inset-0 w-full h-full opacity-[0.04]" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="dots" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+                <circle cx="1" cy="1" r="1" fill="white" />
+              </pattern>
+            </defs>
+            <rect width="100%" height="100%" fill="url(#dots)" />
+          </svg>
+        </div>
 
-        <div className="relative container-app mx-auto py-16 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-8">
-          {/* Left text */}
-          <div className="max-w-xl">
-            <span className="sh-eyebrow inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold font-[--font-ui] tracking-widest uppercase bg-[--color-accent-light] text-[--color-accent-dark] mb-5">
-              Surveyor Workspace
-            </span>
-            <h1 className="sh-title type-display-lg text-white mb-3">
-              {getGreeting()}{name ? `, ${name}` : ""}! 🔵
-            </h1>
-            <p className="sh-subtitle type-body-lg text-white/70 max-w-lg mb-6">
-              Your surveys are live, your data is growing — let&apos;s turn those
-              responses into stories that matter.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                to="/create-survey"
-                className="sh-cta btn btn-primary btn-lg"
+        <div className="relative container-app mx-auto px-6 py-14 lg:py-18">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            animate="show"
+            className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-10"
+          >
+            {/* Left — greeting + CTAs */}
+            <motion.div variants={item} className="max-w-lg">
+              <span
+                className="inline-block mb-4 text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.18em] px-3 py-1 rounded-full"
+                style={{ backgroundColor: "var(--color-accent-light)", color: "var(--color-accent-dark)" }}
               >
-                + Create New Survey
-              </Link>
-              <Link
-                to="/analytics"
-                className="sh-cta btn btn-lg"
-                style={{
-                  background: "rgba(255,255,255,0.12)",
-                  color: "white",
-                  border: "1px solid rgba(255,255,255,0.25)",
-                }}
-              >
-                AI Analytics Lab →
-              </Link>
-            </div>
-          </div>
+                Surveyor Workspace
+              </span>
+              <h1 className="font-heading font-bold text-4xl lg:text-5xl text-white leading-tight mb-3">
+                {greeting},<br />
+                <span style={{ color: "var(--color-accent)" }}>{firstName}!</span>
+              </h1>
+              <p className="text-base text-white/65 leading-relaxed mb-8 max-w-md">
+                Your surveys are live, your data is growing — let's turn those responses into stories that matter.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link to="/dashboard/create-survey" className="btn btn-primary btn-lg flex items-center gap-2">
+                  <PlusIcon className="w-4 h-4" />
+                  New Survey
+                </Link>
+                <Link
+                  to="/dashboard/analytics"
+                  className="btn btn-lg flex items-center gap-2"
+                  style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}
+                >
+                  <BeakerIcon className="w-4 h-4" />
+                  AI Analytics
+                </Link>
+              </div>
+            </motion.div>
 
-          {/* Right — Quick stats */}
-          <div className="sh-cta shrink-0">
-            <div
-              className="rounded-xl p-5 min-w-[220px]"
-              style={{
-                background: "rgba(255,255,255,0.08)",
-                border: "1px solid rgba(255,255,255,0.15)",
-              }}
-            >
-              <p className="type-meta-sm text-white/50 tracking-widest uppercase mb-2">
-                Quick Stats
-              </p>
-              <p className="type-label-sm text-white/80 mb-1">
-                {activeSurveys.length} Active Survey{activeSurveys.length !== 1 ? "s" : ""}
-              </p>
-              <p className="type-label-sm text-white/80 mb-3">
-                {drafts.length} Draft{drafts.length !== 1 ? "s" : ""} in progress
-              </p>
-              <Link
-                to="/dashboard/my-surveys"
-                className="btn btn-primary btn-sm w-full justify-center"
+            {/* Right — summary card + slider */}
+            <motion.div variants={item} className="lg:w-[380px] w-full shrink-0 flex flex-col gap-4">
+              {/* Stats summary */}
+              <div
+                className="rounded-2xl p-5 grid grid-cols-3 gap-4"
+                style={{ backgroundColor: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
-                View All
-              </Link>
-            </div>
-          </div>
+                {[
+                  { label: "Responses", value: kpis.totalResponses ?? 0 },
+                  { label: "Active", value: kpis.activeSurveys ?? 0 },
+                  { label: "Drafts", value: drafts.length },
+                ].map(({ label, value }) => (
+                  <div key={label} className="text-center">
+                    <p className="font-[--font-mono] text-2xl font-bold text-white">{value.toLocaleString()}</p>
+                    <p className="text-[11px] font-[--font-ui] uppercase tracking-wider mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Active survey card slider */}
+              {activeSurveys.length > 0 && (
+                <ActiveSurveySlider surveys={activeSurveys} />
+              )}
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Moderation alerts — rejected or pending surveys */}
+      {/* ── Moderation alerts ── */}
       <ModerationBanner rejectedSurveys={rejectedSurveys} />
 
       {/* ══════════════════════════════════════════════════
-          SECTION 2 — KPI Row
+          SECTION 2 — KPI Cards
       ══════════════════════════════════════════════════ */}
-      <section className="py-16 bg-[--color-bg-subtle]">
+      <section className="py-14" style={{ backgroundColor: "var(--color-bg-subtle)" }}>
         <div className="container-app mx-auto">
-          <div className="mb-8">
-            <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
-              Your Performance
-            </p>
-            <h2 className="type-heading-lg text-[--color-text-primary]">
-              At a Glance
-            </h2>
-            <p className="type-body-sm text-[--color-text-secondary] mt-1 max-w-md">
-              Everything you need to track how your surveys are doing, in one
-              clear view.
-            </p>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            <StatCard
-              title="Total Responses"
-              value={kpis.totalResponses ?? 0}
-              roleAccent="surveyor"
-            />
-            <StatCard
-              title="Active Surveys"
-              value={kpis.activeSurveys ?? 0}
-              roleAccent="surveyor"
-            />
-            <StatCard
-              title="Avg Completion"
-              value={`${kpis.avgCompletionRate ?? 0}%`}
-              roleAccent="surveyor"
-            />
-            <StatCard
-              title="New (7 days)"
-              value={kpis.newResponsesLast7Days ?? 0}
-              roleAccent="surveyor"
-              delta="+12%"
-              deltaType="positive"
-            />
-          </div>
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <motion.div variants={item} className="mb-8">
+              <p className="text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.16em] mb-2" style={{ color: "var(--color-text-tertiary)" }}>
+                Your Performance
+              </p>
+              <h2 className="font-heading font-bold text-2xl" style={{ color: "var(--color-text-primary)" }}>
+                At a Glance
+              </h2>
+              <p className="text-sm mt-1 max-w-sm" style={{ color: "var(--color-text-secondary)" }}>
+                Everything you need to track how your surveys are doing.
+              </p>
+            </motion.div>
+
+            <motion.div variants={item} className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              <StatCard
+                title="Total Responses"
+                value={(kpis.totalResponses ?? 0).toLocaleString()}
+                icon={ChartBarIcon}
+              />
+              <StatCard
+                title="Active Surveys"
+                value={kpis.activeSurveys ?? 0}
+                icon={ClipboardDocumentListIcon}
+              />
+              <StatCard
+                title="Avg Completion"
+                value={`${kpis.avgCompletionRate ?? 0}%`}
+                icon={CheckCircleIcon}
+              />
+              <StatCard
+                title="New (7 days)"
+                value={kpis.newResponsesLast7Days ?? 0}
+                icon={ArrowTrendingUpIcon}
+                delta="+12%"
+                deltaType="positive"
+              />
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 3 — Quick Actions
+          SECTION 3 — Quick Actions (3-col card grid)
       ══════════════════════════════════════════════════ */}
-      <section className="py-20 bg-[--color-bg-surface]">
+      <section className="py-14" style={{ backgroundColor: "var(--color-bg-surface)" }}>
         <div className="container-app mx-auto">
-          <div className="mb-10">
-            <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
-              Jump Right In
-            </p>
-            <h2 className="type-heading-lg text-[--color-text-primary]">
-              Quick Actions
-            </h2>
-            <p className="type-body-sm text-[--color-text-secondary] mt-1 max-w-md">
-              Your most-used tools, one click away. No digging through menus.
-            </p>
-          </div>
-          <div className="grid gap-6 sm:grid-cols-3">
-            {[
-              {
-                icon: "M12 4v16m8-8H4",
-                label: "Create New Survey",
-                desc: "Build a dynamic survey with MCQ, scale, and paragraph questions. Launch in minutes.",
-                to: "/create-survey",
-                accent: "--color-accent",
-                accentLight: "--color-accent-light",
-                accentDark: "--color-accent-dark",
-              },
-              {
-                icon: "M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z",
-                label: "AI Analytics Lab",
-                desc: "Let Gemini analyse your response data and surface the themes that matter most.",
-                to: "/analytics",
-                accent: "--color-accent",
-                accentLight: "--color-accent-light",
-                accentDark: "--color-accent-dark",
-              },
-              {
-                icon: "M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z",
-                label: "Write Insight Blog",
-                desc: "Turn your survey findings into a compelling AI-generated insight post for your audience.",
-                to: "/blog-management",
-                accent: "--color-accent",
-                accentLight: "--color-accent-light",
-                accentDark: "--color-accent-dark",
-              },
-            ].map((action, i) => (
-              <motion.div
-                key={action.label}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1, duration: 0.35 }}
-              >
-                <Link
-                  to={action.to}
-                  className="card card-hover p-6 flex flex-col gap-4 h-full group"
-                >
-                  <div
-                    className="w-12 h-12 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
-                    style={{
-                      backgroundColor: `var(${action.accentLight})`,
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <motion.div variants={item} className="mb-8">
+              <p className="text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.16em] mb-2" style={{ color: "var(--color-text-tertiary)" }}>
+                Jump Right In
+              </p>
+              <h2 className="font-heading font-bold text-2xl" style={{ color: "var(--color-text-primary)" }}>
+                Quick Actions
+              </h2>
+            </motion.div>
+
+            <motion.div variants={container} className="grid gap-4 sm:grid-cols-3">
+              {[
+                {
+                  icon: PlusIcon,
+                  label: "Create Survey",
+                  desc: "Build a dynamic survey with MCQ, scale, and paragraph questions. Launch in minutes.",
+                  to: "/dashboard/create-survey",
+                },
+                {
+                  icon: BeakerIcon,
+                  label: "AI Analytics Lab",
+                  desc: "Let Gemini analyse your response data and surface the themes that matter most.",
+                  to: "/dashboard/analytics",
+                },
+                {
+                  icon: PencilSquareIcon,
+                  label: "Write Insight Blog",
+                  desc: "Turn survey findings into a compelling AI-generated insight post for your audience.",
+                  to: "/dashboard/blog-studio",
+                },
+              ].map((action, i) => (
+                <motion.div key={action.label} variants={item}>
+                  <Link
+                    to={action.to}
+                    className="group flex flex-col gap-5 p-6 rounded-xl border bg-white h-full transition-all duration-200"
+                    style={{ borderColor: "var(--color-border)", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.boxShadow = "0 8px 24px -6px rgba(0,0,0,0.10)";
+                      e.currentTarget.style.borderColor = "var(--color-accent-light)";
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.05)";
+                      e.currentTarget.style.borderColor = "var(--color-border)";
                     }}
                   >
-                    <svg
-                      className="w-6 h-6"
-                      style={{ color: `var(${action.accentDark})` }}
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
+                    <div
+                      className="w-11 h-11 rounded-xl flex items-center justify-center transition-transform duration-200 group-hover:scale-110"
+                      style={{ backgroundColor: "var(--color-accent-light)" }}
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d={action.icon}
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p
-                      className="type-label-lg mb-1"
-                      style={{ color: `var(${action.accentDark})` }}
-                    >
-                      {action.label}
-                    </p>
-                    <p className="type-body-sm text-[--color-text-secondary] leading-relaxed">
-                      {action.desc}
-                    </p>
-                  </div>
-                  <span
-                    className="type-meta-sm tracking-widest uppercase font-[--font-ui] mt-auto"
-                    style={{ color: `var(${action.accent})` }}
-                  >
-                    Get started →
-                  </span>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+                      <action.icon className="w-5 h-5" style={{ color: "var(--color-accent-dark)" }} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm mb-1.5" style={{ color: "var(--color-text-primary)" }}>
+                        {action.label}
+                      </p>
+                      <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-secondary)" }}>
+                        {action.desc}
+                      </p>
+                    </div>
+                    <span className="flex items-center gap-1 text-xs font-semibold font-[--font-ui] mt-auto group-hover:gap-2 transition-all duration-200"
+                      style={{ color: "var(--color-accent)" }}>
+                      Get started <ArrowRightIcon className="w-3.5 h-3.5" />
+                    </span>
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 4 — Active Surveys Banner Slider
+          SECTION 4 — Drafts + Blog Activity (2-col)
       ══════════════════════════════════════════════════ */}
-      <ActiveSurveysBanner surveys={activeSurveys} />
+      <section className="py-14" style={{ backgroundColor: "var(--color-bg-subtle)" }}>
+        <div className="container-app mx-auto grid gap-10 lg:grid-cols-2">
 
-      {/* ══════════════════════════════════════════════════
-          SECTION 5 — Drafts + Recent Blog Activity (2-col)
-      ══════════════════════════════════════════════════ */}
-      <section className="py-20 bg-[--color-bg-surface]">
-        <div className="container-app mx-auto grid gap-12 lg:grid-cols-2">
-          {/* Drafts */}
-          <div>
-            <div className="flex items-end justify-between mb-6">
+          {/* ── Drafts ── */}
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <motion.div variants={item} className="flex items-end justify-between mb-6">
               <div>
-                <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
+                <p className="text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.16em] mb-1.5" style={{ color: "var(--color-text-tertiary)" }}>
                   In Progress
                 </p>
-                <h2 className="type-heading-md text-[--color-text-primary]">
-                  Drafts
-                </h2>
-                <p className="type-body-sm text-[--color-text-secondary] mt-1">
-                  Almost there — publish these to start collecting responses.
+                <h2 className="font-heading font-bold text-xl" style={{ color: "var(--color-text-primary)" }}>Drafts</h2>
+                <p className="text-sm mt-1" style={{ color: "var(--color-text-secondary)" }}>
+                  Almost there — publish to start collecting responses.
                 </p>
               </div>
-              <span className="badge badge-draft">{drafts.length}</span>
-            </div>
+              {drafts.length > 0 && (
+                <span
+                  className="text-[11px] font-bold font-[--font-mono] px-2.5 py-1 rounded-full"
+                  style={{ backgroundColor: "var(--color-accent-light)", color: "var(--color-accent-dark)" }}
+                >
+                  {drafts.length}
+                </span>
+              )}
+            </motion.div>
+
             {drafts.length > 0 ? (
-              <div className="flex flex-col gap-3">
+              <motion.div variants={container} className="flex flex-col gap-3">
                 {drafts.slice(0, 4).map((d) => (
-                  <div
+                  <motion.div
                     key={d._id}
-                    className="card p-5 flex items-center justify-between gap-4 hover:shadow-[--shadow-md] transition-shadow duration-250"
+                    variants={item}
+                    className="flex items-center justify-between gap-4 p-4 rounded-xl bg-white border transition-shadow duration-200 hover:shadow-md"
+                    style={{ borderColor: "var(--color-border)" }}
                   >
                     <div className="min-w-0">
-                      <p className="type-label-sm text-[--color-text-primary] truncate">
-                        {d.title}
-                      </p>
-                      <p className="type-meta text-[--color-text-tertiary] mt-0.5 font-[--font-mono]">
-                        {d.questions?.length ?? 0} questions ·{" "}
-                        {new Date(d.updatedAt || d.createdAt).toLocaleDateString()}
+                      <p className="text-sm font-semibold truncate" style={{ color: "var(--color-text-primary)" }}>{d.title}</p>
+                      <p className="text-xs font-[--font-mono] mt-0.5" style={{ color: "var(--color-text-tertiary)" }}>
+                        {d.questions?.length ?? 0} questions · {new Date(d.updatedAt || d.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <Link
-                      to={`/surveys/${d._id}/edit`}
-                      className="btn btn-primary btn-sm shrink-0"
-                    >
-                      Pay &amp; Publish
+                    <Link to={`/surveys/${d._id}/edit`} className="btn btn-primary btn-sm shrink-0">
+                      Pay & Publish
                     </Link>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             ) : (
-              <div className="card p-10 text-center">
-                <p className="type-body-sm text-[--color-text-tertiary]">
-                  No drafts saved — you&apos;re all caught up! 🎉
-                </p>
+              <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-white border text-center"
+                style={{ borderColor: "var(--color-border)" }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                  style={{ backgroundColor: "var(--color-accent-light)" }}>
+                  <CheckCircleIcon className="w-6 h-6" style={{ color: "var(--color-accent)" }} />
+                </div>
+                <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>All caught up!</p>
+                <p className="text-xs mt-1" style={{ color: "var(--color-text-tertiary)" }}>No drafts saved.</p>
               </div>
             )}
-          </div>
+          </motion.div>
 
-          {/* Recent Blog Activity */}
-          <div>
-            <div className="mb-6">
-              <p className="type-meta-sm text-[--color-text-tertiary] tracking-widest uppercase mb-2">
+          {/* ── Blog Activity ── */}
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <motion.div variants={item} className="mb-6">
+              <p className="text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.16em] mb-1.5" style={{ color: "var(--color-text-tertiary)" }}>
                 Community
               </p>
-              <h2 className="type-heading-md text-[--color-text-primary]">
-                Recent Blog Activity
-              </h2>
-              <p className="type-body-sm text-[--color-text-secondary] mt-1">
-                See how people are engaging with your published insight posts.
+              <h2 className="font-heading font-bold text-xl" style={{ color: "var(--color-text-primary)" }}>Blog Reactions</h2>
+              <p className="text-sm mt-1" style={{ color: "var(--color-text-secondary)" }}>
+                See how people engage with your published insight posts.
               </p>
-            </div>
+            </motion.div>
+
             {blogActivity.length > 0 ? (
-              <div className="flex flex-col gap-3">
+              <motion.div variants={container} className="flex flex-col gap-3">
                 {blogActivity.slice(0, 4).map((a) => (
-                  <div key={a._id} className="card p-5 flex items-start gap-4">
-                    <div className="w-9 h-9 rounded-full bg-[--color-accent-light] flex items-center justify-center shrink-0 text-sm font-bold text-[--color-accent-dark]">
+                  <motion.div
+                    key={a._id}
+                    variants={item}
+                    className="flex items-start gap-3 p-4 rounded-xl bg-white border"
+                    style={{ borderColor: "var(--color-border)" }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-sm font-bold text-white"
+                      style={{ backgroundColor: "var(--color-accent)" }}
+                    >
                       {(a.userEmail || "U")[0].toUpperCase()}
                     </div>
                     <div className="min-w-0">
-                      <p className="type-body-sm text-[--color-text-primary] line-clamp-2">
+                      <p className="text-sm leading-snug line-clamp-2" style={{ color: "var(--color-text-primary)" }}>
                         {a.comment}
                       </p>
-                      <p className="type-meta text-[--color-text-tertiary] mt-1 font-[--font-mono]">
-                        {a.userEmail?.split("@")[0]} · &ldquo;{a.blogTitle}&rdquo; ·{" "}
+                      <p className="text-xs font-[--font-mono] mt-1" style={{ color: "var(--color-text-tertiary)" }}>
+                        {a.userEmail?.split("@")[0]} · "{a.blogTitle}" ·{" "}
                         {a.createdAt ? new Date(a.createdAt).toLocaleDateString() : ""}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
-              </div>
+              </motion.div>
             ) : (
-              <div className="card p-10 text-center">
-                <p className="type-body-sm text-[--color-text-tertiary]">
-                  No blog activity yet. Publish an insight post to get the
-                  conversation started!
+              <div className="flex flex-col items-center justify-center py-12 rounded-xl bg-white border text-center"
+                style={{ borderColor: "var(--color-border)" }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center mb-3"
+                  style={{ backgroundColor: "var(--color-accent-light)" }}>
+                  <ChatBubbleLeftEllipsisIcon className="w-6 h-6" style={{ color: "var(--color-accent)" }} />
+                </div>
+                <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>No activity yet</p>
+                <p className="text-xs mt-1 max-w-[200px]" style={{ color: "var(--color-text-tertiary)" }}>
+                  Publish an insight post to start the conversation.
                 </p>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* ══════════════════════════════════════════════════
-          SECTION 6 — Motivational CTA Banner
+          SECTION 5 — Tips & Resources (new section)
       ══════════════════════════════════════════════════ */}
-      <section className="py-20 bg-[--color-primary] text-center">
+      <section className="py-14" style={{ backgroundColor: "var(--color-bg-surface)" }}>
         <div className="container-app mx-auto">
-          <h2 className="type-display-lg text-white mb-4">
-            Every Response Tells a Story
-          </h2>
-          <p className="type-body-lg text-white/70 max-w-xl mx-auto mb-8">
-            You&apos;re building something meaningful. Keep creating, keep
-            analysing — your next insight could change the conversation.
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <Link to="/analytics" className="btn btn-primary btn-lg">
-              Run AI Analysis →
-            </Link>
-            <Link
-              to="/pricing"
-              className="btn btn-lg"
-              style={{
-                background: "rgba(255,255,255,0.1)",
-                color: "white",
-                border: "1px solid rgba(255,255,255,0.2)",
-              }}
-            >
-              Manage Plan
-            </Link>
-          </div>
+          <motion.div variants={container} initial="hidden" whileInView="show" viewport={{ once: true }}>
+            <motion.div variants={item} className="mb-8">
+              <p className="text-[11px] font-bold font-[--font-ui] uppercase tracking-[0.16em] mb-2" style={{ color: "var(--color-text-tertiary)" }}>
+                Power Your Work
+              </p>
+              <h2 className="font-heading font-bold text-2xl" style={{ color: "var(--color-text-primary)" }}>
+                Surveyor Toolkit
+              </h2>
+            </motion.div>
+            <motion.div variants={container} className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {[
+                {
+                  title: "Craft Better Questions",
+                  desc: "Use a mix of MCQ, linear scale, and open-ended to get richer, more actionable data.",
+                  icon: "✏️",
+                  link: "/dashboard/create-survey",
+                  linkLabel: "Build a survey",
+                },
+                {
+                  title: "Publish Your Findings",
+                  desc: "Turn your response data into an AI-powered blog post your audience will actually read.",
+                  icon: "📝",
+                  link: "/dashboard/blog-studio",
+                  linkLabel: "Open Blog Studio",
+                },
+                {
+                  title: "Monitor in Real Time",
+                  desc: "Track response rates, completion trends, and audience segments from AI Analytics.",
+                  icon: "📊",
+                  link: "/dashboard/analytics",
+                  linkLabel: "View analytics",
+                },
+              ].map((tip) => (
+                <motion.div
+                  key={tip.title}
+                  variants={item}
+                  className="p-5 rounded-xl border"
+                  style={{ borderColor: "var(--color-border)", backgroundColor: "var(--color-bg-subtle)" }}
+                >
+                  <span className="text-2xl mb-3 block">{tip.icon}</span>
+                  <p className="font-semibold text-sm mb-1.5" style={{ color: "var(--color-text-primary)" }}>{tip.title}</p>
+                  <p className="text-sm leading-relaxed mb-4" style={{ color: "var(--color-text-secondary)" }}>{tip.desc}</p>
+                  <Link
+                    to={tip.link}
+                    className="text-xs font-semibold font-[--font-ui] flex items-center gap-1 hover:gap-2 transition-all duration-200"
+                    style={{ color: "var(--color-accent)" }}
+                  >
+                    {tip.linkLabel} <ArrowRightIcon className="w-3 h-3" />
+                  </Link>
+                </motion.div>
+              ))}
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ══════════════════════════════════════════════════
+          SECTION 6 — CTA Banner (bottom)
+      ══════════════════════════════════════════════════ */}
+      <section className="py-16" style={{ backgroundColor: "var(--color-primary)" }}>
+        <div className="container-app mx-auto">
+          <motion.div
+            variants={container}
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true }}
+            className="flex flex-col lg:flex-row items-center justify-between gap-8"
+          >
+            <motion.div variants={item} className="max-w-lg">
+              <h2 className="font-heading font-bold text-3xl text-white leading-tight mb-3">
+                Every Response Tells a Story
+              </h2>
+              <p className="text-base leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
+                You're building something meaningful. Keep creating, keep analysing — your next insight could change the conversation.
+              </p>
+            </motion.div>
+            <motion.div variants={item} className="flex flex-wrap gap-3 shrink-0">
+              <Link to="/dashboard/analytics" className="btn btn-primary btn-lg flex items-center gap-2">
+                <BeakerIcon className="w-4 h-4" />
+                Run AI Analysis
+              </Link>
+              <Link
+                to="/pricing"
+                className="btn btn-lg"
+                style={{ backgroundColor: "rgba(255,255,255,0.1)", color: "white", border: "1px solid rgba(255,255,255,0.2)" }}
+              >
+                Manage Plan
+              </Link>
+            </motion.div>
+          </motion.div>
         </div>
       </section>
 

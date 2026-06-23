@@ -19,9 +19,5 @@ start.txt
 .env.local
 ".env.local"
 
-# Playwright
-node_modules/
-test-results/
-playwright-report/
-blob-report/
-playwright/.cache/
+DESIGN_Prompt.md
+SYSTEM_DESIGN_REVIEW.md

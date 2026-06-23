@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Report = require('../models/report');
+const Response = require('../models/response');
 const AuditLog = require('../models/AuditLog');
 const Survey = require('../models/Survey');
 const Blog = require('../models/Blog');
@@ -263,7 +264,6 @@ router.get('/user/participation', async (req, res) => {
     const userId = user._id;
 
     // Fetch user responses
-    const Response = require('../models/response');
     const responses = await Response.find({ userId, status: 'submitted' })
       .sort({ submittedAt: -1 })
       .lean();

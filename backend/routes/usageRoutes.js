@@ -22,6 +22,7 @@ router.get('/gemini', verifyToken, async (req, res) => {
       if (process.env[`GEMINI_KEY_${i}`]) keyCount++;
     }
     const hasOpenRouter = !!process.env.OPENROUTER_API_KEY;
+    const hasOpenZen = !!process.env.OPEN_ZEN_API_KEY;
 
     res.json({
       success: true,
@@ -33,6 +34,7 @@ router.get('/gemini', verifyToken, async (req, res) => {
           geminiKeys: keyCount,
           openRouter: hasOpenRouter,
           openRouterModel: process.env.OPENROUTER_MODEL || 'auto (best free)',
+          openZen: hasOpenZen,
         },
       },
     });
