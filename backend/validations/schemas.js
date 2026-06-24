@@ -18,8 +18,8 @@ const signUpSchema = z.object({
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email address'),
-  name: z.string().min(1).max(100).optional(),
-  avatar: z.string().optional(),
+  name: z.string().max(100).optional().or(z.literal('')),
+  avatar: z.string().optional().or(z.literal('')),
 });
 
 const avatarUploadSchema = z.object({
