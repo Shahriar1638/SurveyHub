@@ -2,6 +2,9 @@
 
 > A full-stack SaaS platform for creating, distributing, and analyzing surveys — built with a modern React + Node.js stack, integrated AI analytics, content moderation, and a credit-based monetization system.
 
+**Live:** [https://practice-2-firebase.web.app/](https://practice-2-firebase.web.app/)
+**Repository:** [https://github.com/Shahriar1638/SurveyHub](https://github.com/Shahriar1638/SurveyHub)
+
 ---
 
 ## 🚀 What It Does

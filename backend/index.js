@@ -13,6 +13,9 @@ require('dotenv').config({ path: envPath });
 
 const port = process.env.PORT || 3000;
 
+// ── Trust proxy (required behind Render/reverse proxy for accurate IP detection) ─
+app.set('trust proxy', 1);
+
 // ── Request ID (must be first — sets req.id for all downstream middleware) ────
 const requestIdMiddleware = require('./middlewares/requestId');
 app.use(requestIdMiddleware);
