@@ -13,23 +13,27 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 ## ✨ Key Features
 
 ### Survey Engine
+
 - **Dynamic Survey Builder** — Drag-and-drop style dual-panel editor supporting Short Answer, Paragraph, Multiple Choice, Checkbox, and Linear Scale (with Matrix grid mode) question types
 - **Smart Response Capture** — Auto-save drafts, progress tracking, and one-response-per-user enforcement at the database level
 - **Flexible Result Access** — Surveyors control who sees results: only me, participants only, or everyone
 - **Deadline Automation** — BullMQ + Redis scheduled jobs automatically expire surveys, aggregate statistics, and trigger AI insight generation
 
 ### AI-Powered Analytics
+
 - **Automatic Insight Generation** — On expiry, a 3-provider AI cascade (Gemini → OpenRouter → OpenCode Zen) generates a natural language summary, key findings, and recommendations
 - **AI Chat Sandbox** — Surveyors can ask natural language questions about their data and receive answers with inline chart visualizations (bar, pie, horizontal bar)
 - **User-Controlled AI Toggle** — Per-survey opt-in/opt-out for AI insight generation, seeded from user preferences
 
 ### Community & Content
+
 - **Blog Engine** — Markdown-supported blog posts with versioned edit history
 - **Nested Comments** — Full comment + reply threading on blog posts
 - **5-Type Reaction System** — Like, Insightful, Disagree, Interesting, and Funny reactions with toggle logic
 - **Infinite Scroll Feed** — Performance-optimized blog browsing with IntersectionObserver pagination
 
 ### Moderation & Trust
+
 - **AI Content Moderation** — Every survey and blog is pre-screened by a multi-provider AI moderation pipeline before going public
 - **User Reporting** — Structured reporting system for surveys, blogs, comments, and replies with admin resolution workflow
 - **Appeal System** — Content creators can appeal rejected content once per item
@@ -54,6 +58,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 ## 🏗 Architecture Highlights
 
 ### Authentication & Authorization
+
 - **Dual-Layer Security** — Firebase Auth handles identity (OAuth, email/password), while JWT handles API authorization. Decoupled so either can be swapped independently.
 - **Short-Lived Tokens** — JWT 1-hour expiry limits exposure if compromised.
 - **Fail-Fast Startup** — Server refuses to start if `ACCESS_TOKEN_SECRET` is missing. No silent fallback to weak secrets.
@@ -62,6 +67,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 - **Graceful Partial Failure** — If MongoDB insert fails after Firebase account creation, the Firebase user is cleaned up automatically.
 
 ### Input Validation & API Security
+
 - **Zod Schemas** — All user-facing inputs are validated before touching route handlers.
 - **Regex Escape** — `escapeRegex()` on all search queries prevents ReDoS attacks.
 - **Rate Limiting** — 3-tier system: general (100 req/min), auth (20 req/min), payment (10 req/min), all per-IP.
@@ -71,6 +77,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 - **Content Moderation Gate** — Every survey and blog passes AI moderation before going public. Rejected content never reaches the platform.
 
 ### Data Integrity & Modeling
+
 - **Compound Unique Indexes** — `{surveyId, userId}` on Response model enforces one response per user per survey at the database level.
 - **Toggle Logic for Reactions** — Remove from all types, add to selected. Prevents duplicate reactions.
 - **Duplicate Report Guard** — One report per reporter per content item, with self-report rejection.
@@ -81,6 +88,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 - **Status Lifecycle State Machines** — Survey: `draft → published → expired`, with `pending_review`, `rejected`, `banned`, `soft-deleted` branches. Blog: similar with `active` instead of `published`.
 
 ### Backend Architecture
+
 - **Factory-Pattern Auth Middleware** — `authMiddleware.js` exports a function returning independently testable guards. Each middleware is independently testable.
 - **Shared AI Provider Service** — `services/aiProvider.js` centralizes Gemini key rotation, OpenRouter dynamic model selection, OpenCode Zen fallback, and the 3-provider cascade. Imported by `aiInsights.js`, `moderation.js`, and `analyticsRoutes.js`.
 - **BullMQ + Redis Expiry Pipeline** — Survey deadlines are scheduled as delayed jobs. Worker aggregates stats + generates AI insights on expiry. Re-schedules all published surveys on server boot.
@@ -90,6 +98,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 - **Startup Health Checks** — Fails fast if `ACCESS_TOKEN_SECRET` or MongoDB connection config is missing.
 
 ### Frontend Architecture
+
 - **Lazy-Loaded Routes** — All page components are dynamically imported via `React.lazy()`. Reduces initial bundle size.
 - **TanStack React Query v5** — Server state management with automatic cache invalidation, optimistic updates with rollback on mutations.
 - **Framer Motion** — Consistent page transitions, staggered list animations, and micro-interactions across all pages.
@@ -99,6 +108,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 - **Responsive Design Patterns** — Mobile-first with `sm:`, `md:`, `lg:` breakpoints. Dashboard sidebar collapses on mobile. Filter drawers slide in on small screens.
 
 ### AI Integration
+
 - **3-Provider Fallback Chain** — Gemini (key rotation, up to 10 keys) → OpenRouter (dynamic best free model) → OpenCode Zen (OpenAI-compatible). Sequential, not parallel.
 - **Key Rotation** — Gemini keys are tried in sequence. 429/quota errors trigger automatic fallback to next key.
 - **Dynamic Model Selection** — OpenRouter's best free model is fetched via API, cached for 1 hour. No hardcoded model ID.
@@ -108,6 +118,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 - **Zero-Cost AI Features** — AI insights and AI chat read pre-computed stats. No credits deducted.
 
 ### Observability
+
 - **Request ID Propagation** — `req.id` set by middleware, included in audit logs via `lib/audit.js`.
 - **Audit Log Model** — Tracks actor email/role/userId, action string, IP, userAgent, requestId.
 - **Moderation Stats on User Document** — `reportsResolved`, `surveysReviewed`, `usersModerated`, `totalActions`. Denormalized for fast dashboard reads.
@@ -130,6 +141,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 ## 🚦 Getting Started
 
 ### Prerequisites
+
 - Node.js (v18+)
 - MongoDB Atlas or local MongoDB instance
 - Redis (optional — server runs without it)
@@ -157,7 +169,7 @@ npm install
 # Frontend: .env (Firebase config, API base URL)
 
 # Start development servers
-cd ../backend && npm run dev   # Express server on :5000
+cd ../backend && nodemon index.js   # Express server on :5000
 cd ../frontend && npm run dev  # Vite dev server on :5173
 ```
 
@@ -168,35 +180,127 @@ cd ../frontend && npm run dev  # Vite dev server on :5173
 ```
 surveyhub/
 ├── backend/
-│   ├── models/           # Mongoose schemas (Survey, Blog, User, Response, etc.)
-│   ├── routes/           # Express route handlers
-│   ├── services/         # Business logic (AI provider, moderation, insights)
-│   ├── jobs/             # BullMQ workers and queue setup
-│   ├── validations/      # Zod input schemas
-│   └── lib/              # Utilities (audit, redis, stripe)
+│   ├── data/                    # Seed data & fixtures
+│   │   ├── moderation-policies.json
+│   │   ├── packages.json
+│   │   └── fake_*.json          # Test data generators
+│   ├── jobs/                    # BullMQ workers & queue setup
+│   │   ├── aggregateStats.js    # Response → aiInsight.stats aggregation
+│   │   └── surveyExpiry.js      # Delayed jobs for survey deadlines
+│   ├── lib/                     # Core utilities
+│   │   ├── audit.js             # Audit log helper (wraps AuditLog model)
+│   │   ├── creditConfig.js      # CREDIT_COSTS constants + deductCredits()
+│   │   └── redis.js             # ioredis connection + waitForReady()
+│   ├── middlewares/
+│   │   ├── authMiddleware.js    # Factory: verifyToken, verifyAdmin, verifySurveyor, verifyUser
+│   │   ├── authRoutes.js        # Placeholder (empty)
+│   │   └── requestId.js         # crypto.randomUUID() → req.id
+│   ├── models/                  # Mongoose schemas (14 models)
+│   │   ├── User.js              # Users with roles, subscription, moderationStats
+│   │   ├── Survey.js            # Surveys with aiInsight, moderation, questions
+│   │   ├── response.js          # Survey responses (compound unique index)
+│   │   ├── Blog.js              # Blogs with comments, reactions, editHistory
+│   │   ├── Subscription.js      # Credit wallets with ledger + billing history
+│   │   ├── PricingPackage.js    # Credit packages
+│   │   ├── Report.js            # Content reports
+│   │   ├── SiteFeedback.js      # Site feedback tickets
+│   │   ├── AuditLog.js          # Admin audit trail
+│   │   ├── GeminiUsage.js       # Daily AI usage tracking
+│   │   ├── ModerationPolicy.js  # AI moderation rules
+│   │   └── ...
+│   ├── routes/                  # Express route handlers (15 files)
+│   │   ├── authRoutes.js        # POST /sign-up, /login, /upload-avatar
+│   │   ├── surveyRoutes.js      # Full CRUD + respond + results + moderation
+│   │   ├── blogRoutes.js        # Full CRUD + reactions + comments + reports
+│   │   ├── profileRoutes.js     # GET/PATCH /me, stats, auto-ai-insight
+│   │   ├── paymentRoutes.js     # Stripe checkout + webhook + wallet
+│   │   ├── dashboardRoutes.js   # Admin reports, audit logs, user overview
+│   │   ├── analyticsRoutes.js   # GET /ai-insights, POST /chat
+│   │   ├── feedbackRoutes.js    # Site feedback + ImgBB proxy
+│   │   ├── packageRoutes.js     # Pricing packages
+│   │   ├── usageRoutes.js       # Gemini usage stats
+│   │   ├── userRoutes.js        # GET /:email
+│   │   ├── adminHomeRoutes.js   # Admin dashboard aggregation
+│   │   ├── surveyorHomeRoutes.js# Surveyor dashboard aggregation
+│   │   ├── userHomeRoutes.js    # User dashboard aggregation
+│   │   └── guestHomeRoutes.js   # Public landing page data
+│   ├── scripts/                 # Seed & fix scripts
+│   │   ├── seed-*.js            # Database seeding
+│   │   └── fix-*.js            # Data migration scripts
+│   ├── services/                # Business logic
+│   │   ├── aiProvider.js        # Gemini → OpenRouter → OpenCode Zen cascade
+│   │   ├── aiInsights.js        # AI-powered survey analytics
+│   │   └── moderation.js        # AI content moderation
+│   ├── validations/
+│   │   ├── schemas.js           # Zod schemas for all inputs
+│   │   └── validate.js          # Express middleware wrapper
+│   ├── index.js                 # Express app entry point
+│   └── package.json
+│
 ├── frontend/
-│   ├── src/
-│   │   ├── components/   # Reusable UI components
-│   │   ├── pages/        # Route-level page components
-│   │   ├── hooks/        # Custom React hooks (auth, axios, dashboard)
-│   │   └── contexts/     # React Context providers
-│   └── public/
+│   └── src/
+│       ├── assets/              # Static assets (images, icons)
+│       ├── Components/
+│       │   ├── Shared/          # Survey-related shared components
+│       │   ├── Surveys/         # Survey interaction components
+│       │   └── UI/              # Reusable UI primitives
+│       │       ├── BlogCard.jsx
+│       │       ├── MarkdownRenderer.jsx
+│       │       ├── LoadingSpinner.jsx
+│       │       ├── PageTransition.jsx
+│       │       ├── ReportModal.jsx
+│       │       ├── StatCard.jsx
+│       │       ├── SurveyCard.jsx
+│       │       └── ...
+│       ├── Firebase/            # Firebase config
+│       ├── Firebase_AuthProvider/ # Auth context provider
+│       ├── Hooks/               # Custom React hooks (14 hooks)
+│       │   ├── useAxiosSecure.jsx   # Axios interceptor with auto-logout
+│       │   ├── useProfile.jsx       # User profile query
+│       │   ├── useBlogs.jsx         # Blog infinite query
+│       │   ├── useBlogsMutation.js  # Blog create/update/delete
+│       │   ├── useSurveys.jsx       # Survey queries
+│       │   ├── useSurveysMutation.js# Survey mutations
+│       │   └── ...
+│       ├── Layout/
+│       │   ├── MainLayout.jsx      # Public layout (navbar + footer)
+│       │   └── DashboardLayout.jsx # Dashboard sidebar layout
+│       ├── Pages/
+│       │   ├── Auth/           # Login, SignUp
+│       │   ├── Home/           # GuestHome, UserHome, SurveyorHome, AdminHome
+│       │   ├── Surveys/        # SurveysPage, SurveyDetailPage, SurveyResults
+│       │   ├── Blogs/          # BlogsPage, BlogDetailPage, BlogCommentReply
+│       │   ├── Payment/        # PricingPage, PaymentSuccessPage
+│       │   ├── Feedback/       # FeedbackPage
+│       │   ├── Dashboard/
+│       │   │   ├── Dashboard.jsx       # Entry redirect
+│       │   │   ├── DashboardSection.jsx# Lazy-loaded section resolver
+│       │   │   ├── User/Components/    # UserOverview, ParticipationLedger, etc.
+│       │   │   ├── Surveyor/Components/# CreateSurvey, MySurveys, AiAnalytics, etc.
+│       │   │   ├── Admin/Components/   # AdminOverview, Moderation, AuditLogs, etc.
+│       │   │   └── Shared/            # MyProfile, ProfileSettings
+│       │   ├── NotFoundPage.jsx
+│       │   └── BlankPage.jsx
+│       ├── Router/
+│       │   ├── Routes.jsx       # createBrowserRouter config
+│       │   ├── lazyPages.js     # Lazy-loaded page imports
+│       │   ├── PrivateRoute.jsx # Auth guard
+│       │   ├── AdminRoute.jsx   # Admin role guard
+│       │   ├── SurveyorRoute.jsx# Surveyor role guard
+│       │   └── UserRoute.jsx    # User role guard
+│       ├── main.jsx
+│       └── index.css            # Tailwind + CSS variables
+│
+├── Reports/                     # Project documentation
+│   ├── API_DOCUMENTATION.md
+│   ├── ARCHITECTURE_DECISIONS.md
+│   ├── DESIGN_Prompt.md
+│   ├── FEATURES.md
+│   └── SYSTEM_DESIGN_REVIEW.md
+│
+├── TODO.md
 └── README.md
 ```
-
----
-
-## 🎯 What I Learned
-
-Building SurveyHub as a fresh graduate project gave me hands-on experience across the entire development lifecycle:
-
-- **Full-Stack Integration** — Connecting a React SPA to a REST API with JWT auth, Firebase identity, and MongoDB persistence
-- **AI System Design** — Architecting a resilient multi-provider AI pipeline with fallback chains, key rotation, and rate-limit handling
-- **Payment Flows** — Implementing secure Stripe checkout sessions, webhook signature verification, and idempotent fulfillment
-- **Queue-Based Architecture** — Using BullMQ to schedule and process background jobs (survey expiry, stats aggregation)
-- **Content Moderation** — Building an end-to-end moderation pipeline from AI pre-screening to human admin review workflows
-- **Database Modeling** — Designing MongoDB schemas with embedded vs. referenced data patterns, compound indexes, and pre-save hooks
-- **Frontend Performance** — Lazy loading, optimistic updates, infinite scroll, and responsive mobile-first design
 
 ---
 

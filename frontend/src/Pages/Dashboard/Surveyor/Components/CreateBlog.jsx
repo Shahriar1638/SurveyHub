@@ -1,11 +1,12 @@
 ﻿import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
-import { ArrowLeftIcon, ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowLeftIcon, ExclamationTriangleIcon, XMarkIcon, EyeIcon, PencilSquareIcon } from "@heroicons/react/24/outline";
 import { useCreateBlog, useUpdateBlog, useBlogForEdit } from "../../../../Hooks/useBlogsMutation";
 import useDashboardSurveyor from "../../../../Hooks/useDashboardSurveyor";
 import { PageTransition } from "../../../../Components/UI/PageTransition";
 import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
+import MarkdownRenderer from "../../../../Components/UI/MarkdownRenderer";
 import Swal from "sweetalert2";
 
 export default function CreateBlog() {
@@ -25,6 +26,7 @@ export default function CreateBlog() {
   const [moderationInfo, setModerationInfo] = useState(null);
   const [showModerationModal, setShowModerationModal] = useState(false);
   const [savedBlogId, setSavedBlogId] = useState(null);
+  const [editorTab, setEditorTab] = useState("write");
 
   // Load existing blog data when editing
   useEffect(() => {
@@ -170,14 +172,68 @@ export default function CreateBlog() {
 
           <div>
             <label className="form-label">Content <span className="text-[--color-error]">*</span></label>
-            <textarea
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              placeholder="Write your blog post content here. Markdown is supported."
-              rows={16}
-              className="form-input resize-y min-h-[300px] font-[--font-mono] text-sm"
-            />
-            <p className="form-helper">{content.length.toLocaleString()} characters</p>
+            {/* Editor tabs */}
+            <div className="flex items-center gap-1 border border-b-0 border-[--color-border] rounded-t-lg bg-[--color-bg-inset] px-2 py-1">
+              <button
+                onClick={() => setEditorTab("write")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  editorTab === "write"
+                    ? "bg-[--color-bg-surface] text-[--color-text-primary] shadow-sm"
+                    : "text-[--color-text-secondary] hover:text-[--color-text-primary]"
+                }`}
+              >
+                <PencilSquareIcon className="w-3.5 h-3.5" />
+                Write
+              </button>
+              <button
+                onClick={() => setEditorTab("preview")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  editorTab === "preview"
+                    ? "bg-[--color-bg-surface] text-[--color-text-primary] shadow-sm"
+                    : "text-[--color-text-secondary] hover:text-[--color-text-primary]"
+                }`}
+              >
+                <EyeIcon className="w-3.5 h-3.5" />
+                Preview
+              </button>
+            </div>
+            {/* Editor body */}
+            <div className="border border-[--color-border] rounded-b-lg rounded-t-none">
+              {editorTab === "write" ? (
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Write your blog post in Markdown...
+
+# Heading 1
+## Heading 2
+
+**Bold text** and *italic text*
+
+- Bullet list
+1. Numbered list
+
+> Blockquote
+
+`inline code`
+
+[Link text](https://example.com)"
+                  rows={16}
+                  className="w-full p-4 text-sm font-[--font-mono] text-[--color-text-primary] bg-transparent border-0 outline-none resize-y min-h-[300px] placeholder:text-[--color-text-tertiary]/50"
+                />
+              ) : (
+                <div className="p-4 min-h-[300px]">
+                  {content ? (
+                    <MarkdownRenderer content={content} />
+                  ) : (
+                    <p className="text-sm text-[--color-text-tertiary] italic">Nothing to preview. Start writing in the Write tab.</p>
+                  )}
+                </div>
+              )}
+            </div>
+            <p className="form-helper">
+              {content.length.toLocaleString()} characters · Supports **bold**, *italic*, headings, lists, code blocks, links, and more
+            </p>
           </div>
         </div>
 

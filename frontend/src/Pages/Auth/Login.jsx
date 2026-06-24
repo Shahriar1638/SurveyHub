@@ -120,16 +120,15 @@ const Login = () => {
 
   const onSubmit = async (values) => {
     try {
-      await signInUser(values.email, values.password);
+      const userCredential = await signInUser(values.email, values.password);
 
       const dbResponse = await axiosPublic.post("/api/auth/login", {
         email: values.email,
+        name: userCredential.user?.displayName || "",
+        avatar: userCredential.user?.photoURL || "",
       });
 
-      const { user: userData, token } = dbResponse.data || {};
-      if (userData) {
-        localStorage.setItem("surveyhub-user", JSON.stringify(userData));
-      }
+      const { token } = dbResponse.data || {};
       if (token) {
         localStorage.setItem(TOKEN_KEY, token);
       }

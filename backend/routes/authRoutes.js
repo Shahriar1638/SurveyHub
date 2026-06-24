@@ -90,18 +90,24 @@ router.post('/upload-avatar', validate(avatarUploadSchema), async (req, res) => 
 // POST /login
 router.post('/login', validate(loginSchema), async (req, res) => {
   try {
-    const { email } = req.body;
+    const { email, name, avatar } = req.body;
     
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
+
+    // Auto-sync: create MongoDB user if Firebase succeeded but MongoDB was missing
     if (!user) {
-      return res.status(404).send({ message: 'User not found in database' });
+      const userName = name || email.split('@')[0];
+      user = await User.create({
+        email,
+        name: userName,
+        avatar: avatar || '',
+      });
     }
 
     if (user.status === 'banned') {
       return res.status(403).send({ message: 'User is banned' });
     }
 
-    // Optional: generate JWT if not handled globally
     const token = jwt.sign({ email: user.email, role: user.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
 
     res.status(200).send({ message: 'Login successful', user, token });

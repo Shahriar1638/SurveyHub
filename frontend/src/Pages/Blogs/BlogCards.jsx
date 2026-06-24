@@ -1,6 +1,6 @@
 ﻿import { Link, useNavigate } from "react-router";
-import DOMPurify from "dompurify";
 import { RoleBadge, Avatar, ReactionBar } from "../../Components/UI/BlogCard";
+import MarkdownRenderer from "../../Components/UI/MarkdownRenderer";
 
 export default function BlogCards({
   blog,
@@ -69,10 +69,9 @@ export default function BlogCards({
       </h1>
 
       {/* Content */}
-      <div
-        className="prose prose-sm max-w-none type-body-base text-[--color-text-secondary] leading-relaxed whitespace-pre-wrap mb-8"
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content || "") }}
-      />
+      <div className="mb-8">
+        <MarkdownRenderer content={blog.content} />
+      </div>
 
       {/* Divider */}
       <div className="border-t border-[--color-border] my-8" />

@@ -1,37 +1,38 @@
-import { useContext } from "react";
+import { lazy, Suspense, useContext } from "react";
 import { Navigate, useParams } from "react-router";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
 
-import UserDashboard from "./User/UserDashboard";
-import SurveyorDashboard from "./Surveyor/SurveyorDashboard";
-import AdminDashboard from "./Admin/AdminDashboard";
+// ── Lazy-loaded section components ────────────────────────────────────────────
+// User sections
+const UserOverview = lazy(() => import("./User/Components/UserOverview"));
+const ParticipationLedger = lazy(() => import("./User/Components/ParticipationLedger"));
+const UserReports = lazy(() => import("./User/Components/UserReports"));
+const UserSupport = lazy(() => import("./User/Components/UserSupport"));
 
-import UserOverview from "./User/Components/UserOverview";
-import ParticipationLedger from "./User/Components/ParticipationLedger";
-import UserReports from "./User/Components/UserReports";
-import UserSupport from "./User/Components/UserSupport";
+// Surveyor sections
+const SurveyorOverview = lazy(() => import("./Surveyor/Components/SurveyorOverview"));
+const MySurveys = lazy(() => import("./Surveyor/Components/MySurveys"));
+const CreateSurvey = lazy(() => import("./Surveyor/Components/CreateSurvey"));
+const AiAnalytics = lazy(() => import("./Surveyor/Components/AiAnalytics"));
+const AiChat = lazy(() => import("./Surveyor/Components/AiChat"));
+const BlogStudio = lazy(() => import("./Surveyor/Components/BlogStudio"));
+const CreateBlog = lazy(() => import("./Surveyor/Components/CreateBlog"));
+const FeedbackInbox = lazy(() => import("./Surveyor/Components/FeedbackInbox"));
+const RecycleBin = lazy(() => import("./Surveyor/Components/RecycleBin"));
 
-import SurveyorOverview from "./Surveyor/Components/SurveyorOverview";
-import MySurveys from "./Surveyor/Components/MySurveys";
-import CreateSurvey from "./Surveyor/Components/CreateSurvey";
-import AiAnalytics from "./Surveyor/Components/AiAnalytics";
-import AiChat from "./Surveyor/Components/AiChat";
-import BlogStudio from "./Surveyor/Components/BlogStudio";
-import CreateBlog from "./Surveyor/Components/CreateBlog";
-import FeedbackInbox from "./Surveyor/Components/FeedbackInbox";
-import RecycleBin from "./Surveyor/Components/RecycleBin";
+// Admin sections
+const AdminOverview = lazy(() => import("./Admin/Components/AdminOverview"));
+const AdminModeration = lazy(() => import("./Admin/Components/AdminModeration"));
+const AdminReports = lazy(() => import("./Admin/Components/AdminReports"));
+const AuditLogs = lazy(() => import("./Admin/Components/AuditLogs"));
+const BroadcastControl = lazy(() => import("./Admin/Components/BroadcastControl"));
+const FeedbackManagement = lazy(() => import("./Admin/Components/FeedbackManagement"));
 
-import AdminOverview from "./Admin/Components/AdminOverview";
-import AdminModeration from "./Admin/Components/AdminModeration";
-import AdminReports from "./Admin/Components/AdminReports";
-import AuditLogs from "./Admin/Components/AuditLogs";
-import BroadcastControl from "./Admin/Components/BroadcastControl";
-import FeedbackManagement from "./Admin/Components/FeedbackManagement";
-
-import MyProfile from "./Shared/MyProfile";
-import ProfileSettings from "./Shared/ProfileSettings";
+// Shared sections
+const MyProfile = lazy(() => import("./Shared/MyProfile"));
+const ProfileSettings = lazy(() => import("./Shared/ProfileSettings"));
 
 const USER_SECTIONS = {
   overview: UserOverview,
@@ -74,6 +75,11 @@ const ROLE_SECTIONS = {
   admin: ADMIN_SECTIONS,
 };
 
+// Dashboard shells are kept as static imports since they're lightweight wrappers
+import UserDashboard from "./User/UserDashboard";
+import SurveyorDashboard from "./Surveyor/SurveyorDashboard";
+import AdminDashboard from "./Admin/AdminDashboard";
+
 const ROLE_DASHBOARDS = {
   user: UserDashboard,
   surveyor: SurveyorDashboard,
@@ -100,7 +106,9 @@ export default function DashboardSection() {
 
   return (
     <DashboardShell>
-      <SectionComponent />
+      <Suspense fallback={<LoadingSpinner />}>
+        <SectionComponent />
+      </Suspense>
     </DashboardShell>
   );
 }

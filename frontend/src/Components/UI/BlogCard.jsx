@@ -123,10 +123,22 @@ export function BlogCard({ blog, index, onEdit, onDelete }) {
     () => Math.max(1, Math.ceil((blog.content || "").length / 1200)),
     [blog.content]
   );
-  const excerpt = useMemo(
-    () => (blog.content || "").replace(/<[^>]+>/g, "").slice(0, 220),
-    [blog.content]
-  );
+  const excerpt = useMemo(() => {
+    if (!blog.content) return "";
+    return blog.content
+      .replace(/<[^>]+>/g, "")
+      .replace(/#{1,6}\s/g, "")
+      .replace(/\*\*(.+?)\*\*/g, "$1")
+      .replace(/\*(.+?)\*/g, "$1")
+      .replace(/`{1,3}[^`]*`{1,3}/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .replace(/!\[([^\]]*)\]\([^)]+\)/g, "")
+      .replace(/^[-*+]\s/gm, "")
+      .replace(/^\d+\.\s/gm, "")
+      .replace(/^>\s/gm, "")
+      .replace(/---/g, "")
+      .slice(0, 220);
+  }, [blog.content]);
 
   return (
     <motion.article

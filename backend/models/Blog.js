@@ -77,20 +77,18 @@ const blogSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Pre-save hook: trim unbounded arrays to cap size
-blogSchema.pre('save', function (next) {
+blogSchema.pre('save', function () {
   if (this.editHistory.length > 50) {
     this.editHistory = this.editHistory.slice(-50);
   }
   if (this.comments.length > 200) {
     this.comments = this.comments.slice(-200);
   }
-  // Cap each reaction type
   for (const key of ['like', 'insightful', 'disagree', 'interesting', 'funny']) {
     if (this.reactions[key]?.length > 500) {
       this.reactions[key] = this.reactions[key].slice(-500);
     }
   }
-  next();
 });
 
 // Indexes for faster queries

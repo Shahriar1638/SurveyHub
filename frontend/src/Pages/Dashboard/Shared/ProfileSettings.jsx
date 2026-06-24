@@ -35,6 +35,7 @@ export default function ProfileSettings() {
       twitter: "",
       linkedin: "",
       website: "",
+      preferences: "",
     },
     values: {
       name: profile?.name || "",
@@ -45,6 +46,7 @@ export default function ProfileSettings() {
       twitter: profile?.socialLinks?.twitter || "",
       linkedin: profile?.socialLinks?.linkedin || "",
       website: profile?.socialLinks?.website || "",
+      preferences: Array.isArray(profile?.preferences) ? profile.preferences.join(", ") : "",
     },
   });
 
@@ -60,6 +62,9 @@ export default function ProfileSettings() {
         linkedin: data.linkedin || "",
         website: data.website || "",
       },
+      preferences: data.preferences
+        ? data.preferences.split(",").map((s) => s.trim()).filter(Boolean)
+        : [],
     };
 
     updateProfile(payload, {
@@ -158,6 +163,20 @@ export default function ProfileSettings() {
             />
             <p className="type-body-sm text-[--color-text-tertiary] mt-1">
               {String(watch("bio") || "").length}/500
+            </p>
+          </div>
+
+          {/* Preferences */}
+          <div>
+            <label className="form-label mb-1 block">Survey Preferences</label>
+            <input
+              type="text"
+              {...register("preferences")}
+              placeholder="e.g. technology, education, health"
+              className="form-input"
+            />
+            <p className="type-body-sm text-[--color-text-tertiary] mt-1">
+              Comma-separated categories you're interested in.
             </p>
           </div>
 

@@ -125,14 +125,13 @@ const subscriptionSchema = new mongoose.Schema(
 );
 
 // Pre-save hook: trim arrays to cap size (keep newest entries)
-subscriptionSchema.pre('save', function (next) {
+subscriptionSchema.pre('save', function () {
   if (this.creditLedger.length > MAX_CREDIT_LEDGER) {
     this.creditLedger = this.creditLedger.slice(-MAX_CREDIT_LEDGER);
   }
   if (this.billingHistory.length > MAX_BILLING_HISTORY) {
     this.billingHistory = this.billingHistory.slice(-MAX_BILLING_HISTORY);
   }
-  next();
 });
 
 module.exports = mongoose.models.Subscription || mongoose.model('Subscription', subscriptionSchema);
