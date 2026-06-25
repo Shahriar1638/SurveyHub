@@ -17,7 +17,7 @@ const PACKAGE_THEMES = {
 
 export default function PricingPage() {
   const { user } = useContext(AuthContext);
-  const { data: profile, isPending: profileLoading } = useProfile();
+  const { data: profile } = useProfile();
   const navigate = useNavigate();
   const [loadingId, setLoadingId] = useState(null);
   const [error, setError] = useState("");
@@ -37,7 +37,7 @@ export default function PricingPage() {
       .finally(() => setPackagesLoading(false));
   }, [axiosSecure]);
 
-  if (profileLoading || packagesLoading) return <LoadingSpinner />;
+  if (packagesLoading) return <LoadingSpinner />;
 
   const handlePurchase = async (packageId) => {
     if (!user) {
