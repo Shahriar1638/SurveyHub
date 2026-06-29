@@ -57,14 +57,22 @@ const paymentLimiter = rateLimit({
 app.use(generalLimiter);
 
 // middleware
+const allowedOrigins = process.env.CORS_ORIGINS
+  ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+  : [
+      'http://localhost:5173',
+      'https://practice-2-firebase.web.app',
+      'https://practice-2-firebase.firebaseapp.com',
+      'https://surveyhub-bfmp.onrender.com',
+    ];
+
 app.use(cors({
-    origin: [
-        'http://localhost:5173',
-        'http://localhost:5174',
-        'https://practice-2-firebase.web.app',
-        'https://practice-2-firebase.firebaseapp.com',
-        'https://surveyhub-bfmp.onrender.com' 
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
     optionsSuccessStatus: 200
 }));

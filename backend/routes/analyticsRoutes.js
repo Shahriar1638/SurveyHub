@@ -9,7 +9,8 @@ const { callAIProviders } = require('../services/aiProvider');
  */
 router.get('/ai-insights', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.decoded.email }).lean();
+    // Use cached user from middleware if available, otherwise fetch
+    const user = req.user?._id ? req.user : await User.findOne({ email: req.decoded.email }).lean();
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const surveys = await Survey.find({
@@ -52,7 +53,8 @@ router.get('/ai-insights', async (req, res) => {
  */
 router.post('/chat', async (req, res) => {
   try {
-    const user = await User.findOne({ email: req.decoded.email }).lean();
+    // Use cached user from middleware if available, otherwise fetch
+    const user = req.user?._id ? req.user : await User.findOne({ email: req.decoded.email }).lean();
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const { surveyId, message } = req.body;

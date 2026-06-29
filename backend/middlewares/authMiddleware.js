@@ -28,6 +28,7 @@ module.exports = () => {
       if (!isAdmin) {
         return res.status(403).send({ message: 'Unauthorized request' });
       }
+      req.user = user; // Cache full user for route handlers
       next();
     } catch (error) {
       return res.status(500).send({ message: 'Failed to verify user role' });
@@ -45,6 +46,7 @@ module.exports = () => {
       if (!isSurveyor) {
         return res.status(403).send({ message: 'Unauthorized request' });
       }
+      req.user = user; // Cache full user for route handlers
       next();
     } catch (error) {
       return res.status(500).send({ message: 'Failed to verify user role' });
@@ -62,6 +64,7 @@ module.exports = () => {
       if (!isUser) {
         return res.status(403).send({ message: 'Unauthorized request' });
       }
+      req.user = user; // Cache full user for route handlers
       next();
     } catch (error) {
       return res.status(500).send({ message: 'Failed to verify user role' });
@@ -79,6 +82,7 @@ module.exports = () => {
       if (!isAllowed) {
         return res.status(403).send({ message: 'Unauthorized request' });
       }
+      req.user = user; // Cache full user for route handlers
       next();
     } catch (error) {
       return res.status(500).send({ message: 'Failed to verify user role' });
