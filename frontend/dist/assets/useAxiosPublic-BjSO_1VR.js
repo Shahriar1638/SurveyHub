@@ -1,1 +1,0 @@
-import{t as e}from"./axios-DyGzaxxB.js";var t=e.create({baseURL:`http://localhost:3000`}),n=()=>t;export{n as t};

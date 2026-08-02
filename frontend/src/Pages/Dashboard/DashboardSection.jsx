@@ -3,6 +3,7 @@ import { Navigate, useParams } from "react-router";
 import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import useProfile from "../../Hooks/useProfile";
 import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
+import { ErrorBoundary } from "../../Components/ErrorBoundary";
 
 // ── Lazy-loaded section components ────────────────────────────────────────────
 // User sections
@@ -106,9 +107,11 @@ export default function DashboardSection() {
 
   return (
     <DashboardShell>
-      <Suspense fallback={<LoadingSpinner />}>
-        <SectionComponent />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
+          <SectionComponent />
+        </Suspense>
+      </ErrorBoundary>
     </DashboardShell>
   );
 }
