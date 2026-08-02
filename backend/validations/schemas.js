@@ -17,7 +17,7 @@ const signUpSchema = z.object({
 });
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
+  idToken: z.string().min(1, 'Firebase ID token is required'),
   name: z.string().max(100).optional().or(z.literal('')),
   avatar: z.string().optional().or(z.literal('')),
 });
@@ -142,6 +142,45 @@ const feedbackImageUploadSchema = z.object({
   image: z.string().min(1, 'Image data is required'),
 });
 
+// ── Admin ────────────────────────────────────────────────────────────────────
+const reportUpdateSchema = z.object({
+  status: z.enum(['pending', 'investigating', 'resolved', 'dismissed']).optional(),
+  adminResponse: z.string().max(1000).optional().or(z.literal('')),
+  actionTaken: z.string().max(100).optional().or(z.literal('')),
+});
+
+const broadcastSchema = z.object({
+  title: z.string().trim().min(1, 'Title is required').max(200),
+  message: z.string().trim().min(1, 'Message is required').max(2000),
+  severity: z.enum(['info', 'warning', 'critical']).optional(),
+});
+
+// ── Payments ─────────────────────────────────────────────────────────────────
+const checkoutSessionSchema = z.object({
+  packageId: z.string().min(1, 'packageId is required').max(50),
+  userId: z.string().min(1, 'userId is required'),
+});
+
+// ── Analytics ────────────────────────────────────────────────────────────────
+const chatSchema = z.object({
+  surveyId: z.string().min(1, 'surveyId is required'),
+  message: z.string().min(1, 'Message is required').max(2000),
+});
+
+// ── Moderation & appeals ─────────────────────────────────────────────────────
+const aiInsightToggleSchema = z.object({
+  autoGenerate: z.boolean(),
+});
+
+const appealSchema = z.object({
+  message: z.string().trim().min(1, 'Appeal message is required').max(2000),
+});
+
+const moderateSchema = z.object({
+  decision: z.enum(['approved', 'rejected']),
+  reason: z.string().trim().min(1, 'Admin note is required').max(2000),
+});
+
 module.exports = {
   signUpSchema,
   loginSchema,
@@ -159,4 +198,11 @@ module.exports = {
   submitFeedbackSchema,
   updateFeedbackSchema,
   feedbackImageUploadSchema,
+  reportUpdateSchema,
+  broadcastSchema,
+  checkoutSessionSchema,
+  chatSchema,
+  aiInsightToggleSchema,
+  appealSchema,
+  moderateSchema,
 };

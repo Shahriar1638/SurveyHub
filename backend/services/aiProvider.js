@@ -1,6 +1,6 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 
-const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 const DEFAULT_TIMEOUT = 45000;
 
 // ── Gemini key rotation ─────────────────────────────────────────────────────
@@ -58,7 +58,7 @@ async function getBestFreeModel() {
   if (cachedFreeModel && Date.now() < cacheExpiry) return cachedFreeModel;
 
   const apiKey = process.env.OPENROUTER_API_KEY;
-  if (!apiKey) return 'deepseek/deepseek-v4-flash:free';
+  if (!apiKey) return 'google/gemma-4-31b-it:free';
 
   try {
     const res = await fetch('https://openrouter.ai/api/v1/models?sort=newest&output_modalities=text', {
@@ -66,10 +66,10 @@ async function getBestFreeModel() {
       signal: AbortSignal.timeout(15000),
     });
 
-    if (!res.ok) return cachedFreeModel || 'deepseek/deepseek-v4-flash:free';
+    if (!res.ok) return cachedFreeModel || 'google/gemma-4-31b-it:free';
 
     const { data: models } = await res.json();
-    if (!models?.length) return cachedFreeModel || 'deepseek/deepseek-v4-flash:free';
+    if (!models?.length) return cachedFreeModel || 'google/gemma-4-31b-it:free';
 
     const freeModels = models.filter((m) => {
       if (m.expiration_date) return false;
@@ -78,7 +78,7 @@ async function getBestFreeModel() {
       return price === 0 && completion === 0;
     });
 
-    if (!freeModels.length) return cachedFreeModel || 'deepseek/deepseek-v4-flash:free';
+    if (!freeModels.length) return cachedFreeModel || 'google/gemma-4-31b-it:free';
 
     freeModels.sort((a, b) => {
       const createdDiff = (b.created || 0) - (a.created || 0);
@@ -90,7 +90,7 @@ async function getBestFreeModel() {
     cacheExpiry = Date.now() + CACHE_TTL;
     return cachedFreeModel;
   } catch {
-    return cachedFreeModel || 'deepseek/deepseek-v4-flash:free';
+    return cachedFreeModel || 'google/gemma-4-31b-it:free';
   }
 }
 

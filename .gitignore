@@ -23,3 +23,6 @@ Reports/
 design_prompt.md
 
 SYSTEM_DESIGN_REVIEW.md
+
+# Old route files (kept for cross-check during restructure)
+backend/routesv1/

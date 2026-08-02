@@ -112,23 +112,24 @@ async function run() {
     // Initialize Middlewares
     const { verifyToken, verifyAdmin, verifySurveyor, verifyUser, verifySurveyorOrAdmin } = require('./middlewares/authMiddleware')();
 
-    // Initialize Routes
+    // Initialize Routes — barrel mounts all domain routers
+    const routes = require('./routes');
     app.use(require('./middlewares/authRoutes'));
-    app.use('/api/auth', authLimiter, require('./routes/authRoutes'));
-    app.use('/api/users', verifyToken, require('./routes/userRoutes'));
-    app.use('/api/surveys', require('./routes/surveyRoutes'));
-    app.use('/api/profile', verifyToken, require('./routes/profileRoutes'));
-    app.use('/api/homepages/guest', require('./routes/guestHomeRoutes'));
-    app.use('/api/homepages/user', verifyToken, verifyUser, require('./routes/userHomeRoutes'));
-    app.use('/api/homepages/surveyor', verifyToken, verifySurveyor, require('./routes/surveyorHomeRoutes'));
-    app.use('/api/homepages/admin', verifyToken, verifyAdmin, require('./routes/adminHomeRoutes'));
-    app.use('/api/feedback', require('./routes/feedbackRoutes'));
-    app.use('/api/blogs', require('./routes/blogRoutes'));
-    app.use('/api/payments', paymentLimiter, require('./routes/paymentRoutes'));
-    app.use('/api/packages', require('./routes/packageRoutes'));
-    app.use('/api/dashboard', verifyToken, require('./routes/dashboardRoutes'));
-    app.use('/api/usage', require('./routes/usageRoutes'));
-    app.use('/api/analytics', verifyToken, require('./routes/analyticsRoutes'));
+    app.use('/api/auth', authLimiter, routes.auth);
+    app.use('/api/users', verifyToken, routes.users);
+    app.use('/api/profile', verifyToken, routes.profile);
+    app.use('/api/surveys', routes.surveys);
+    app.use('/api/analytics', verifyToken, routes.analytics);
+    app.use('/api/homepages/guest', routes.homepages.guest);
+    app.use('/api/homepages/user', verifyToken, verifyUser, routes.homepages.user);
+    app.use('/api/homepages/surveyor', verifyToken, verifySurveyor, routes.homepages.surveyor);
+    app.use('/api/homepages/admin', verifyToken, verifyAdmin, routes.homepages.admin);
+    app.use('/api/feedback', routes.feedback);
+    app.use('/api/blogs', routes.blogs);
+    app.use('/api/payments', paymentLimiter, routes.payments);
+    app.use('/api/packages', routes.packages);
+    app.use('/api/dashboard', verifyToken, routes.dashboard);
+    app.use('/api/usage', routes.usage);
     // Send a ping to confirm a successful connection
     await mongoose.connection.db.admin().command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");

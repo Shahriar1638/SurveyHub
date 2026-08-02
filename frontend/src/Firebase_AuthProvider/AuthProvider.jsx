@@ -37,6 +37,7 @@ const AuthProvider = ({ children }) => {
 
   const logOut = useCallback(() => {
     setLoading(true);
+    localStorage.removeItem(TOKEN_KEY);
     return signOut(auth).catch((error) => {
       setLoading(false);
       throw error;

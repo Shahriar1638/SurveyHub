@@ -13,6 +13,17 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 
 ---
 
+## 🚧 Coming Soon: SurveyGuard AI & SurveyLens AI
+
+> Two dedicated AI agents are being built specifically for SurveyHub. Details, previews, and launch date — coming soon.
+
+| Agent | Role |
+|-------|------|
+| **🛡️ SurveyGuard AI** | A dedicated AI content **moderator** — purpose-built to keep surveys, blogs, comments, and reports clean and safe |
+| **🔍 SurveyLens AI** | A dedicated AI **analysis agent** — purpose-built for deeper survey insights, smarter Q&A, and richer data exploration |
+
+---
+
 ## ✨ Key Features
 
 ### Survey Engine
@@ -172,13 +183,15 @@ npm install
 # Frontend: .env (Firebase config, API base URL)
 
 # Start development servers
-cd ../backend && nodemon index.js   # Express server on :5000
+cd ../backend && nodemon index.js   # Express server on :3000
 cd ../frontend && npm run dev  # Vite dev server on :5173
 ```
 
 ---
 
 ## 📁 Project Structure
+
+> **Want the full file-by-file breakdown?** See [`FILE_STRUCTURE.md`](FILE_STRUCTURE.md) for the complete directory listing.
 
 ```
 surveyhub/
@@ -211,22 +224,18 @@ surveyhub/
 │   │   ├── GeminiUsage.js       # Daily AI usage tracking
 │   │   ├── ModerationPolicy.js  # AI moderation rules
 │   │   └── ...
-│   ├── routes/                  # Express route handlers (15 files)
-│   │   ├── authRoutes.js        # POST /sign-up, /login, /upload-avatar
-│   │   ├── surveyRoutes.js      # Full CRUD + respond + results + moderation
-│   │   ├── blogRoutes.js        # Full CRUD + reactions + comments + reports
-│   │   ├── profileRoutes.js     # GET/PATCH /me, stats, auto-ai-insight
-│   │   ├── paymentRoutes.js     # Stripe checkout + webhook + wallet
-│   │   ├── dashboardRoutes.js   # Admin reports, audit logs, user overview
-│   │   ├── analyticsRoutes.js   # GET /ai-insights, POST /chat
-│   │   ├── feedbackRoutes.js    # Site feedback + ImgBB proxy
-│   │   ├── packageRoutes.js     # Pricing packages
-│   │   ├── usageRoutes.js       # Gemini usage stats
-│   │   ├── userRoutes.js        # GET /:email
-│   │   ├── adminHomeRoutes.js   # Admin dashboard aggregation
-│   │   ├── surveyorHomeRoutes.js# Surveyor dashboard aggregation
-│   │   ├── userHomeRoutes.js    # User dashboard aggregation
-│   │   └── guestHomeRoutes.js   # Public landing page data
+│   ├── routes/                  # Domain-based route barrels
+│   │   ├── index.js             # Barrel: exports all domain routers + aliases
+│   │   ├── auth/                # POST /sign-up, /login, /upload-avatar
+│   │   ├── users/               # user.routes (GET /:email) + profile.routes
+│   │   ├── surveys/             # Full CRUD + respond + results + moderation
+│   │   ├── blogs/               # Full CRUD + reactions + comments + reports
+│   │   ├── admin/               # Admin reports, audit logs, user overview
+│   │   ├── payments/            # Stripe checkout + webhook + wallet + packages
+│   │   ├── analytics/           # GET /ai-insights, POST /chat
+│   │   ├── feedback/            # Site feedback + ImgBB proxy
+│   │   ├── usage/               # Gemini usage stats
+│   │   └── homepages/           # guest / user / surveyor / admin home data
 │   ├── scripts/                 # Seed & fix scripts
 │   │   ├── seed-*.js            # Database seeding
 │   │   └── fix-*.js            # Data migration scripts

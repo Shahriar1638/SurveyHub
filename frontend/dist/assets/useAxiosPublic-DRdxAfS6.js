@@ -1,1 +1,0 @@
-import{t as e}from"./axios-Co5g1oBF.js";var t=e.create({baseURL:`https://surveyhub-bfmp.onrender.com`}),n=()=>t;export{n as t};

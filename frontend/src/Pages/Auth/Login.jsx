@@ -1,8 +1,10 @@
 ﻿import { useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { useForm } from "react-hook-form";
+import { useQueryClient } from "@tanstack/react-query";
 import { AuthContext, TOKEN_KEY } from "../../Firebase_AuthProvider/AuthProvider";
 import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import useAxiosSecure from "../../Hooks/useAxiosSecure";
 import { motion } from "motion/react";
 import logo from "../../assets/logo.svg";
 
@@ -104,8 +106,10 @@ const formContainerVariants = {
 const Login = () => {
   const { signInUser, logOut } = useContext(AuthContext);
   const axiosPublic = useAxiosPublic();
+  const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
   const location = useLocation();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -122,15 +126,51 @@ const Login = () => {
     try {
       const userCredential = await signInUser(values.email, values.password);
 
+      const idToken = await userCredential.user.getIdToken();
       const dbResponse = await axiosPublic.post("/api/auth/login", {
-        email: values.email,
+        idToken,
         name: userCredential.user?.displayName || "",
         avatar: userCredential.user?.photoURL || "",
       });
 
-      const { token } = dbResponse.data || {};
+      const { token, user: profile } = dbResponse.data || {};
       if (token) {
         localStorage.setItem(TOKEN_KEY, token);
+      }
+
+      // Fix 1: Seed profile cache so useProfile() resolves instantly
+      if (profile) {
+        queryClient.setQueryData(["profile", values.email], profile);
+
+        // Fix 2: Prefetch home data based on role (before navigate)
+        const role = profile.role;
+        if (role === "surveyor") {
+          queryClient.prefetchQuery({
+            queryKey: ["home", "surveyor", userCredential.user?.uid],
+            queryFn: async () => {
+              const uid = userCredential.user?.uid || "";
+              const res = await axiosSecure.get(`/api/homepages/surveyor${uid ? `?surveyorId=${uid}` : ""}`);
+              return res.data;
+            },
+          });
+        } else if (role === "admin") {
+          queryClient.prefetchQuery({
+            queryKey: ["home", "admin"],
+            queryFn: async () => {
+              const res = await axiosSecure.get("/api/homepages/admin");
+              return res.data;
+            },
+          });
+        } else if (role === "user") {
+          queryClient.prefetchQuery({
+            queryKey: ["home", "user", userCredential.user?.uid],
+            queryFn: async () => {
+              const uid = userCredential.user?.uid || "";
+              const res = await axiosSecure.get(`/api/homepages/user${uid ? `?userId=${uid}` : ""}`);
+              return res.data;
+            },
+          });
+        }
       }
 
       const from = location.state?.from;
