@@ -298,10 +298,7 @@ surveyhub/
 │       ├── Router/
 │       │   ├── Routes.jsx       # createBrowserRouter config
 │       │   ├── lazyPages.js     # Lazy-loaded page imports
-│       │   ├── PrivateRoute.jsx # Auth guard
-│       │   ├── AdminRoute.jsx   # Admin role guard
-│       │   ├── SurveyorRoute.jsx# Surveyor role guard
-│       │   └── UserRoute.jsx    # User role guard
+│       │   └── PrivateRoute.jsx # Auth guard
 │       ├── main.jsx
 │       └── index.css            # Tailwind + CSS variables
 │

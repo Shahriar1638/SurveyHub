@@ -177,12 +177,9 @@ frontend/
 │   │       ├── SurveyResults.jsx
 │   │       └── SurveysPage.jsx
 │   └── Router/                 # Route definitions
-│       ├── AdminRoute.jsx
 │       ├── lazyPages.js
 │       ├── PrivateRoute.jsx
-│       ├── Routes.jsx
-│       ├── SurveyorRoute.jsx
-│       └── UserRoute.jsx
+│       └── Routes.jsx
 └── vite.config.js              # Vite build config
 ```
 

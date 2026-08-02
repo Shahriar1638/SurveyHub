@@ -20,10 +20,7 @@ frontend/src/
 ├── Router/
 │   ├── Routes.jsx                    # Route definitions (public + dashboard)
 │   ├── lazyPages.js                  # Lazy-loaded page components
-│   ├── PrivateRoute.jsx              # Auth guard (login required)
-│   ├── AdminRoute.jsx                # Admin role guard
-│   ├── SurveyorRoute.jsx             # Surveyor role guard
-│   └── UserRoute.jsx                 # User role guard
+│   └── PrivateRoute.jsx              # Auth guard (login required)
 │
 ├── Layout/
 │   ├── MainLayout.jsx                # Public layout (Navbar + Footer)

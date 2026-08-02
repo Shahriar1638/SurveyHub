@@ -3,7 +3,7 @@ import { useSearchParams, Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "motion/react";
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import { SparklesIcon, ArrowLeftIcon, PaperAirplaneIcon } from "@heroicons/react/24/outline";
 import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
@@ -204,16 +204,20 @@ export default function AiChat() {
 
         {messages.map((msg, i) => (
           <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div
-              className={`max-w-[80%] rounded-xl px-4 py-2.5 ${
-                msg.role === "user"
-                  ? "bg-[--color-primary] text-white"
-                  : "bg-[--color-bg-surface] text-[--color-text-primary]"
-              }`}
-            >
-              <p className="type-body-sm whitespace-pre-wrap">{msg.text}</p>
+            <div className="max-w-[80%]">
+              <div
+                className={`rounded-xl px-4 py-2.5 ${
+                  msg.role === "user"
+                    ? "bg-[--color-primary] text-white"
+                    : "bg-[--color-accent-light] text-[--color-accent-dark]"
+                }`}
+              >
+                <p className="type-body-sm whitespace-pre-wrap">{msg.text}</p>
+              </div>
               {msg.charts?.map((chart, ci) => (
-                <ChatChart key={ci} chart={chart} />
+                <div className="mt-3" key={ci}>
+                  <ChatChart chart={chart} />
+                </div>
               ))}
             </div>
           </div>
