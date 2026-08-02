@@ -61,7 +61,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 |-------|------------|
 | **Frontend** | React 19, Vite, Tailwind CSS, TanStack Query v5, Framer Motion, Recharts |
 | **Backend** | Node.js, Express.js, MongoDB (Mongoose), BullMQ |
-| **Authentication** | Firebase Auth (OAuth + Email/Password), JWT (1h expiry) |
+| **Authentication** | Firebase Auth (email/password), server-verified Firebase ID tokens, JWT (1h expiry) |
 | **AI / ML** | Gemini (key rotation), OpenRouter (dynamic model selection), OpenCode Zen |
 | **Payments** | Stripe Checkout (one-time sessions), webhook fulfillment |
 | **Queue / Cache** | BullMQ + Redis (delayed jobs for survey expiry) |
@@ -73,10 +73,11 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 
 ### Authentication & Authorization
 
-- **Dual-Layer Security** — Firebase Auth handles identity (OAuth, email/password), while JWT handles API authorization. Decoupled so either can be swapped independently.
+- **Dual-Layer Security** — Firebase Auth handles identity (email/password), while a JWT issued after server-side ID-token verification handles API authorization. Decoupled so either can be swapped independently.
+- **Verified Login** — `POST /api/auth/login` verifies the Firebase ID token server-side via firebase-admin and derives the email from the verified token; client-supplied identity is never trusted.
 - **Short-Lived Tokens** — JWT 1-hour expiry limits exposure if compromised.
 - **Fail-Fast Startup** — Server refuses to start if `ACCESS_TOKEN_SECRET` is missing. No silent fallback to weak secrets.
-- **Role-Based Middleware** — Factory-pattern auth middleware exports independently testable guards (`verifyToken`, `verifyAdmin`, `verifySurveyor`, `verifyUser`, `verifySurveyorOrAdmin`). Separation of concerns: auth check ≠ role check.
+- **Role-Based Middleware** — Factory-pattern auth middleware exports independently testable guards (`verifyToken`, `verifyAdmin`, `verifySurveyor`, `verifyUser`). Role checks hit the DB on every request, so banned users are blocked even with a valid JWT.
 - **Banned User Detection** — Role middlewares check `user.status === 'banned'` from DB on every request, blocking banned users even with a valid JWT.
 - **Graceful Partial Failure** — If MongoDB insert fails after Firebase account creation, the Firebase user is cleaned up automatically.
 
@@ -114,9 +115,10 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 ### Frontend Architecture
 
 - **Lazy-Loaded Routes** — All page components are dynamically imported via `React.lazy()`. Reduces initial bundle size.
+- **Stale-Chunk Resilience** — A global handler auto-reloads once when a hashed chunk fails to load after a redeploy, and an `ErrorBoundary` shows a recovery UI for any section that still fails.
 - **TanStack React Query v5** — Server state management with automatic cache invalidation, optimistic updates with rollback on mutations.
 - **Framer Motion** — Consistent page transitions, staggered list animations, and micro-interactions across all pages.
-- **Role-Based Route Guards** — `PrivateRoute`, `AdminRoute`, `SurveyorRoute` components protect routes by role.
+- **Route Guard** — `PrivateRoute` gates authenticated pages client-side; fine-grained role authorization (admin/surveyor/user) is enforced server-side by the auth middleware.
 - **Axios Interceptor with Auto-Logout** — `useAxiosSecure` reads token fresh from localStorage on every request. 401/403 triggers automatic logout + redirect.
 - **SweetAlert2 Confirmations** — Destructive actions require confirmation dialogs. Prevents accidental operations.
 - **Responsive Design Patterns** — Mobile-first with `sm:`, `md:`, `lg:` breakpoints. Dashboard sidebar collapses on mobile. Filter drawers slide in on small screens.
@@ -125,7 +127,7 @@ SurveyHub empowers users to build dynamic surveys with 5 question types, publish
 
 - **3-Provider Fallback Chain** — Gemini (key rotation, up to 10 keys) → OpenRouter (dynamic best free model) → OpenCode Zen (OpenAI-compatible). Sequential, not parallel.
 - **Key Rotation** — Gemini keys are tried in sequence. 429/quota errors trigger automatic fallback to next key.
-- **Dynamic Model Selection** — OpenRouter's best free model is fetched via API, cached for 1 hour. No hardcoded model ID.
+- **Dynamic Model Selection** — OpenRouter picks the newest free model via API (cached 1 hr), falling back to a hardcoded default free model (`google/gemma-4-31b-it:free`).
 - **Gated AI Insight Generation** — `aiInsight.autoGenerate` flag per survey. Stats are always aggregated (for charts), but expensive AI calls only run when the user opts in.
 - **User Preference Seeding** — `User.autoAIInsight` boolean seeds new survey's `aiInsight.autoGenerate` on creation.
 - **Content Moderation Cascade** — Gemini primary, OpenRouter fallback, OpenCode Zen last resort. 45s timeout on fallback providers.
@@ -179,7 +181,7 @@ cd ../frontend
 npm install
 
 # Configure environment variables
-# Backend: .env (MongoDB URI, Firebase config, Stripe keys, JWT secret, AI API keys)
+# Backend: .env (MongoDB URI, Firebase config incl. FIREBASE_PROJECT_ID, Stripe keys, JWT secret, AI API keys)
 # Frontend: .env (Firebase config, API base URL)
 
 # Start development servers
