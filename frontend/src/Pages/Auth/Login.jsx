@@ -1,4 +1,4 @@
-﻿import { useContext } from "react";
+import { useContext } from "react";
 import { useNavigate, useLocation, Link } from "react-router";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
@@ -114,11 +114,18 @@ const Login = () => {
   const {
     register,
     handleSubmit,
+    setValue,
     setError: setFieldError,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: { email: "", password: "" },
   });
+
+  const handleDemoLogin = (email, password) => {
+    setValue("email", email, { shouldValidate: true });
+    setValue("password", password, { shouldValidate: true });
+    onSubmit({ email, password });
+  };
 
   const message = location.state?.message;
 
@@ -462,7 +469,46 @@ const Login = () => {
               </button>
             </form>
 
-            <div className="mt-6 text-center border-t border-border pt-5">
+            {/* Quick Demo Access Buttons */}
+            <div className="mt-5 pt-4 border-t border-border">
+              <div className="flex items-center justify-between mb-3">
+                <span className="h-px bg-border flex-1" />
+                <span className="px-3 type-label-sm text-[11px] font-bold text-text-tertiary uppercase tracking-wider">
+                  Explore As
+                </span>
+                <span className="h-px bg-border flex-1" />
+              </div>
+              <div className="grid grid-cols-3 gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin("user1@example.com", "123456")}
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center py-2.5 px-3 rounded-xl border border-border bg-bg-surface hover:border-accent hover:bg-accent/5 text-primary hover:text-accent type-label-sm text-[13px] font-bold transition-all duration-150 cursor-pointer disabled:opacity-50 shadow-xs"
+                >
+                  User
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin("surveyor1@example.com", "123456")}
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center py-2.5 px-3 rounded-xl border border-border bg-bg-surface hover:border-accent hover:bg-accent/5 text-primary hover:text-accent type-label-sm text-[13px] font-bold transition-all duration-150 cursor-pointer disabled:opacity-50 shadow-xs"
+                >
+                  Surveyor
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDemoLogin("admin1@example.com", "123456")}
+                  disabled={isSubmitting}
+                  className="flex items-center justify-center py-2.5 px-3 rounded-xl border border-border bg-bg-surface hover:border-accent hover:bg-accent/5 text-primary hover:text-accent type-label-sm text-[13px] font-bold transition-all duration-150 cursor-pointer disabled:opacity-50 shadow-xs"
+                >
+                  Admin
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-5 text-center border-t border-border pt-4">
               <p className="type-body-sm text-text-secondary">
                 Don&apos;t have an account yet?{" "}
                 <Link

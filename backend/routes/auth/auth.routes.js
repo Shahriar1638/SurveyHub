@@ -122,7 +122,11 @@ router.post('/login', validate(loginSchema), async (req, res) => {
       return res.status(403).send({ message: 'User is banned' });
     }
 
-    const token = jwt.sign({ email: user.email, role: user.role }, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      { email: user.email, role: user.role, _id: user._id },
+      process.env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '1h' }
+    );
 
     res.status(200).send({ message: 'Login successful', user, token });
   } catch (error) {

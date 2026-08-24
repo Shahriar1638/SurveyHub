@@ -337,8 +337,8 @@ function SidebarContent({ user, profile, role, navGroups, navigate, onNav, logOu
             Back to Site
           </button>
           <button
-            onClick={async () => { try { await logOut(); } finally { navigate("/"); } }}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium font-[--font-ui] transition-all duration-200 group"
+            onClick={() => logOut()}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium font-[--font-ui] transition-all duration-200 group cursor-pointer"
             style={{ color: "var(--color-text-secondary)" }}
             onMouseEnter={e => {
               e.currentTarget.style.backgroundColor = "var(--color-error-light)";

@@ -208,17 +208,21 @@ router.post('/admin/broadcast', verifyToken, verifyAdmin, validate(broadcastSche
 router.get('/user/overview', async (req, res) => {
   try {
     const userEmail = req.user.email;
-    const userId = req.user._id;
+    let userId = req.user._id;
+    if (!userId) {
+      const userObj = await User.findOne({ email: userEmail }).select('_id').lean();
+      userId = userObj?._id;
+    }
 
     // Count surveys taken (submitted responses)
-    const totalSurveysTaken = await Response.countDocuments({ userId, status: 'submitted' });
+    const totalSurveysTaken = userId ? await Response.countDocuments({ userId, status: 'submitted' }) : 0;
 
     // Fetch submitted responses to compute rewards
-    const userResponses = await Response.find({ userId, status: 'submitted' }).select('surveyId').lean();
+    const userResponses = userId ? await Response.find({ userId, status: 'submitted' }).select('surveyId').lean() : [];
     const surveyIds = userResponses.map(r => r.surveyId);
 
     // Fetch survey questions lengths
-    const surveys = await Survey.find({ _id: { $in: surveyIds } }).select('questions').lean();
+    const surveys = surveyIds.length > 0 ? await Survey.find({ _id: { $in: surveyIds } }).select('questions').lean() : [];
     let totalRewardsEarned = 0;
     surveys.forEach(survey => {
       totalRewardsEarned += (survey.questions?.length || 0) * 10; // 10 points per question
@@ -250,12 +254,16 @@ router.get('/user/overview', async (req, res) => {
 router.get('/user/participation', async (req, res) => {
   try {
     const userEmail = req.user.email;
-    const userId = req.user._id;
+    let userId = req.user._id;
+    if (!userId) {
+      const userObj = await User.findOne({ email: userEmail }).select('_id').lean();
+      userId = userObj?._id;
+    }
 
     // Fetch user responses
-    const responses = await Response.find({ userId, status: 'submitted' })
+    const responses = userId ? await Response.find({ userId, status: 'submitted' })
       .sort({ submittedAt: -1 })
-      .lean();
+      .lean() : [];
 
     const surveyIds = responses.map(r => r.surveyId);
     const surveys = await Survey.find({ _id: { $in: surveyIds } })

@@ -35,13 +35,19 @@ const AuthProvider = ({ children }) => {
     });
   }, []);
 
-  const logOut = useCallback(() => {
+  const logOut = useCallback(async () => {
     setLoading(true);
     localStorage.removeItem(TOKEN_KEY);
-    return signOut(auth).catch((error) => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUser(null);
       setLoading(false);
-      throw error;
-    });
+      // Hard site-wide refresh to clear all in-memory caches, React Query stores, and singleton states
+      window.location.href = "/";
+    }
   }, []);
 
   //Sign in with gmail pass

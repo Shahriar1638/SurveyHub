@@ -72,7 +72,8 @@ export default function AdminHome() {
   const axiosSecure = useAxiosSecure();
 
   const { data, isPending, error } = useQuery({
-    queryKey: ["home", "admin"],
+    queryKey: ["home", "admin", user?.email],
+    enabled: !!user?.email,
     queryFn: async () => {
       const res = await axiosSecure.get("/api/homepages/admin");
       return res.data;

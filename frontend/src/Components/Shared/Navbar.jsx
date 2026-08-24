@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { useContext, useState, useEffect, useMemo } from "react";
 import { Link, NavLink, useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
@@ -220,10 +221,8 @@ export function Navbar() {
               </Link>
 
               <button
-                onClick={async () => {
-                  try { await logOut(); } finally { navigate("/"); }
-                }}
-                className="px-3 py-1.5 rounded-lg text-sm font-medium font-[--font-ui] text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                onClick={() => logOut()}
+                className="px-3 py-1.5 rounded-lg text-sm font-medium font-[--font-ui] text-white/70 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 Log out
               </button>

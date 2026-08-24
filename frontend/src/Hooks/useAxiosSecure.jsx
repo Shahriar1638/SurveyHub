@@ -7,54 +7,55 @@ const axiosSecure = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-let requestInterceptorId = null;
-let responseInterceptorId = null;
+// Synchronous module-level request interceptor:
+// Guarantees that EVERY request (including immediate useQuery fetches on mount)
+// always has Authorization attached without waiting for React useEffect.
+axiosSecure.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) {
+      config.headers.authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Global callbacks ref for 401/403 handling
+let globalLogOut = null;
+let globalNavigate = null;
+
+// Synchronous module-level response interceptor
+axiosSecure.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const status = error?.response?.status;
+    if (status === 401 || status === 403) {
+      localStorage.removeItem(TOKEN_KEY);
+      if (typeof globalLogOut === "function") {
+        await globalLogOut().catch(() => {});
+      }
+      if (typeof globalNavigate === "function") {
+        globalNavigate("/login");
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 const useAxiosSecure = () => {
   const navigate = useNavigate();
-  const { logOut, user } = useContext(AuthContext);
+  const { logOut } = useContext(AuthContext);
 
-  // Refs so interceptors always read the latest logOut/navigate
   const logOutRef = useRef(logOut);
   const navigateRef = useRef(navigate);
-  const tokenRef = useRef(localStorage.getItem(TOKEN_KEY));
 
   useEffect(() => {
     logOutRef.current = logOut;
     navigateRef.current = navigate;
-    tokenRef.current = localStorage.getItem(TOKEN_KEY);
-
-    if (requestInterceptorId === null) {
-      requestInterceptorId = axiosSecure.interceptors.request.use(
-        (config) => {
-          const token = localStorage.getItem(TOKEN_KEY);
-          if (token) {
-            config.headers.authorization = `Bearer ${token}`;
-          }
-          return config;
-        },
-        (error) => Promise.reject(error)
-      );
-    }
-
-    if (responseInterceptorId === null) {
-      responseInterceptorId = axiosSecure.interceptors.response.use(
-        (response) => response,
-        async (error) => {
-          const status = error?.response?.status;
-          if (status === 401 || status === 403) {
-            if (typeof logOutRef.current === "function") {
-              await logOutRef.current();
-            }
-            if (typeof navigateRef.current === "function") {
-              navigateRef.current("/login");
-            }
-          }
-          return Promise.reject(error);
-        }
-      );
-    }
-  }, [logOut, navigate, user?.email]);
+    globalLogOut = logOut;
+    globalNavigate = navigate;
+  }, [logOut, navigate]);
 
   return axiosSecure;
 };

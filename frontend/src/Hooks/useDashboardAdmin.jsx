@@ -1,5 +1,7 @@
+import { useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import useAxiosSecure from "./useAxiosSecure";
+import { AuthContext } from "../Firebase_AuthProvider/AuthProvider";
 
 /**
  * useDashboardAdmin — hooks for the admin control center
@@ -7,10 +9,12 @@ import useAxiosSecure from "./useAxiosSecure";
 
 /** Overview KPIs + health metrics */
 export const useAdminOverview = () => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
 
   return useQuery({
-    queryKey: ["dashboard", "admin", "overview"],
+    queryKey: ["dashboard", "admin", "overview", user?.email],
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 2,
     queryFn: async () => {
       const res = await axiosSecure.get("/api/homepages/admin");
@@ -21,11 +25,13 @@ export const useAdminOverview = () => {
 
 /** Paginated reports */
 export const useAdminReports = (filters = {}) => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const { status, type, search, sort, page = 1, limit = 20 } = filters;
 
   return useQuery({
-    queryKey: ["dashboard", "admin", "reports", status, type, search, sort, page, limit],
+    queryKey: ["dashboard", "admin", "reports", user?.email, status, type, search, sort, page, limit],
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 1,
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -43,6 +49,7 @@ export const useAdminReports = (filters = {}) => {
 
 /** Update a report (status, admin response, action) */
 export const useUpdateReport = () => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
 
@@ -52,19 +59,21 @@ export const useUpdateReport = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "reports"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "overview"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "reports", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "overview", user?.email] });
     },
   });
 };
 
 /** Paginated audit logs */
 export const useAuditLogs = (filters = {}) => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const { page = 1, limit = 30, action } = filters;
 
   return useQuery({
-    queryKey: ["dashboard", "admin", "audit-logs", action, page, limit],
+    queryKey: ["dashboard", "admin", "audit-logs", user?.email, action, page, limit],
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 2,
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -79,11 +88,13 @@ export const useAuditLogs = (filters = {}) => {
 
 /** Site feedback (reuses existing /api/feedback admin endpoint) */
 export const useAdminFeedback = (filters = {}) => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const { status, feedbackType, page = 1, limit = 20 } = filters;
 
   return useQuery({
-    queryKey: ["dashboard", "admin", "feedback", status, feedbackType, page, limit],
+    queryKey: ["dashboard", "admin", "feedback", user?.email, status, feedbackType, page, limit],
+    enabled: !!user?.email,
     staleTime: 1000 * 60 * 2,
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -99,6 +110,7 @@ export const useAdminFeedback = (filters = {}) => {
 
 /** Update a feedback ticket (status + admin response) */
 export const useUpdateFeedback = () => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
 
@@ -108,14 +120,15 @@ export const useUpdateFeedback = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "feedback"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "user", "support"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "feedback", user?.email] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "user", "support", user?.email] });
     },
   });
 };
 
 /** Send a broadcast */
 export const useSendBroadcast = () => {
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
 
@@ -125,7 +138,7 @@ export const useSendBroadcast = () => {
       return res.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "audit-logs"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard", "admin", "audit-logs", user?.email] });
     },
   });
 };
