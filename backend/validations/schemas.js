@@ -165,6 +165,10 @@ const checkoutSessionSchema = z.object({
 const chatSchema = z.object({
   surveyId: z.string().min(1, 'surveyId is required'),
   message: z.string().min(1, 'Message is required').max(2000),
+  history: z.array(z.object({
+    role: z.enum(['user', 'assistant']),
+    content: z.string().max(5000),
+  })).max(20).optional(),
 });
 
 // ── Moderation & appeals ─────────────────────────────────────────────────────

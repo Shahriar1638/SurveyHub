@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { useParams, Link } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -6,6 +7,8 @@ import {
 import { LoadingSpinner } from "../../Components/UI/LoadingSpinner";
 import { PageTransition } from "../../Components/UI/PageTransition";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
+import useAxiosPublic from "../../Hooks/useAxiosPublic";
+import { AuthContext } from "../../Firebase_AuthProvider/AuthProvider";
 import { ArrowLeftIcon, ChartBarIcon, SparklesIcon, UserGroupIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 
 const CHART_COLORS = [
@@ -164,12 +167,15 @@ function ResultChart({ question }) {
 
 export default function SurveyResults() {
   const { id } = useParams();
+  const { user } = useContext(AuthContext);
   const axiosSecure = useAxiosSecure();
+  const axiosPublic = useAxiosPublic();
+  const axiosToUse = user ? axiosSecure : axiosPublic;
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["surveyResults", id],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/api/surveys/${id}/results`);
+      const res = await axiosToUse.get(`/api/surveys/${id}/results`);
       return res.data.data;
     },
     enabled: !!id,

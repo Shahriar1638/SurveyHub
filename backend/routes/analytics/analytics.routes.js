@@ -60,6 +60,7 @@ router.post('/chat', validate(chatSchema), async (req, res) => {
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     const { surveyId, message } = req.body;
+    const history = Array.isArray(req.body.history) ? req.body.history : [];
 
     const survey = await Survey.findOne({
       _id: surveyId,
@@ -145,8 +146,12 @@ RULES:
 - Never make up data or reference data not in RESULTS DATA
 - Respond in the SAME LANGUAGE as the user's question`;
 
+    // Build messages: system context + conversation history + new user message
+    // Keep history capped at last 10 turns to avoid token overflow
+    const recentHistory = history.slice(-10);
     const response = await callAIProviders([
       { role: 'system', content: systemPrompt },
+      ...recentHistory,
       { role: 'user', content: message },
     ], { logTag: 'AI Chat' });
 

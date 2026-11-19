@@ -104,18 +104,26 @@ export default function AiChat() {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSend = async () => {
-    const text = input.trim();
+  const handleSend = async (overrideText) => {
+    const text = (overrideText ?? input).trim();
     if (!text || sending) return;
 
-    setInput("");
+    if (!overrideText) setInput("");
     setMessages((prev) => [...prev, { role: "user", text }]);
     setSending(true);
+
+    // Build history from messages already in state (before this new message)
+    // cap at last 10 to avoid token overflow
+    const history = messages.slice(-10).map((m) => ({
+      role: m.role === "user" ? "user" : "assistant",
+      content: m.text,
+    }));
 
     try {
       const res = await axiosSecure.post("/api/analytics/chat", {
         surveyId,
         message: text,
+        history,
       });
 
       const data = res.data.data;
@@ -192,7 +200,7 @@ export default function AiChat() {
               ].map((q) => (
                 <button
                   key={q}
-                  onClick={() => { setInput(q); }}
+                  onClick={() => handleSend(q)}
                   className="type-body-sm px-3 py-1.5 rounded-full border border-[--color-border] text-[--color-text-secondary] hover:border-[--color-primary] hover:text-[--color-primary] transition-colors"
                 >
                   {q}

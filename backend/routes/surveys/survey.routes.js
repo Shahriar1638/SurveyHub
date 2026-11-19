@@ -355,9 +355,10 @@ router.get('/:id/results', async (req, res) => {
       return res.status(404).json({ success: false, message: 'Survey not found' });
     }
 
-    // Access control
+    // Access control — single token decode
     let userId = null;
     let isOwner = false;
+    let isAdmin = false;
     if (req.headers.authorization) {
       try {
         const token = req.headers.authorization.split(' ')[1];
@@ -366,26 +367,16 @@ router.get('/:id/results', async (req, res) => {
         if (user) {
           userId = user._id.toString();
           isOwner = user._id.toString() === survey.surveyorId.toString();
+          isAdmin = user.role === 'admin';
         }
       } catch { /* not authenticated */ }
-    }
-
-    const isAdmin = isOwner; // owner check done below via surveyorId
-    let adminCheck = false;
-    if (req.headers.authorization && !isOwner) {
-      try {
-        const token = req.headers.authorization.split(' ')[1];
-        const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
-        const user = await User.findOne({ email: decoded.email }).lean();
-        adminCheck = user?.role === 'admin';
-      } catch { /* not admin */ }
     }
 
     const access = survey.resultAccess || 'only_me';
 
     // Determine if requester can view results
     let canView = false;
-    if (adminCheck || isOwner) {
+    if (isAdmin || isOwner) {
       canView = true;
     } else if (access === 'everyone') {
       canView = true;

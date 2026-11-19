@@ -2,11 +2,37 @@ const express = require('express');
 const router = express.Router();
 const Survey = require('../../models/Survey');
 const Blog = require('../../models/Blog');
+const Response = require('../../models/response');
 
 // Add auth middleware here when integrating with the front-end (e.g., router.use(verifyToken))
 
 router.get('/', async (req, res) => {
   try {
+    const userId = req.query.userId || null;
+
+    // Compute monthlyParticipations: submitted responses in last 30 days for this user
+    let monthlyParticipations = 0;
+    if (userId) {
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      monthlyParticipations = await Response.countDocuments({
+        userId,
+        status: 'submitted',
+        createdAt: { $gte: thirtyDaysAgo },
+      });
+    }
+
+    // If userId provided, get in-progress surveys (responses with status=draft)
+    let inProgressSurveys = [];
+    if (userId) {
+      const draftResponses = await Response.find({ userId, status: 'draft' })
+        .populate({ path: 'surveyId', select: 'title category image deadline' })
+        .limit(5)
+        .lean();
+      inProgressSurveys = draftResponses
+        .filter(r => r.surveyId)
+        .map(r => r.surveyId);
+    }
+
     // All independent queries in parallel
     const [recommendedSurveys, trendingSurveys, recentBlogs] = await Promise.all([
       Survey.find({ status: 'published' })
@@ -29,9 +55,12 @@ router.get('/', async (req, res) => {
     res.json({
       success: true,
       data: {
-        activitySummary: { monthlyParticipations: 0, streak: 0 },
+        activitySummary: {
+          monthlyParticipations,
+          streak: 0, // TODO: requires date-by-date calculation
+        },
         recommendedSurveys,
-        inProgressSurveys: [],
+        inProgressSurveys,
         trendingSurveys,
         recentBlogs
       }
