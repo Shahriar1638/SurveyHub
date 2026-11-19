@@ -25,59 +25,65 @@ const item = {
 };
 
 function ChatChart({ chart }) {
-  const data = chart.labels.map((label, i) => ({
+  const data = (chart.labels || []).map((label, i) => ({
     name: label,
-    value: chart.values[i] || 0,
+    value: chart.values?.[i] || 0,
   }));
 
   if (chart.type === "pie") {
     return (
-      <div className="mt-3">
+      <div className="w-full min-w-0">
         <p className="type-meta font-semibold text-[--color-text-primary] mb-2">{chart.title}</p>
-        <ResponsiveContainer width="100%" height={250}>
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="name"
-              cx="50%"
-              cy="50%"
-              outerRadius={80}
-              label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-            >
-              {data.map((_, i) => (
-                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
+        <div className="w-full h-[260px] min-w-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {data.map((_, i) => (
+                  <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     );
   }
 
   const isHorizontal = chart.type === "bar_horizontal";
+  const height = isHorizontal ? Math.max(220, data.length * 40) : 260;
+
   return (
-    <div className="mt-3">
+    <div className="w-full min-w-0">
       <p className="type-meta font-semibold text-[--color-text-primary] mb-2">{chart.title}</p>
-      <ResponsiveContainer width="100%" height={Math.max(200, data.length * 40)}>
-        <BarChart data={data} layout={isHorizontal ? "vertical" : "horizontal"}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-          {isHorizontal ? (
-            <>
-              <XAxis type="number" tick={{ fontSize: 12 }} />
-              <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={120} />
-            </>
-          ) : (
-            <>
-              <XAxis dataKey="name" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-            </>
-          )}
-          <Tooltip />
-          <Bar dataKey="value" fill="#2D9FCF" radius={[4, 4, 0, 0]} />
-        </BarChart>
-      </ResponsiveContainer>
+      <div className="w-full min-w-0" style={{ height: `${height}px` }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} layout={isHorizontal ? "vertical" : "horizontal"}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+            {isHorizontal ? (
+              <>
+                <XAxis type="number" tick={{ fontSize: 12 }} />
+                <YAxis dataKey="name" type="category" tick={{ fontSize: 12 }} width={120} />
+              </>
+            ) : (
+              <>
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+              </>
+            )}
+            <Tooltip />
+            <Bar dataKey="value" fill="#2D9FCF" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }
@@ -178,7 +184,7 @@ export default function AiChat() {
           <div>
             <h2 className="type-heading-lg text-[--color-text-primary]">{survey.title}</h2>
             <p className="type-meta text-[--color-text-secondary]">
-              {survey.aiInsight.stats.totalResponses} response{survey.aiInsight.stats.totalResponses !== 1 ? "s" : ""}
+              {(survey.aiInsight?.stats?.totalResponses ?? survey.participantCount ?? 0)} response{(survey.aiInsight?.stats?.totalResponses ?? survey.participantCount) !== 1 ? "s" : ""}
               {survey.category && <> &middot; {survey.category}</>}
             </p>
           </div>
@@ -186,7 +192,7 @@ export default function AiChat() {
       </motion.div>
 
       {/* Chat messages */}
-      <motion.div variants={item} className="card p-4 flex flex-col gap-3 max-h-[500px] overflow-y-auto border border-[--color-border]">
+      <motion.div variants={item} className="card p-4 sm:p-6 flex flex-col gap-4 min-h-[450px] max-h-[680px] overflow-y-auto border border-[--color-border]">
         {messages.length === 0 && (
           <div className="text-center py-8">
             <p className="type-body text-[--color-text-secondary]">
@@ -210,30 +216,33 @@ export default function AiChat() {
           </div>
         )}
 
-        {messages.map((msg, i) => (
-          <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-            <div className="max-w-[80%]">
-              <div
-                className={`rounded-xl px-4 py-2.5 ${
-                  msg.role === "user"
-                    ? "bg-[--color-primary] text-white"
-                    : "bg-[--color-accent-light] text-[--color-accent-dark]"
-                }`}
-              >
-                <p className="type-body-sm whitespace-pre-wrap">{msg.text}</p>
-              </div>
-              {msg.charts?.map((chart, ci) => (
-                <div className="mt-3" key={ci}>
-                  <ChatChart chart={chart} />
+        {messages.map((msg, i) => {
+          const hasCharts = msg.charts && msg.charts.length > 0;
+          return (
+            <div key={i} className={`flex w-full min-w-0 ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+              <div className={hasCharts ? "w-full max-w-4xl min-w-0" : "max-w-2xl min-w-0"}>
+                <div
+                  className={`rounded-xl px-4 py-2.5 ${
+                    msg.role === "user"
+                      ? "bg-[--color-primary] text-white"
+                      : "bg-[--color-accent-light] text-[--color-accent-dark]"
+                  }`}
+                >
+                  <p className="type-body-sm whitespace-pre-wrap">{msg.text}</p>
                 </div>
-              ))}
+                {msg.charts?.map((chart, ci) => (
+                  <div className="mt-3 p-4 rounded-xl bg-[--color-bg-surface] border border-[--color-border] shadow-xs w-full min-w-0" key={ci}>
+                    <ChatChart chart={chart} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
 
         {sending && (
           <div className="flex justify-start">
-            <div className="max-w-[80%] rounded-xl px-5 py-3 bg-[--color-bg-surface] border border-[--color-border] relative overflow-hidden">
+            <div className="max-w-md rounded-xl px-5 py-3 bg-[--color-bg-surface] border border-[--color-border] relative overflow-hidden">
               <div className="flex items-center gap-2">
                 <div className="relative flex gap-1">
                   <span className="w-2 h-2 rounded-full bg-[--color-primary] animate-[pulse_1.4s_ease-in-out_infinite]" />

@@ -102,7 +102,7 @@ export default function ReportsTable({ statusFilter, typeFilter, search, sort, o
           const r = row.original;
           const title = r.survey?.title || r.blog?.title || "—";
           return (
-            <span className="type-body-sm text-[--color-text-primary] truncate block max-w-[180px]">
+            <span className="type-body-sm text-[--color-text-primary] truncate block max-w-44">
               {title}
             </span>
           );

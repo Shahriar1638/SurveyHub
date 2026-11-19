@@ -63,6 +63,8 @@ const ADMIN_SECTIONS = {
   overview: AdminOverview,
   moderation: AdminModeration,
   reports: AdminReports,
+  analytics: AiAnalytics,
+  "analytics-chat": AiChat,
   "audit-logs": AuditLogs,
   broadcasts: BroadcastControl,
   feedback: FeedbackManagement,

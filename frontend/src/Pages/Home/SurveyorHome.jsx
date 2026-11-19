@@ -89,7 +89,7 @@ function ModerationBanner({ rejectedSurveys }) {
               {s.status === "rejected" && !s.moderation?.appeal && (
                 <div className="shrink-0">
                   {appealId === s._id ? (
-                    <div className="flex flex-col gap-2 min-w-[240px]">
+                    <div className="flex flex-col gap-2 min-w-60">
                       <textarea
                         value={appealMsg}
                         onChange={(e) => setAppealMsg(e.target.value)}
@@ -340,7 +340,7 @@ export default function SurveyorHome() {
             </motion.div>
 
             {/* Right — summary card + slider */}
-            <motion.div variants={item} className="lg:w-[380px] w-full shrink-0 flex flex-col gap-4">
+            <motion.div variants={item} className="lg:w-96 w-full shrink-0 flex flex-col gap-4">
               {/* Stats summary */}
               <div
                 className="rounded-2xl p-5 grid grid-cols-3 gap-4"
@@ -601,7 +601,7 @@ export default function SurveyorHome() {
                   <ChatBubbleLeftEllipsisIcon className="w-6 h-6" style={{ color: "var(--color-accent)" }} />
                 </div>
                 <p className="text-sm font-medium" style={{ color: "var(--color-text-primary)" }}>No activity yet</p>
-                <p className="text-xs mt-1 max-w-[200px]" style={{ color: "var(--color-text-tertiary)" }}>
+                <p className="text-xs mt-1 max-w-52" style={{ color: "var(--color-text-tertiary)" }}>
                   Publish an insight post to start the conversation.
                 </p>
               </div>

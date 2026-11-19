@@ -318,10 +318,10 @@
      §4 — Layout Container Utilities
      ============================================================ */
 
-  /* Marketing pages: max-w-[1280px] */
+  /* Marketing pages: max-w-7xl (1280px / 80rem) */
   .container-marketing {
     width: 100%;
-    max-width: 1280px;
+    max-width: 80rem; /* max-w-7xl */
     margin-inline: auto;
     padding-inline: 1.5rem; /* px-6 */
   }
@@ -332,10 +332,10 @@
     }
   }
 
-  /* Dashboard/App: max-w-[1440px] */
+  /* Dashboard/App: max-w-screen-2xl (1440px) */
   .container-app {
     width: 100%;
-    max-width: 1440px;
+    max-width: 90rem; /* max-w-screen-2xl / 1440px */
     margin-inline: auto;
     padding-inline: 1rem; /* px-4 */
   }
@@ -346,10 +346,10 @@
     }
   }
 
-  /* Blog/Reading: max-w-[768px] centered */
+  /* Blog/Reading: max-w-3xl (768px) centered */
   .container-prose {
     width: 100%;
-    max-width: 768px;
+    max-width: 48rem; /* max-w-3xl / 768px */
     margin-inline: auto;
     padding-inline: 1.5rem;
   }

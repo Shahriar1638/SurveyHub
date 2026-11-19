@@ -35,7 +35,7 @@ const columns = [
   }),
   columnHelper.accessor("comment", {
     header: "Inquiry / Comment", cell: (info) => (
-      <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-[280px]">{info.getValue()}</span>
+      <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-72">{info.getValue()}</span>
     ),
   }),
   columnHelper.accessor((row) => row.affectedPage || "—", {
@@ -57,7 +57,7 @@ const columns = [
     cell: ({ row }) => {
       const ticket = row.original;
       return ticket.adminResponse?.message ? (
-        <div className="inline-block text-left max-w-[240px] p-2 bg-[--color-accent-light] border border-[--color-accent-light]/40 rounded-lg text-xs">
+        <div className="inline-block text-left max-w-60 p-2 bg-[--color-accent-light] border border-[--color-accent-light]/40 rounded-lg text-xs">
           <span className="type-label-sm text-[--color-accent-dark] block font-bold text-[10px] uppercase">Reply from Admin:</span>
           <p className="type-body-sm text-[--color-text-primary] italic mt-0.5 font-[500]">
             "{ticket.adminResponse.message}"

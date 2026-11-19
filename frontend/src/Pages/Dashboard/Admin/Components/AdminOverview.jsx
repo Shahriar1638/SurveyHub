@@ -161,7 +161,7 @@ export default function AdminOverview() {
           <h3 className="type-heading-sm text-[--color-text-primary]">Revenue Overview</h3>
           <span className="type-meta text-[--color-text-tertiary]">Last 6 months</span>
         </div>
-        <div className="h-56">
+        <div className="h-56 w-full min-w-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={revenueData}>
               <defs>

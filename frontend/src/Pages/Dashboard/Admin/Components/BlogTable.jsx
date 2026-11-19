@@ -40,7 +40,7 @@ export default function BlogTable({ statusFilter, search, sort, onDetail }) {
       accessorKey: "title",
       header: ({ column }) => <SortHeader column={column} title="Title" />,
       cell: ({ row }) => (
-        <span className="type-body-sm text-[--color-text-primary] font-medium truncate block max-w-[200px]">
+        <span className="type-body-sm text-[--color-text-primary] font-medium truncate block max-w-52">
           {row.original.title}
         </span>
       ),
@@ -63,7 +63,7 @@ export default function BlogTable({ statusFilter, search, sort, onDetail }) {
       id: "preview",
       header: "Preview",
       cell: ({ row }) => (
-        <span className="type-meta text-[--color-text-tertiary] truncate block max-w-[200px]">
+        <span className="type-meta text-[--color-text-tertiary] truncate block max-w-52">
           {row.original.content?.slice(0, 80)}...
         </span>
       ),

@@ -34,6 +34,7 @@ const ADMIN_NAV = [
   ]},
   { group: "MANAGEMENT", items: [
     { name: "Moderation", icon: ShieldCheckIcon, id: "moderation" },
+    { name: "AI Analytics", icon: BeakerIcon, id: "analytics" },
     { name: "All Reports", icon: ExclamationTriangleIcon, id: "reports" },
     { name: "Audit Logs", icon: DocumentMagnifyingGlassIcon, id: "audit-logs" },
     { name: "Broadcasts", icon: MegaphoneIcon, id: "broadcasts" },
@@ -133,7 +134,7 @@ function NavItem({ item, role, onNav }) {
             whileHover={!isActive ? { scale: 1.08 } : {}}
             transition={{ duration: 0.15 }}
           >
-            <Icon className="w-[15px] h-[15px]" />
+            <Icon className="w-4 h-4" />
           </motion.div>
 
           <span className="truncate flex-1">{item.name}</span>
@@ -332,7 +333,7 @@ function SidebarContent({ user, profile, role, navGroups, navigate, onNav, logOu
             <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0 group-hover:-translate-x-0.5 transition-transform duration-200"
               style={{ color: "var(--color-text-tertiary)" }}
             >
-              <ArrowLeftIcon className="w-[15px] h-[15px]" />
+              <ArrowLeftIcon className="w-4 h-4" />
             </div>
             Back to Site
           </button>
@@ -350,7 +351,7 @@ function SidebarContent({ user, profile, role, navGroups, navigate, onNav, logOu
             }}
           >
             <div className="w-7 h-7 rounded-md flex items-center justify-center shrink-0">
-              <ArrowLeftStartOnRectangleIcon className="w-[15px] h-[15px]" />
+              <ArrowLeftStartOnRectangleIcon className="w-4 h-4" />
             </div>
             Log Out
           </button>

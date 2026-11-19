@@ -63,7 +63,7 @@ export default function FeedbackManagement() {
       columnHelper.accessor("comment", {
         header: "Comment",
         cell: (info) => (
-          <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-[280px]">
+          <span className="type-body-sm text-[--color-text-primary] line-clamp-2 max-w-72">
             {info.getValue()}
           </span>
         ),
@@ -72,7 +72,7 @@ export default function FeedbackManagement() {
         id: "user",
         header: "User",
         cell: (info) => (
-          <span className="type-meta text-[--color-text-secondary] truncate block max-w-[160px]">
+          <span className="type-meta text-[--color-text-secondary] truncate block max-w-40">
             {info.getValue()}
           </span>
         ),
@@ -87,7 +87,7 @@ export default function FeedbackManagement() {
         cell: ({ row }) => {
           const ticket = row.original;
           return ticket.adminResponse?.message ? (
-            <span className="type-body-sm text-[--color-success] line-clamp-1 max-w-[180px]">
+            <span className="type-body-sm text-[--color-success] line-clamp-1 max-w-44">
               {ticket.adminResponse.message}
             </span>
           ) : (

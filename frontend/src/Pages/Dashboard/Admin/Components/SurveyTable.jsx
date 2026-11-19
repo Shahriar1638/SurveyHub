@@ -41,7 +41,7 @@ export default function SurveyTable({ statusFilter, search, sort }) {
       accessorKey: "title",
       header: ({ column }) => <SortHeader column={column} title="Title" />,
       cell: ({ row }) => (
-        <span className="type-body-sm text-[--color-text-primary] font-medium truncate block max-w-[200px]">
+        <span className="type-body-sm text-[--color-text-primary] font-medium truncate block max-w-52">
           {row.original.title}
         </span>
       ),

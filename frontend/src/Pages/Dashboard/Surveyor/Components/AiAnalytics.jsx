@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { useQuery } from "@tanstack/react-query";
 import { SparklesIcon, ChartBarIcon, LightBulbIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import useAxiosSecure from "../../../../Hooks/useAxiosSecure";
+import useProfile from "../../../../Hooks/useProfile";
 import { LoadingSpinner } from "../../../../Components/UI/LoadingSpinner";
 import { Link } from "react-router";
 
@@ -16,6 +17,7 @@ const item = {
 
 export default function AiAnalytics() {
   const axiosSecure = useAxiosSecure();
+  const { data: profile } = useProfile();
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["aiAnalytics"],
@@ -60,8 +62,11 @@ export default function AiAnalytics() {
           <p className="type-body-sm text-[--color-text-secondary] mt-1">
             AI insights are generated automatically when a published survey reaches its deadline. Enable AI insights on your surveys to get started.
           </p>
-          <Link to="/dashboard/surveys" className="btn btn-primary mt-4">
-            Go to My Surveys
+          <Link
+            to={profile?.role === "admin" ? "/dashboard/moderation" : "/dashboard/surveys"}
+            className="btn btn-primary mt-4"
+          >
+            {profile?.role === "admin" ? "Go to Moderation Queue" : "Go to My Surveys"}
           </Link>
         </motion.div>
       ) : (
@@ -84,7 +89,7 @@ export default function AiAnalytics() {
               <div>
                 <p className="type-meta text-[--color-text-secondary]">Total Responses</p>
                 <p className="type-heading-sm text-[--color-text-primary]">
-                  {insights.reduce((sum, s) => sum + s.aiInsight.stats.totalResponses, 0)}
+                  {insights.reduce((sum, s) => sum + (s.aiInsight?.stats?.totalResponses ?? s.participantCount ?? 0), 0)}
                 </p>
               </div>
             </div>
@@ -110,7 +115,7 @@ export default function AiAnalytics() {
                   <p className="type-meta text-[--color-text-secondary] mt-0.5">
                     {survey.participantCount} response{survey.participantCount !== 1 ? "s" : ""}
                     {survey.category && <> &middot; {survey.category}</>}
-                    {survey.aiInsight.generatedAt && (
+                    {survey.aiInsight?.generatedAt && (
                       <> &middot; {new Date(survey.aiInsight.generatedAt).toLocaleDateString()}</>
                     )}
                   </p>

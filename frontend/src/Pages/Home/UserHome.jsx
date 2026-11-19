@@ -160,7 +160,7 @@ export default function UserHome() {
           </div>
 
           {/* Right — streak + activity snapshot */}
-          <div className="uh-cta shrink-0 flex flex-col gap-3 min-w-[200px]">
+          <div className="uh-cta shrink-0 flex flex-col gap-3 min-w-52">
             {activity.streakDays > 0 && (
               <div
                 className="rounded-xl px-5 py-4 flex items-center gap-3"

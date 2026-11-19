@@ -145,7 +145,7 @@ export default function MySurveys() {
     columnHelper.accessor("title", {
       header: "Title",
       cell: (info) => (
-        <span className="type-label-sm text-[--color-text-primary] line-clamp-1 max-w-[240px] block">
+        <span className="type-label-sm text-[--color-text-primary] line-clamp-1 max-w-60 block">
           {info.getValue()}
         </span>
       ),
@@ -334,7 +334,7 @@ export default function MySurveys() {
         </div>
 
         {/* Search */}
-        <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="relative flex-1 min-w-52 max-w-sm">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[--color-text-tertiary]" />
           <input
             type="text"

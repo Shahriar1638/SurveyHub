@@ -63,7 +63,7 @@ function ResultChart({ question }) {
   if (question.type === "multiple_choice") {
     return (
       <div className="flex flex-col sm:flex-row items-center gap-6">
-        <div className="flex-1 w-full">
+        <div className="flex-1 w-full min-w-0">
           <ResponsiveContainer width="100%" height={280}>
             <PieChart>
               <Pie
@@ -86,7 +86,7 @@ function ResultChart({ question }) {
             </PieChart>
           </ResponsiveContainer>
         </div>
-        <div className="flex flex-col gap-2 min-w-[140px]">
+        <div className="flex flex-col gap-2 min-w-36">
           {data.map((d, i) => (
             <div key={d.name} className="flex items-center gap-2 type-body-sm">
               <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
@@ -101,67 +101,71 @@ function ResultChart({ question }) {
 
   if (question.type === "linear_scale") {
     return (
-      <ResponsiveContainer width="100%" height={280}>
-        <BarChart data={data} barCategoryGap="20%">
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+      <div className="w-full h-[280px] min-w-0">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} barCategoryGap="20%">
+            <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" vertical={false} />
+            <XAxis
+              dataKey="label"
+              tick={{ fontSize: 11, fontFamily: "var(--font-mono)", fill: "#6B7280" }}
+              axisLine={false}
+              tickLine={false}
+              interval={0}
+              angle={hasScaleLabels ? -30 : 0}
+              textAnchor={hasScaleLabels ? "end" : "middle"}
+              height={hasScaleLabels ? 60 : 30}
+            />
+            <YAxis
+              tick={{ fontSize: 12, fontFamily: "var(--font-mono)", fill: "#9CA3AF" }}
+              axisLine={false}
+              tickLine={false}
+              allowDecimals={false}
+            />
+            <Tooltip
+              contentStyle={TOOLTIP_STYLE}
+              formatter={(value, name, entry) => [`${value} responses`, entry.payload.label || entry.payload.name]}
+            />
+            <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={50}>
+              {data.map((_, i) => (
+                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  // checkbox → horizontal BarChart
+  return (
+    <div className="w-full min-w-0" style={{ height: `${Math.max(200, data.length * 44)}px` }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={data} layout="vertical" barCategoryGap="25%">
+          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal={false} />
           <XAxis
-            dataKey="label"
-            tick={{ fontSize: 11, fontFamily: "var(--font-mono)", fill: "#6B7280" }}
-            axisLine={false}
-            tickLine={false}
-            interval={0}
-            angle={hasScaleLabels ? -30 : 0}
-            textAnchor={hasScaleLabels ? "end" : "middle"}
-            height={hasScaleLabels ? 60 : 30}
-          />
-          <YAxis
+            type="number"
             tick={{ fontSize: 12, fontFamily: "var(--font-mono)", fill: "#9CA3AF" }}
             axisLine={false}
             tickLine={false}
             allowDecimals={false}
           />
-          <Tooltip
-            contentStyle={TOOLTIP_STYLE}
-            formatter={(value, name, entry) => [`${value} responses`, entry.payload.label || entry.payload.name]}
+          <YAxis
+            type="category"
+            dataKey="name"
+            tick={{ fontSize: 12, fontFamily: "var(--font-mono)", fill: "#6B7280" }}
+            axisLine={false}
+            tickLine={false}
+            width={120}
           />
-          <Bar dataKey="value" radius={[6, 6, 0, 0]} maxBarSize={50}>
+          <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value} selections`, "Count"]} />
+          <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={32}>
             {data.map((_, i) => (
               <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-    );
-  }
-
-  // checkbox → horizontal BarChart
-  return (
-    <ResponsiveContainer width="100%" height={Math.max(200, data.length * 44)}>
-      <BarChart data={data} layout="vertical" barCategoryGap="25%">
-        <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" horizontal={false} />
-        <XAxis
-          type="number"
-          tick={{ fontSize: 12, fontFamily: "var(--font-mono)", fill: "#9CA3AF" }}
-          axisLine={false}
-          tickLine={false}
-          allowDecimals={false}
-        />
-        <YAxis
-          type="category"
-          dataKey="name"
-          tick={{ fontSize: 12, fontFamily: "var(--font-mono)", fill: "#6B7280" }}
-          axisLine={false}
-          tickLine={false}
-          width={120}
-        />
-        <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(value) => [`${value} selections`, "Count"]} />
-        <Bar dataKey="value" radius={[0, 6, 6, 0]} maxBarSize={32}>
-          {data.map((_, i) => (
-            <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    </div>
   );
 }
 

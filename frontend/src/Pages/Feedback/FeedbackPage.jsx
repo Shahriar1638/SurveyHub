@@ -77,7 +77,7 @@ function Toast({ message, type, onClose }) {
       animate={{ x: 0, opacity: 1 }}
       exit={{ x: 60, opacity: 0 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed bottom-6 right-6 z-9999 flex items-start gap-3 bg-[--color-bg-surface] border border-[--color-border] rounded-xl shadow-[--shadow-lg] min-w-[300px] max-w-[400px] overflow-hidden"
+      className="fixed bottom-6 right-6 z-9999 flex items-start gap-3 bg-[--color-bg-surface] border border-[--color-border] rounded-xl shadow-[--shadow-lg] min-w-72 max-w-sm overflow-hidden"
     >
       <div
         className="w-1 self-stretch shrink-0 rounded-l-xl"

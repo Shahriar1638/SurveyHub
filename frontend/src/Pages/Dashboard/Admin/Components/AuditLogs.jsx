@@ -29,7 +29,7 @@ const columns = [
   ),
   columnHelper.accessor((row) => row.actor?.email || "System", {
     id: "actor", header: "Actor", cell: (info) => (
-      <span className="type-body-sm text-[--color-text-primary] truncate block max-w-45">{info.getValue()}</span>
+      <span className="type-body-sm text-[--color-text-primary] truncate block max-w-44">{info.getValue()}</span>
     ),
   }),
   columnHelper.accessor("action", {
@@ -44,7 +44,7 @@ const columns = [
   }),
   columnHelper.accessor((row) => row.detail ? JSON.stringify(row.detail) : "—", {
     id: "details", header: "Details", cell: (info) => (
-      <span className="type-meta text-[--color-text-tertiary] truncate block max-w-50">{info.getValue()}</span>
+      <span className="type-meta text-[--color-text-tertiary] truncate block max-w-52">{info.getValue()}</span>
     ),
   }),
 ];

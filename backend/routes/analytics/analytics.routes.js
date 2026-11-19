@@ -15,10 +15,12 @@ router.get('/ai-insights', async (req, res) => {
     const user = req.user?._id ? req.user : await User.findOne({ email: req.decoded.email }).lean();
     if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-    const surveys = await Survey.find({
-      surveyorId: user._id,
-      'aiInsight.status': 'ready',
-    })
+    const filter = { 'aiInsight.status': 'ready' };
+    if (user.role !== 'admin') {
+      filter.surveyorId = user._id;
+    }
+
+    const surveys = await Survey.find(filter)
       .sort({ 'aiInsight.generatedAt': -1 })
       .select('title category status participantCount deadline aiInsight')
       .lean();
@@ -62,10 +64,12 @@ router.post('/chat', validate(chatSchema), async (req, res) => {
     const { surveyId, message } = req.body;
     const history = Array.isArray(req.body.history) ? req.body.history : [];
 
-    const survey = await Survey.findOne({
-      _id: surveyId,
-      surveyorId: user._id,
-    }).lean();
+    const surveyFilter = { _id: surveyId };
+    if (user.role !== 'admin') {
+      surveyFilter.surveyorId = user._id;
+    }
+
+    const survey = await Survey.findOne(surveyFilter).lean();
 
     if (!survey) return res.status(404).json({ success: false, message: 'Survey not found' });
 
