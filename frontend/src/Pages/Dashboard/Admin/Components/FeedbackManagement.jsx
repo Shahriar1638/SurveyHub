@@ -1,4 +1,4 @@
-﻿"use no memo";
+"use no memo";
 
 import { useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "motion/react";

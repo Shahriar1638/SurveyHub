@@ -1,4 +1,4 @@
-﻿"use no memo";
+"use no memo";
 
 import { useMemo } from "react";
 import {

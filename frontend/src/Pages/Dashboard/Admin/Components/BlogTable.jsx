@@ -1,4 +1,4 @@
-﻿"use no memo";
+"use no memo";
 
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";

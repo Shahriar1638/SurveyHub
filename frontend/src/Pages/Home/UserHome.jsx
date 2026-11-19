@@ -1,4 +1,4 @@
-﻿import { useContext, useRef, useState } from "react";
+import { useContext, useRef, useState } from "react";
 import { Link } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
 import { gsap } from "gsap";

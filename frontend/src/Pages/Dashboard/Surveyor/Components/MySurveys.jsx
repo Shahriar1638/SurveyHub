@@ -1,4 +1,4 @@
-﻿"use no memo";
+"use no memo";
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
 import { motion, AnimatePresence } from "motion/react";
